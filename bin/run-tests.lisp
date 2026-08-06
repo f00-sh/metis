@@ -11,11 +11,13 @@
 (let ((ok1 (%suite-ok :metis))
       (ok2 (%suite-ok :metis-production))
       (ok3 (%suite-ok :metis-bench))
-      (ok4 (%suite-ok :metis-further)))
-  (format t "~&~%=== METIS 2.0 TEST SUMMARY ===~%")
-  (format t "core: ~A  production: ~A  bench: ~A  further: ~A~%"
+      (ok4 (%suite-ok :metis-further))
+      (ok5 (%suite-ok :metis-epoch)))
+  (format t "~&~%=== METIS 3.0 TEST SUMMARY ===~%")
+  (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A~%"
           (if ok1 "PASS" "FAIL")
           (if ok2 "PASS" "FAIL")
           (if ok3 "PASS" "FAIL")
-          (if ok4 "PASS" "FAIL"))
-  (uiop:quit (if (and ok1 ok2 ok3 ok4) 0 1)))
+          (if ok4 "PASS" "FAIL")
+          (if ok5 "PASS" "FAIL"))
+  (uiop:quit (if (and ok1 ok2 ok3 ok4 ok5) 0 1)))

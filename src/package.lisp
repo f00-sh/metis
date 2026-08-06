@@ -139,7 +139,21 @@
    #:arc-thesis
    #:*arc*
    #:api-security-check-input
-   #:api-require-auth)
+   #:api-require-auth
+   ;; 3.0 EPOCH
+   #:epoch-thesis
+   #:epoch-open
+   #:epoch-step
+   #:epoch-run
+   #:epoch-suspend
+   #:epoch-resume
+   #:epoch-status
+   #:epoch-flagship
+   #:epoch-guarded-self-mod
+   #:epoch-ingest-self-code
+   #:epoch-leap-resume-demo
+   #:*epoch*
+   #:*epoch-thesis*)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

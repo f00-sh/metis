@@ -1,9 +1,9 @@
-;;;; metis.asd — Metis 2.0 ARC cognitive architecture
+;;;; metis.asd — Metis 3.0 EPOCH cognitive architecture
 (defsystem "metis"
-  :description "Metis 2.0: Autopoietic Reflexive Continuum — RETE, durable LMDB, formal TMS, multi-agent CL intelligence"
+  :description "Metis 3.0 EPOCH: multi-session open cognitive homotopy beyond ARC"
   :author "Glenda"
   :license "MIT"
-  :version "2.0.0"
+  :version "3.0.0"
   :depends-on ("alexandria"
                "bordeaux-threads"
                "cl-ppcre"
@@ -53,6 +53,7 @@
      (:file "daemon")
      (:file "api")
      (:file "arc")
+     (:file "epoch")
      (:file "world")
      (:file "repl")))
    (:module "knowledge"
@@ -72,8 +73,10 @@
     ((:file "suite")
      (:file "production")
      (:file "bench")
-     (:file "further-paths"))))
+     (:file "further-paths")
+     (:file "epoch"))))
   :perform (test-op (o c)
              (symbol-call :fiveam :run! :metis)
              (symbol-call :fiveam :run! :metis-production)
-             (symbol-call :fiveam :run! :metis-further)))
+             (symbol-call :fiveam :run! :metis-further)
+             (symbol-call :fiveam :run! :metis-epoch)))

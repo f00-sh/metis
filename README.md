@@ -1,57 +1,50 @@
-# Metis 2.0 — ARC (Autopoietic Reflexive Continuum)
+# Metis 3.0 — EPOCH
 
-**A Common Lisp cognitive architecture whose unit of intelligence is a self-stabilizing continuum cycle:**
+**Enduring Process of Open Cognitive Homotopy**
+
+Flagship post-ARC program: multi-session open cognitive pursuit that can **suspend, restart, and resume** past any single continuum cycle, treating the mind’s **own code as cognitive material**, with **TMS-guarded self-modification**.
 
 ```
-percept → RETE react → TMS validate → autopoietic repair → durable checkpoint → continue
+open goals → ARC cycle + pursue → introspect self-code →
+  guarded self-mod → durable suspend → [process exit] → resume session N+1
 ```
 
-## Novel intelligence thesis
+## Why this is farther than 2.0 ARC
 
-**Autopoietic Reflexive Continuum (ARC)** — dual-pathway intelligence in which a **RETE-compiled reactive cortex** and a **TMS-verified deliberative validator** share **durable continuum memory** (LMDB). Contradictions trigger autopoietic repair (retract → rejoin → re-derive → checkpoint) rather than silent inconsistency.
+| | ARC (2.0) | EPOCH (3.0) |
+|--|-----------|-------------|
+| Unit of cognition | single-session continuum cycle | multi-session open pursuit |
+| Process restart | not an obligatory unit | **suspend/resume across process** |
+| Own code as material | optional introspection | **ingest exports as facts** |
+| Self-mod | rewrite-rule tools | **TMS-integrity-gated + rollback** |
 
-This is not “AGI.” It is a named, runnable mechanism that no prior open CL stack shipped as one obligatory cognitive unit with formal TMS guards + RETE + durable continuum tests.
-
-## Capabilities
-
-| Path | Module |
-|------|--------|
-| RETE forward inference | `src/rete.lisp` · `forward-chain-rete` |
-| Durable LMDB store | `src/durable.lisp` |
-| Formal TMS properties P1–P6 | `src/tms-formal.lisp` |
-| Large corpora | `knowledge/large-corpus.lisp` |
-| API adversarial review + gates | `docs/adversarial-api-review.md` · `src/api.lisp` |
-| ARC continuum | `src/arc.lisp` |
-| STRIPS + HTN, multi-agent, frames, … | Metis 1.x baseline retained |
-
-## Quick start
+## Flagship entry
 
 ```bash
-# tests (core + production + bench + further)
-./bin/metis test
-# or
-sbcl --load bin/run-tests.lisp
+./bin/epoch --path /tmp/epoch-store --id flagship --steps 12
+./bin/metis epoch --resume --path /tmp/epoch-store --id flagship
 ```
 
 ```lisp
 (ql:quickload :metis)
-(in-package :metis)
-(boot)
-(forward-chain-rete *mind*)
-(arc-boot *mind*)
-(arc-cycle *arc* '((philosopher ada)))
-(ask *mind* '(mortal ada))
-(tms-formal-verify)
-(durable-roundtrip-ok-p *mind*)
+(metis:epoch-flagship :durable-path "/tmp/epoch-store" :goals '((clear a)))
+(metis:epoch-leap-resume-demo "/tmp/epoch-leap/" :id "demo")
 ```
 
-## HTTP API
+## Architecture (kept from 2.0)
 
-Local by default (`127.0.0.1:7433`). Set `METIS_API_TOKEN` for bearer auth. Bodies reject `#.` / dangerous forms; rate-limited.
+RETE · LMDB durable · JTMS formal P1–P6 · HTN/STRIPS · multi-agent · API security · ARC continuum
 
-## Requirements
+## Tests
 
-SBCL, Quicklisp, LMDB (via Quicklisp `lmdb` system + system liblmdb).
+```bash
+./bin/metis test
+# core · production · bench · further · epoch
+```
+
+## Thesis
+
+See `metis:epoch-thesis` / `*epoch-thesis*` in `src/epoch.lisp`.
 
 ## License
 

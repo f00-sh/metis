@@ -14,11 +14,14 @@ case "$MODE" in
   production|prod)
     exec sbcl --noinform --load "$ROOT/bin/production.lisp" -- "$@"
     ;;
+  epoch|flagship)
+    exec sbcl --noinform --load "$ROOT/bin/epoch.lisp" -- "$@"
+    ;;
   test)
     exec sbcl --noinform --load "$ROOT/bin/run-tests.lisp"
     ;;
   *)
-    echo "Usage: metis [repl|production|test] [--api] [--daemon] [--society]"
+    echo "Usage: metis [repl|production|epoch|test] ..."
     exit 2
     ;;
 esac

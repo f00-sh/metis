@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.0.0 — EPOCH (Enduring Process of Open Cognitive Homotopy)
+
+### Flagship program
+- `bin/epoch` / `metis epoch` — primary post-ARC program entry
+- Multi-session open-goal pursuit with durable suspend/resume across process restarts
+- Live introspective ingest of the mind's own code surface as cognitive material
+- TMS-guarded self-modification of rules/skills with rollback on integrity failure
+
+### Leap past 2.0 ARC
+- ARC = single-session continuum cycle
+- EPOCH = multi-session open pursuit + code-as-cognition + guarded self-mod as one unit
+
+### Tests
+- Suite `:metis-epoch` — flagship, leap resume, self-mod, self-code ingest
+
 ## 2.0.0 — ARC (Autopoietic Reflexive Continuum)
 
 ### Novel intelligence thesis
