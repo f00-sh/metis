@@ -7,7 +7,7 @@
 
 (test version-and-build
   (is (stringp (metis:metis-version-string)))
-  (is (equal "3.0.0" metis:*metis-version*))
+  (is (equal "3.1.0" metis:*metis-version*))
   (is (getf (metis:metis-build-info) :version)))
 
 (test tms-justify-and-why
@@ -91,7 +91,7 @@
 
 (test production-boot-smoke
   (let ((r (metis:production-boot :api nil :daemon nil :society t)))
-    (is (equal "3.0.0" (getf r :version)))
+    (is (equal "3.1.0" (getf r :version)))
     (is (getf r :society))
     (metis:society-stop metis:*society*)))
 

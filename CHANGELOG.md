@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0 — INTERFACE (full interactive product surface)
+
+### Interactive multi-turn interface
+- `session` + `iface` modules: multi-turn session without process restart
+- Attachments: **files** (text extract), **context** strings, **photos** (path/type/size/caption)
+- `/need CAP` self-accommodation via TMS-guarded self-mod + tool/skill registration
+- Launchers: `./bin/iface`, `./bin/metis iface` (`--demo`, `--drive`, REPL)
+- HTTP: `POST /v1/session`, `/v1/session/turn`, `/v1/session/attach`
+- Suite `:metis-iface`
+
 ## 3.0.0 — EPOCH (Enduring Process of Open Cognitive Homotopy)
 
 ### Flagship program

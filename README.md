@@ -1,50 +1,41 @@
-# Metis 3.0 — EPOCH
+# Metis 3.1 — INTERFACE
 
-**Enduring Process of Open Cognitive Homotopy**
+**Full interactive cognitive product surface** on the EPOCH/ARC mind:
 
-Flagship post-ARC program: multi-session open cognitive pursuit that can **suspend, restart, and resume** past any single continuum cycle, treating the mind’s **own code as cognitive material**, with **TMS-guarded self-modification**.
-
-```
-open goals → ARC cycle + pursue → introspect self-code →
-  guarded self-mod → durable suspend → [process exit] → resume session N+1
-```
-
-## Why this is farther than 2.0 ARC
-
-| | ARC (2.0) | EPOCH (3.0) |
-|--|-----------|-------------|
-| Unit of cognition | single-session continuum cycle | multi-session open pursuit |
-| Process restart | not an obligatory unit | **suspend/resume across process** |
-| Own code as material | optional introspection | **ingest exports as facts** |
-| Self-mod | rewrite-rule tools | **TMS-integrity-gated + rollback** |
-
-## Flagship entry
+- Multi-turn chat **without process restart**
+- Attach **files**, freeform **context**, and **photos**
+- Turns drive real tell/ask/pursue cognition
+- **Self-accommodation**: `/need CAP` → TMS-guarded self-mod + tool/skill install
 
 ```bash
-./bin/epoch --path /tmp/epoch-store --id flagship --steps 12
-./bin/metis epoch --resume --path /tmp/epoch-store --id flagship
+./bin/metis iface                 # interactive REPL
+./bin/metis iface --demo          # multi-turn demo
+./bin/iface --drive "status" "(tell (hi))" "(ask (hi))"
 ```
 
-```lisp
-(ql:quickload :metis)
-(metis:epoch-flagship :durable-path "/tmp/epoch-store" :goals '((clear a)))
-(metis:epoch-leap-resume-demo "/tmp/epoch-leap/" :id "demo")
-```
+### Commands (iface)
 
-## Architecture (kept from 2.0)
+| Input | Effect |
+|-------|--------|
+| `/attach file PATH [caption]` | text/binary file → session + KB |
+| `/attach photo PATH [caption]` | image provenance (path/type/size) |
+| `/context TEXT` | freeform context material |
+| `/attachments` | list session attachments |
+| `/read ID` | read attachment text/meta |
+| `/ask` `/tell` `/goal` | cognition |
+| `/need CAPABILITY` | self-accommodate unknown skill |
+| `(lisp forms…)` | mind language |
 
-RETE · LMDB durable · JTMS formal P1–P6 · HTN/STRIPS · multi-agent · API security · ARC continuum
+### Architecture stack
+
+INTERFACE (3.1) → EPOCH (3.0) → ARC/RETE/TMS/LMDB (2.0) → cognitive kernel (1.x)
 
 ## Tests
 
 ```bash
 ./bin/metis test
-# core · production · bench · further · epoch
+# core · production · bench · further · epoch · iface
 ```
-
-## Thesis
-
-See `metis:epoch-thesis` / `*epoch-thesis*` in `src/epoch.lisp`.
 
 ## License
 

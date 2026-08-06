@@ -17,11 +17,14 @@ case "$MODE" in
   epoch|flagship)
     exec sbcl --noinform --load "$ROOT/bin/epoch.lisp" -- "$@"
     ;;
+  iface|chat|interactive)
+    exec sbcl --noinform --load "$ROOT/bin/iface.lisp" -- "$@"
+    ;;
   test)
     exec sbcl --noinform --load "$ROOT/bin/run-tests.lisp"
     ;;
   *)
-    echo "Usage: metis [repl|production|epoch|test] ..."
+    echo "Usage: metis [repl|production|epoch|iface|test] ..."
     exit 2
     ;;
 esac

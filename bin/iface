@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Metis full interactive interface
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export CL_SOURCE_REGISTRY="${ROOT}/:${CL_SOURCE_REGISTRY:-}"
+exec sbcl --noinform --load "$ROOT/bin/iface.lisp" -- "$@"

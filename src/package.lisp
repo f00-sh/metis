@@ -153,7 +153,26 @@
    #:epoch-ingest-self-code
    #:epoch-leap-resume-demo
    #:*epoch*
-   #:*epoch-thesis*)
+   #:*epoch-thesis*
+   ;; 3.1 interactive interface
+   #:session-create
+   #:session-ensure
+   #:session-get
+   #:session-attach-file
+   #:session-attach-photo
+   #:session-attach-context
+   #:session-list-attachments
+   #:session-get-attachment
+   #:session-attachment-text
+   #:session-status
+   #:*session*
+   #:iface-turn
+   #:iface-drive
+   #:iface-repl
+   #:iface-accommodate
+   #:iface-flagship
+   #:iface-thesis
+   #:*iface-thesis*)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

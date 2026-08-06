@@ -182,6 +182,61 @@
     (return-from api-cycle (%api-respond (list :error "unauthorized") 401)))
   (%api-respond (list :result (prin1-to-string (cognitive-cycle *mind*)))))
 
+(hunchentoot:define-easy-handler (api-session-create :uri "/v1/session") ()
+  (unless (%api-authorized-p)
+    (return-from api-session-create (%api-respond (list :error "unauthorized") 401)))
+  (unless *mind* (boot))
+  (let ((s (session-create)))
+    (%api-respond (list :session (sess-id s) :status (session-status s)))))
+
+(hunchentoot:define-easy-handler (api-session-turn :uri "/v1/session/turn") ()
+  (unless (%api-authorized-p)
+    (return-from api-session-turn (%api-respond (list :error "unauthorized") 401)))
+  (handler-case
+      (let* ((body (%api-read-json))
+             (sid (%api-body-field body "session"))
+             (text (%api-body-field body "text"))
+             (s (or (and sid (session-get sid)) (session-ensure))))
+        (unless (stringp text)
+          (return-from api-session-turn
+            (%api-respond (list :error "text required") 400)))
+        (let ((resp (iface-turn s text)))
+          (%api-respond (list :session (sess-id s)
+                              :turn (getf resp :turn)
+                              :reply (getf resp :reply)
+                              :result (prin1-to-string (getf resp :result))
+                              :facts-delta (getf resp :facts-delta)))))
+    (error (e)
+      (%api-respond (list :error (princ-to-string e)) 400))))
+
+(hunchentoot:define-easy-handler (api-session-attach :uri "/v1/session/attach") ()
+  (unless (%api-authorized-p)
+    (return-from api-session-attach (%api-respond (list :error "unauthorized") 401)))
+  (handler-case
+      (let* ((body (%api-read-json))
+             (sid (%api-body-field body "session"))
+             (kind (%api-body-field body "kind"))
+             (path (%api-body-field body "path"))
+             (text (%api-body-field body "text"))
+             (caption (%api-body-field body "caption"))
+             (s (or (and sid (session-get sid)) (session-ensure)))
+             (att
+              (cond
+                ((equalp kind "context")
+                 (session-attach-context s (or text "") :caption caption))
+                ((equalp kind "photo")
+                 (session-attach-photo s path :caption caption))
+                (t
+                 (session-attach-file s path :caption caption)))))
+        (%api-respond (list :id (att-id att)
+                            :kind (symbol-name (att-kind att))
+                            :path (att-path att)
+                            :media-type (att-media-type att)
+                            :size (att-size att)
+                            :has-text (and (att-text att) t))))
+    (error (e)
+      (%api-respond (list :error (princ-to-string e)) 400))))
+
 (defun api-start (&key (port 7433) (address "127.0.0.1") (token nil))
   "Start production HTTP API. Default localhost only.
    If METIS_API_TOKEN or token is set, all mutating endpoints require it.

@@ -1,11 +1,11 @@
 ;;;; version.lisp
 (in-package :metis)
 
-(defparameter *metis-version* "3.0.0"
+(defparameter *metis-version* "3.1.0"
   "Semantic version of the Metis production cognitive architecture.")
 
-(defparameter *metis-codename* "EPOCH"
-  "Release codename — Enduring Process of Open Cognitive Homotopy.")
+(defparameter *metis-codename* "INTERFACE"
+  "Release codename — full interactive files/photos/self-accommodation UI.")
 
 (defparameter *metis-api-version* "v1")
 
