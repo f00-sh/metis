@@ -51,6 +51,52 @@
         (is-true meta)
         (is (eq :rete (metis::fm-support meta)))))))
 
+(test rete-naf-penguin-cannot-fly
+  "birds-fly has (not (penguin ?x)): pure RETE must NOT assert (can-fly opus)."
+  (with-fixture clean-mind ()
+    (metis:set-config :auto-forward nil)
+    (let* ((m metis:*mind*)
+           (kb (metis::mind-kb m))
+           (can-fly-opus (mread "(can-fly opus)"))
+           (fresh-bird (mread "(bird sky-lark-rete)"))
+           (can-fly-fresh (mread "(can-fly sky-lark-rete)")))
+      (is-true (metis::kb-holds-p kb (mread "(penguin opus)")))
+      (is (not (metis::kb-holds-p kb can-fly-opus)))
+      (let ((derived (metis:forward-chain-rete m)))
+        (is (not (member can-fly-opus derived :test #'equal)))
+        (is (not (metis::kb-holds-p kb can-fly-opus))))
+      ;; Positive control: fresh non-penguin bird → RETE may derive can-fly.
+      (metis::kb-assert kb fresh-bird :support :asserted)
+      (let ((d2 (metis:forward-chain-rete m)))
+        (is (member can-fly-fresh d2 :test #'equal))
+        (is-true (metis::kb-holds-p kb can-fly-fresh))
+        (is (eq :rete
+                (metis::fm-support
+                 (gethash can-fly-fresh (metis::kb-facts kb)))))
+        ;; Still no can-fly opus
+        (is (not (metis::kb-holds-p kb can-fly-opus)))))))
+
+(test rete-naf-clear-blocked-by-on
+  "clear-if-nothing-on: (not (on ?y ?x)) must block (clear a) while (on c a)."
+  (with-fixture clean-mind ()
+    (metis:set-config :auto-forward nil)
+    (let* ((m metis:*mind*)
+           (kb (metis::mind-kb m))
+           (clear-a (mread "(clear a)"))
+           (on-c-a (mread "(on c a)")))
+      (is-true (metis::kb-holds-p kb on-c-a))
+      ;; May or may not hold pre-RETE from bootstrap asserts; force retract.
+      (metis::kb-retract kb clear-a)
+      (is (not (metis::kb-holds-p kb clear-a)))
+      (let ((derived (metis:forward-chain-rete m)))
+        (is (not (member clear-a derived :test #'equal)))
+        (is (not (metis::kb-holds-p kb clear-a))))
+      ;; After removing on-c-a, RETE may derive clear a.
+      (metis::kb-retract kb on-c-a)
+      (let ((d2 (metis:forward-chain-rete m)))
+        (is (or (member clear-a d2 :test #'equal)
+                (metis::kb-holds-p kb clear-a)))))))
+
 (test rete-compile-structure
   (with-fixture clean-mind ()
     (let ((net (metis:rete-compile (metis::mind-kb metis:*mind*))))

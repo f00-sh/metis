@@ -19,6 +19,7 @@
   rule
   head
   beta
+  (negations nil)   ; list of (not lit) with same alpha-rename as head
   (fired (make-hash-table :test #'equal)))
 
 (defstruct (rete-network (:conc-name rn-))
@@ -60,28 +61,34 @@
     net))
 
 (defun %rete-compile-rule (net rule)
+  "Compile RULE: positive body lits → alpha/beta chain; (not …) kept on prod for NAF."
   (let* ((ren (rename-variables (cons (rule-head rule) (rule-body rule))))
          (head (car ren))
          (body (or (cdr ren) '((true))))
+         (neg (remove-if-not
+               (lambda (lit) (and (consp lit) (eq (car lit) 'not)))
+               body))
+         (pos (remove-if
+               (lambda (lit) (and (consp lit) (eq (car lit) 'not)))
+               body))
          (parent (rn-root net)))
-    ;; skip pure (not ...) only bodies for alpha (still compile positive lits)
-    (let ((pos (remove-if (lambda (lit)
-                            (and (consp lit) (eq (car lit) 'not)))
-                          body)))
-      (when (null pos)
-        (setf pos '((true))))
-      (dolist (lit pos)
-        (let* ((alpha (%rete-find-or-make-alpha net lit))
-               (beta (make-rete-beta :id (%rete-new-id net)
-                                     :left parent
-                                     :right alpha)))
-          (push beta (ra-betas alpha))
-          (push beta (rb-children parent))
-          (setf parent beta)))
-      (let ((prod (make-rete-prod :rule rule :head head :beta parent)))
-        (push prod (rb-productions parent))
-        (push prod (rn-prods net))
-        prod))))
+    (when (null pos)
+      (setf pos '((true))))
+    (dolist (lit pos)
+      (let* ((alpha (%rete-find-or-make-alpha net lit))
+             (beta (make-rete-beta :id (%rete-new-id net)
+                                   :left parent
+                                   :right alpha)))
+        (push beta (ra-betas alpha))
+        (push beta (rb-children parent))
+        (setf parent beta)))
+    (let ((prod (make-rete-prod :rule rule
+                                :head head
+                                :beta parent
+                                :negations neg)))
+      (push prod (rb-productions parent))
+      (push prod (rn-prods net))
+      prod)))
 
 (defun %rete-join-tokens (left-subst pattern fact)
   (unify (apply-subst pattern left-subst) fact left-subst))
@@ -89,8 +96,25 @@
 (defun %rete-token-key (subst)
   (prin1-to-string (pretty-subst subst)))
 
+(defun %rete-naf-ok-p (kb subst neg-lit)
+  "Negation-as-failure for (not INNER) under SUBST against KB facts.
+   Ground INNER: fail NAF if KB holds it.
+   Open INNER: fail NAF if any KB fact unifies with INNER."
+  (unless (and (consp neg-lit) (eq (car neg-lit) 'not))
+    (return-from %rete-naf-ok-p t))
+  (let ((inner (apply-subst (second neg-lit) subst)))
+    (if (groundp inner)
+        (not (kb-holds-p kb inner))
+        (not (some (lambda (f)
+                     (not (unify-fail-p (unify inner f subst))))
+                   (kb-candidates kb inner))))))
+
+(defun %rete-negations-satisfied-p (net subst negations)
+  (every (lambda (n) (%rete-naf-ok-p (rn-kb net) subst n))
+         negations))
+
 (defun %rete-fire-productions (net beta)
-  "Fire production nodes on BETA; return newly asserted heads."
+  "Fire production nodes on BETA; enforce NAF on stored (not …) body lits."
   (let ((derived nil))
     (dolist (prod (rb-productions beta))
       (maphash
@@ -100,7 +124,9 @@
                 (fk (%rete-token-key subst)))
            (when (and (groundp head)
                       (not (kb-holds-p (rn-kb net) head))
-                      (not (gethash fk (rp-fired prod))))
+                      (not (gethash fk (rp-fired prod)))
+                      (%rete-negations-satisfied-p net subst
+                                                   (rp-negations prod)))
              (setf (gethash fk (rp-fired prod)) t)
              (kb-assert (rn-kb net) head :support :rete)
              (incf (rn-derived net))
