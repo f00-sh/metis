@@ -1,0 +1,10 @@
+*.fasl
+*.mind.lisp
+worlds/*.mind.lisp
+worlds/metis-lmdb/
+worlds/**/data.mdb
+worlds/**/lock.mdb
+*~
+.DS_Store
+system-index.txt
+*.mdb

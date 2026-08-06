@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install SBCL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sbcl
+
+      - name: Install Quicklisp
+        run: |
+          curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o /tmp/quicklisp.lisp
+          sbcl --non-interactive \
+            --load /tmp/quicklisp.lisp \
+            --eval '(quicklisp-quickstart:install)' \
+            --eval '(ql:add-to-init-file)' \
+            --eval '(quit)'
+
+      - name: Link project into local-projects
+        run: |
+          mkdir -p ~/quicklisp/local-projects
+          ln -sfn "$GITHUB_WORKSPACE" ~/quicklisp/local-projects/metis
+
+      - name: Quickload and test
+        run: |
+          sbcl --non-interactive --load bin/run-tests.lisp

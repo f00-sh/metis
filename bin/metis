@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export CL_SOURCE_REGISTRY="${ROOT}/:${CL_SOURCE_REGISTRY:-}"
+MODE="${1:-repl}"
+shift || true
+case "$MODE" in
+  repl)
+    exec sbcl --noinform \
+      --eval '(ql:quickload :metis :silent t)' \
+      --eval '(metis:boot)' \
+      --eval '(metis:run)'
+    ;;
+  production|prod)
+    exec sbcl --noinform --load "$ROOT/bin/production.lisp" -- "$@"
+    ;;
+  test)
+    exec sbcl --noinform --load "$ROOT/bin/run-tests.lisp"
+    ;;
+  *)
+    echo "Usage: metis [repl|production|test] [--api] [--daemon] [--society]"
+    exit 2
+    ;;
+esac
