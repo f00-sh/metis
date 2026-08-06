@@ -214,55 +214,58 @@
     derived))
 
 (defun run-forward-rete (kb &key (network nil) (max-iterations nil))
-  "Compile (or reuse) RETE network and run full propagation.
-   Re-seeds all KB facts into alpha memories so post-compile asserts are seen.
-   Returns (values derived-facts network count)."
-  (declare (ignore max-iterations))
-  (let* ((net (or network (rete-compile kb :seed t :fire nil)))
-         (before (kb-count-facts kb)))
-    ;; Ensure every current KB fact is in alpha (handles asserts after compile).
-    (dolist (f (kb-all-facts kb))
-      (%rete-alpha-insert net f :propagate nil))
-    (setf (rn-last-derived net) nil)
-    (let ((derived (%rete-full-propagate net)))
-      (values (remove-duplicates
-               (append derived (copy-list (rn-last-derived net)))
-               :test #'equal)
-              net
-              (- (kb-count-facts kb) before)))))
+  "FULL REBUILD contract: always compile a fresh RETE network from the live KB
+   (seed only current kb-all-facts, fire full propagate). Ignores NETWORK to
+   avoid sticky rp-fired / stale alpha. Returns (values derived network count)."
+  (declare (ignore network max-iterations))
+  (let* ((before (let ((h (make-hash-table :test #'equal)))
+                   (dolist (f (kb-all-facts kb)) (setf (gethash f h) t))
+                   h))
+         ;; seed + fire in one shot against live KB only
+         (net (rete-compile kb :seed t :fire t))
+         (derived
+          (loop for f in (kb-all-facts kb)
+                for meta = (gethash f (kb-facts kb))
+                when (and meta
+                          (eq (fm-support meta) :rete)
+                          (not (gethash f before)))
+                collect f)))
+    ;; Also include anything recorded on the net during fire
+    (setf derived
+          (remove-duplicates
+           (append derived (copy-list (rn-last-derived net)))
+           :test #'equal))
+    (values derived net (length derived))))
 
 (defun forward-chain-rete (mind)
-  "Public RETE forward-chain entry point. Returns list of newly derived facts
-   (support :rete). Does not use agenda forward."
+  "Public RETE entry: pure full rebuild from live KB (no agenda, no sticky net).
+   Returns list of newly :rete-derived facts."
   (let* ((m (ensure-mind mind))
-         (kb (mind-kb m))
-         (before (let ((h (make-hash-table :test #'equal)))
-                   (dolist (f (kb-all-facts kb)) (setf (gethash f h) t))
-                   h)))
+         (kb (mind-kb m)))
     (multiple-value-bind (derived net n)
-        (run-forward-rete kb :network (mind-rete m))
+        (run-forward-rete kb)
       (declare (ignore n))
-      (setf (mind-rete m) net)
-      (let* ((new-facts (loop for f in (kb-all-facts kb)
-                              unless (gethash f before)
-                              collect f))
-             (out (remove-duplicates (append derived new-facts) :test #'equal)))
-        (mind-trace-push m :rete-forward (length out) (rn-compiled-rules net))
-        (dolist (f out)
-          (when (mind-tms m)
-            (tms-assert (mind-tms m) f :informant :rete))
-          (when (mind-beliefs m)
-            (belief-set (mind-beliefs m) f 0.9)))
-        out))))
+      (setf (mind-rete m) net) ; store only the fresh network
+      (mind-trace-push m :rete-forward (length derived) (rn-compiled-rules net))
+      (dolist (f derived)
+        (when (mind-tms m)
+          (tms-assert (mind-tms m) f :informant :rete))
+        (when (mind-beliefs m)
+          (belief-set (mind-beliefs m) f 0.9)))
+      derived)))
 
 (defun rete-assert-fact (mind fact)
-  "Pure RETE path: kb-assert without agenda auto-forward, then rete-assert-wme.
-   Returns list of facts derived solely by RETE."
+  "Pure RETE path: kb-assert without agenda, then full rebuild forward-chain-rete."
   (let* ((m (ensure-mind mind))
          (kb (mind-kb m)))
     (kb-assert kb fact :support :asserted)
-    (let ((net (or (mind-rete m)
-                   (setf (mind-rete m)
-                         (rete-compile kb :seed t :fire nil)))))
-      (wm-add (mind-wm m) fact :source :rete-assert)
-      (rete-assert-wme net fact))))
+    (wm-add (mind-wm m) fact :source :rete-assert)
+    ;; Invalidate any sticky net; rebuild from KB including FACT.
+    (setf (mind-rete m) nil)
+    (forward-chain-rete m)))
+
+(defun rete-invalidate (mind)
+  "Drop compiled network so next forward-chain-rete rebuilds from live KB."
+  (let ((m (ensure-mind mind)))
+    (setf (mind-rete m) nil)
+    t))

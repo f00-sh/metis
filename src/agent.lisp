@@ -144,6 +144,10 @@
         (tms-retract-assumption (mind-tms m) fact))
       (when (mind-beliefs m)
         (belief-set (mind-beliefs m) fact 0.0))
+      ;; RETE rebuild contract: never keep stale alpha / rp-fired
+      (when (mind-rete m)
+        (ignore-errors (rete-retract-wme (mind-rete m) fact))
+        (setf (mind-rete m) nil))
       (mind-trace-push m :retract fact))))
 
 (defun assert-rule (mind head body &key name priority)

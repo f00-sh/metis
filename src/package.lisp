@@ -123,6 +123,7 @@
    #:forward-chain-rete
    #:rete-assert-wme
    #:rete-assert-fact
+   #:rete-invalidate
    #:durable-open
    #:durable-close
    #:durable-put

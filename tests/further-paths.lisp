@@ -87,15 +87,79 @@
       (is-true (metis::kb-holds-p kb on-c-a))
       ;; May or may not hold pre-RETE from bootstrap asserts; force retract.
       (metis::kb-retract kb clear-a)
+      (metis:rete-invalidate m)
       (is (not (metis::kb-holds-p kb clear-a)))
       (let ((derived (metis:forward-chain-rete m)))
         (is (not (member clear-a derived :test #'equal)))
         (is (not (metis::kb-holds-p kb clear-a))))
       ;; After removing on-c-a, RETE may derive clear a.
       (metis::kb-retract kb on-c-a)
+      (metis:rete-invalidate m)
       (let ((d2 (metis:forward-chain-rete m)))
         (is (or (member clear-a d2 :test #'equal)
                 (metis::kb-holds-p kb clear-a)))))))
+
+(test rete-lifecycle-matrix
+  "Multi-property RETE matrix on shipped entry points (no agenda).
+   (a) multi-hop :rete  (b) NAF  (c) join  (d) re-derive after head retract
+   (e) no fire from stale alpha after premise retract."
+  (with-fixture clean-mind ()
+    (metis:set-config :auto-forward nil)
+    (let* ((m metis:*mind*)
+           (kb (metis::mind-kb m))
+           (phil (mread "(philosopher again-y)"))
+           (human (mread "(human again-y)"))
+           (mortal (mread "(mortal again-y)"))
+           (can-fly-opus (mread "(can-fly opus)"))
+           (clear-a (mread "(clear a)"))
+           (link-ab (mread "(link n-rete-a n-rete-b)"))
+           (link-bc (mread "(link n-rete-b n-rete-c)"))
+           (conn (mread "(connected n-rete-a n-rete-c)")))
+      ;; --- (a) positive multi-hop ---
+      (metis::kb-assert kb phil :support :asserted)
+      (let ((d1 (metis:forward-chain-rete m)))
+        (is (member human d1 :test #'equal))
+        (is (member mortal d1 :test #'equal))
+        (is (eq :rete (metis::fm-support (gethash mortal (metis::kb-facts kb))))))
+      ;; --- (d) re-derive after retracting ONLY the derived head ---
+      (metis:retract-fact m mortal) ; shipped retract — must invalidate rete
+      (is (not (metis::kb-holds-p kb mortal)))
+      (is (metis::kb-holds-p kb phil)) ; premise remains
+      (let ((d2 (metis:forward-chain-rete m)))
+        (is (member mortal d2 :test #'equal)
+            "must re-derive mortal after head retract with premise held")
+        (is-true (metis::kb-holds-p kb mortal))
+        (is (eq :rete (metis::fm-support (gethash mortal (metis::kb-facts kb))))))
+      ;; --- (b) NAF ---
+      (metis::kb-retract kb clear-a)
+      (metis:rete-invalidate m)
+      (let ((d3 (metis:forward-chain-rete m)))
+        (is (not (member can-fly-opus d3 :test #'equal)))
+        (is (not (metis::kb-holds-p kb can-fly-opus)))
+        (is (not (member clear-a d3 :test #'equal)))
+        (is (not (metis::kb-holds-p kb clear-a))))
+      ;; --- (c) join rule connected (install join rule on live KB) ---
+      (metis:assert-rule m
+                         (mread "(connected ?a ?c)")
+                         (list (mread "(link ?a ?b)")
+                               (mread "(link ?b ?c)"))
+                         :name 'metis::rete-matrix-link-join)
+      (metis::kb-assert kb link-ab :support :asserted)
+      (metis::kb-assert kb link-bc :support :asserted)
+      (let ((d4 (metis:forward-chain-rete m)))
+        (is (member conn d4 :test #'equal))
+        (is-true (metis::kb-holds-p kb conn))
+        (is (eq :rete (metis::fm-support (gethash conn (metis::kb-facts kb))))))
+      ;; --- (e) retract premise → no re-fire of dependent from stale alpha ---
+      (metis:retract-fact m phil)
+      (metis:retract-fact m human)
+      (metis:retract-fact m mortal)
+      (is (not (metis::kb-holds-p kb phil)))
+      (let ((d5 (metis:forward-chain-rete m)))
+        (is (not (member mortal d5 :test #'equal)))
+        (is (not (metis::kb-holds-p kb mortal)))
+        (is (not (member human d5 :test #'equal)))
+        (is (not (metis::kb-holds-p kb human)))))))
 
 (test rete-compile-structure
   (with-fixture clean-mind ()
