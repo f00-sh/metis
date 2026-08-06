@@ -103,12 +103,52 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
       (setf (epx-code-facts st) n))
     n))
 
+(defun %epoch-ensure-mind-tms (mind)
+  (let ((m (ensure-mind mind)))
+    (unless (mind-tms m)
+      (setf (mind-tms m) (make-empty-tms)))
+    (mind-tms m)))
+
+(defun %epoch-mind-tms-integrity (mind marker)
+  "Integrity checks against the mind's LIVE TMS (not a fresh empty instance).
+   MARKER must be IN with a valid justification; scratch retract/reinstate works."
+  (let ((tms (%epoch-ensure-mind-tms mind)))
+    (unless (tms-in-p tms marker)
+      (error 'metis-error
+             :message (format nil "mind TMS: marker ~S not IN" marker)))
+    (unless (tms-why tms marker)
+      (error 'metis-error
+             :message (format nil "mind TMS: marker ~S has no valid why" marker)))
+    ;; live retract/reinstate on THIS tms
+    (let ((scratch (list 'epoch-integrity-scratch (get-universal-time))))
+      (tms-assert tms scratch :informant :epoch-integrity)
+      (unless (tms-in-p tms scratch)
+        (error 'metis-error :message "mind TMS: cannot assert scratch"))
+      (tms-retract-assumption tms scratch)
+      (when (tms-in-p tms scratch)
+        (error 'metis-error :message "mind TMS: scratch still IN after retract"))
+      (tms-assert tms scratch :informant :epoch-integrity)
+      (unless (tms-in-p tms scratch)
+        (error 'metis-error :message "mind TMS: cannot reinstate scratch")))
+    t))
+
+(defun %epoch-restore-skill (pm name old-skill)
+  (if old-skill
+      (pm-install pm old-skill)
+      (remhash name (pmem-skills pm))))
+
 (defun epoch-guarded-self-mod (mind name head body &key (kind :rule))
-  "Install a rule/skill only if TMS integrity is preserved after install.
-   On failure, roll back the change. Returns (values ok detail)."
+  "Install a rule/skill only if the mind's LIVE TMS integrity holds after.
+   Rolls back KB, skill table, and TMS marker on failure.
+   Returns (values ok detail)."
   (let* ((m (ensure-mind mind))
          (kb (mind-kb m))
+         (tms (%epoch-ensure-mind-tms m))
+         (marker (list 'self-mod-ok name))
          (snap (kb-snapshot kb))
+         (old-skill (when (eq kind :skill)
+                      (pm-get (mind-pm m) name)))
+         (had-marker (tms-in-p tms marker))
          (ok nil)
          (detail nil))
     (handler-case
@@ -118,23 +158,18 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
              (rewrite-rule m name head body :priority 1))
             (:skill
              (synthesize-skill m name body :preconds nil)))
-          ;; TMS: assert a meta-fact that the mod is justified by self-code
-          (when (mind-tms m)
-            (tms-assert (mind-tms m)
-                        (list 'self-mod-ok name)
-                        :informant :epoch-self-mod))
-          ;; Integrity: formal TMS properties still hold
-          (multiple-value-bind (tms-ok results)
-              (tms-formal-verify)
-            (declare (ignore results))
-            (unless tms-ok
-              (error 'metis-error :message "TMS formal integrity failed after self-mod")))
-          ;; RETE still compiles / runs without crash
+          (tms-assert tms marker :informant :epoch-self-mod)
+          (%epoch-mind-tms-integrity m marker)
+          ;; RETE rebuild must succeed
           (forward-chain-rete m)
           (setf ok t
-                detail (list :installed name :kind kind)))
+                detail (list :installed name :kind kind :tms-marker marker)))
       (error (e)
         (kb-restore kb snap)
+        (when (eq kind :skill)
+          (%epoch-restore-skill (mind-pm m) name old-skill))
+        (when (and (mind-tms m) (not had-marker))
+          (ignore-errors (tms-retract-assumption (mind-tms m) marker)))
         (when (mind-rete m) (setf (mind-rete m) nil))
         (setf ok nil
               detail (list :rolled-back (princ-to-string e)))))
@@ -142,8 +177,34 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
       (incf (epx-self-mods *epoch*)))
     (values ok detail)))
 
+(defun %epoch-goal-lit (goal)
+  (cond ((and (consp goal) (member (car goal) '(:achieve :prove :answer)))
+         (second goal))
+        (t goal)))
+
+(defun %epoch-try-achieve (mind goal)
+  "Achieve GOAL via already-true / HTN / STRIPS / pursue. Returns T if KB holds goal."
+  (let* ((m (ensure-mind mind))
+         (lit (%epoch-goal-lit goal))
+         (kb (mind-kb m)))
+    (when (kb-holds-p kb lit)
+      (return-from %epoch-try-achieve t))
+    ;; HTN for (clear x)
+    (when (and (consp lit) (eq (car lit) 'clear) (second lit))
+      (ignore-errors
+        (htn-plan m (list 'clear-rec (second lit)) :execute t))
+      (when (kb-holds-p kb lit)
+        (return-from %epoch-try-achieve t)))
+    ;; STRIPS
+    (ignore-errors (plan m lit :execute t))
+    (when (kb-holds-p kb lit)
+      (return-from %epoch-try-achieve t))
+    ;; pursue fallback
+    (ignore-errors (pursue m lit :max-cycles 12))
+    (and (kb-holds-p kb lit) t)))
+
 (defun epoch-step (st &optional percepts)
-  "One EPOCH step: ARC cycle + pursue open goals + record history."
+  "One EPOCH step: ARC cycle + achieve open goals + record history."
   (unless (eq (epx-status st) :open)
     (return-from epoch-step (epx-last-report st)))
   (let* ((m (epx-mind st))
@@ -152,12 +213,10 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
          (remaining nil)
          (achieved nil))
     (incf (epx-steps st))
-    ;; Drive open goals through pursue (one goal batch, limited cycles)
     (dolist (g (copy-list (epx-open-goals st)))
-      (let ((r (pursue m g :max-cycles 8)))
-        (if (getf r :success)
-            (push g achieved)
-            (push g remaining))))
+      (if (%epoch-try-achieve m g)
+          (push g achieved)
+          (push g remaining)))
     (setf (epx-open-goals st) (nreverse remaining))
     (when (null (epx-open-goals st))
       (setf (epx-status st) :complete))
@@ -167,7 +226,7 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
                  :session (epx-session st)
                  :step (epx-steps st)
                  :status (epx-status st)
-                 :achieved achieved
+                 :achieved (nreverse achieved)
                  :remaining (epx-open-goals st)
                  :arc arc-report
                  :self-mods (epx-self-mods st)
@@ -271,7 +330,9 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
 (defun epoch-flagship (&key
                          (durable-path nil)
                          (id "flagship")
-                         (goals '((clear a)))
+                         ;; (clear b) is true in bootstrap — completes immediately;
+                         ;; (clear a) requires HTN/STRIPS unstack and also completes.
+                         (goals '((clear b) (clear a)))
                          (max-steps 12)
                          (resume nil)
                          (self-mod t))
@@ -302,10 +363,12 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
            '(epoch-flagship-marker ?x)
            '((true))
            :kind :rule)
-        (format t "guarded-self-mod: ~S ~S~%" ok detail)))
+        (format t "guarded-self-mod: ~S ~S~%" ok detail)
+        (unless ok
+          (format t ";; self-mod failed (integrity gate): ~S~%" detail))))
     (let ((report (epoch-run st :max-steps max-steps)))
       (format t "~%=== EPOCH FLAGSHIP REPORT ===~%")
-      (format t "status=~S session=~S steps=~S remaining=~S achieved-hint=~S~%"
+      (format t "status=~S session=~S steps=~S remaining=~S achieved=~S~%"
               (epx-status st)
               (epx-session st)
               (epx-steps st)
@@ -318,11 +381,14 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
         (epoch-suspend st)
         (format t "suspended for multi-session resume (id=~A path=~A)~%"
                 id (namestring path)))
+      (when (eq (epx-status st) :complete)
+        (format t "EPOCH COMPLETE — goals achieved.~%"))
       (list :flagship t
             :version *metis-version*
             :codename *metis-codename*
             :report report
-            :status (epoch-status st)))))
+            :status (epoch-status st)
+            :complete (eq (epx-status st) :complete)))))
 
 (defun epoch-leap-resume-demo (path &key (id "leap-demo"))
   "Prove multi-session leap: open → suspend → NEW mind → resume → continue.
