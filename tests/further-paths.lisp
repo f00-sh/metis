@@ -6,15 +6,50 @@
 (in-suite :metis-further)
 
 (test rete-forward-derives-mortal
-  "RETE path derives mortal from philosopher via real forward-chain-rete."
+  "Pure RETE: kb-assert only (no tell/assert-fact agenda), then RETE derives."
   (with-fixture clean-mind ()
-    (tell metis:*mind* (mread "(philosopher hypatia)"))
-    (let ((derived (metis:forward-chain-rete metis:*mind*)))
-      (declare (ignore derived))
-      (is (equal (mread "(mortal hypatia)")
-                 (ask metis:*mind* (mread "(mortal hypatia)"))))
-      (is (equal (mread "(human hypatia)")
-                 (ask metis:*mind* (mread "(human hypatia)")))))))
+    ;; Ensure auto-forward cannot smuggle agenda derivations.
+    (metis:set-config :auto-forward nil)
+    (let* ((m metis:*mind*)
+           (kb (metis::mind-kb m))
+           (seed (mread "(philosopher hypatia-rete-only)"))
+           (human (mread "(human hypatia-rete-only)"))
+           (mortal (mread "(mortal hypatia-rete-only)")))
+      ;; Must NOT use tell/assert-fact (those can agenda-forward).
+      (metis::kb-assert kb seed :support :asserted)
+      ;; ask/prove can succeed without KB membership — use kb-holds-p.
+      (is (not (metis::kb-holds-p kb mortal))
+          "precondition: mortal not in KB before RETE")
+      (is (not (metis::kb-holds-p kb human))
+          "precondition: human not in KB before RETE")
+      (let ((derived (metis:forward-chain-rete m)))
+        (is-true (plusp (length derived)))
+        (is (member human derived :test #'equal))
+        (is (member mortal derived :test #'equal))
+        (is-true (metis::kb-holds-p kb mortal))
+        (is-true (metis::kb-holds-p kb human))
+        ;; Heads must be tagged :rete by the shipped RETE assert path.
+        (let ((hmeta (gethash human (metis::kb-facts kb)))
+              (mmeta (gethash mortal (metis::kb-facts kb))))
+          (is-true hmeta)
+          (is-true mmeta)
+          (is (eq :rete (metis::fm-support hmeta)))
+          (is (eq :rete (metis::fm-support mmeta))))))))
+
+(test rete-assert-fact-entry
+  "Shipped rete-assert-fact: no agenda; returns non-empty derived list."
+  (with-fixture clean-mind ()
+    (metis:set-config :auto-forward nil)
+    (let* ((m metis:*mind*)
+           (kb (metis::mind-kb m))
+           (fact (mread "(philosopher pure-rete-person)"))
+           (mortal (mread "(mortal pure-rete-person)"))
+           (derived (metis:rete-assert-fact m fact)))
+      (is-true (plusp (length derived)))
+      (is-true (metis::kb-holds-p kb mortal))
+      (let ((meta (gethash mortal (metis::kb-facts kb))))
+        (is-true meta)
+        (is (eq :rete (metis::fm-support meta)))))))
 
 (test rete-compile-structure
   (with-fixture clean-mind ()

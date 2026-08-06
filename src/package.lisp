@@ -122,6 +122,7 @@
    #:run-forward-rete
    #:forward-chain-rete
    #:rete-assert-wme
+   #:rete-assert-fact
    #:durable-open
    #:durable-close
    #:durable-put

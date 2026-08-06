@@ -59,6 +59,7 @@
                                 (asdf:system-source-directory :metis))))
   (set-config :verbose nil)
   (set-config :forward-engine :agenda)
+  (set-config :auto-forward :agenda)
   (set-config :api-require-token nil)
   (set-config :api-max-body 65536)
   (set-config :api-rate-limit 120)

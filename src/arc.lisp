@@ -93,15 +93,18 @@ share durable continuum memory; contradictions trigger autopoietic repair
   "One ARC continuum cycle — the unit of ARC intelligence."
   (let ((m (arc-mind st)))
     (when percepts
-      (perceive m percepts)
       (dolist (p (ensure-list percepts))
         (when (consp p)
-          (rete-assert-wme (or (mind-rete m)
-                               (setf (mind-rete m) (rete-compile (mind-kb m))))
-                           p)
+          ;; pure RETE ingest — no agenda auto-forward
+          (kb-assert (mind-kb m) p :support :perceived)
+          (wm-add (mind-wm m) p :source :percept)
           (when (mind-tms m)
-            (tms-assert (mind-tms m) p :informant :percept)))))
-    ;; reactive cortex
+            (tms-assert (mind-tms m) p :informant :percept))
+          (let ((net (or (mind-rete m)
+                         (setf (mind-rete m)
+                               (rete-compile (mind-kb m) :seed t :fire nil)))))
+            (rete-assert-wme net p)))))
+    ;; reactive cortex (full rejoin)
     (let ((derived (forward-chain-rete m)))
       (setf (arc-last-derived st) derived)
       ;; deliberative validator

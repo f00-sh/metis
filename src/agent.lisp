@@ -106,7 +106,11 @@
 
 ;;; ---------- public KB / frame / memory API ----------
 
-(defun assert-fact (mind fact &key (support :asserted) (belief 1.0))
+(defun assert-fact (mind fact &key (support :asserted) (belief 1.0)
+                                (forward :auto))
+  "Assert FACT. FORWARD controls opportunistic inference:
+   :auto  — use (get-config :auto-forward) which is :agenda | :rete | nil
+   :agenda / :rete / nil — force that engine (nil = no auto forward)."
   (let ((m (ensure-mind mind)))
     (multiple-value-bind (meta new-p)
         (kb-assert (mind-kb m) fact :support support)
@@ -120,7 +124,17 @@
                  :author (mind-name m) :priority 0))
       (mind-trace-push m :assert fact (if new-p :new :refresh))
       (when new-p
-        (run-forward (mind-kb m) :max-iterations 50))
+        (let ((eng (if (eq forward :auto)
+                       (get-config :auto-forward :agenda)
+                       forward)))
+          (case eng
+            (:agenda (run-forward (mind-kb m) :max-iterations 50))
+            (:rete
+             (let ((net (or (mind-rete m)
+                            (setf (mind-rete m)
+                                  (rete-compile (mind-kb m))))))
+               (rete-assert-wme net fact)))
+            (t nil))))
       meta)))
 
 (defun retract-fact (mind fact)
