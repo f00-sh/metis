@@ -116,11 +116,13 @@
     att))
 
 (defun session-attach-context (sess text &key (name "context") (caption nil))
-  "Attach freeform context text as session material."
+  "Attach freeform context text as session material.
+   Does not advance sess-turn-count (that is only for iface-turn)."
   (unless (stringp text)
     (error 'metis-error :message "context must be a string"))
   (let ((att (make-attachment
-              :id (format nil "ctx-~D" (incf (sess-turn-count sess)))
+              :id (format nil "ctx-~D-~D"
+                          (get-universal-time) (random 100000))
               :kind :context
               :path nil
               :media-type "text/plain"
@@ -132,7 +134,6 @@
     (%session-record-attachment sess att)
     (working-add (sess-mind sess) (list :context name text) :source :session)
     att))
-
 (defun session-attach-file (sess path &key (caption nil) (name nil))
   "Attach an ordinary file; text files get body extract."
   (let* ((p (pathname path))

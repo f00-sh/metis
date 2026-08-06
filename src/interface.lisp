@@ -64,24 +64,23 @@ when the user requests an unknown capability.")
        (values :freeform s)))))
 
 (defun %iface-capability-present-p (sess name)
-  (let ((n (string-downcase (string name))))
-    (or (member (intern (string-upcase n) :keyword)
-                (sess-capabilities sess))
-        (find-skills (sess-mind sess) :pattern (string-upcase n))
+  (let* ((n (string-upcase (string name)))
+         (tool-sym (intern n :metis)))
+    (or (member (intern n :keyword) (sess-capabilities sess))
+        (find-skills (sess-mind sess) :pattern n)
         (some (lambda (r)
-                (search n (string-downcase (symbol-name (rule-name r)))))
+                (search (string-downcase n)
+                        (string-downcase (symbol-name (rule-name r)))))
               (kb-all-rules (mind-kb (sess-mind sess))))
-        (tr-get (mind-tools (sess-mind sess))
-                (intern (string-upcase n) :metis))
-        (tr-get (mind-tools (sess-mind sess))
-                (intern (string-downcase n) :metis)))))
-
+        (tr-get (mind-tools (sess-mind sess)) tool-sym))))
 (defun iface-accommodate (sess capability-name &key (doc nil))
-  "Self-accommodation: register skill+tool under TMS-guarded self-mod."
+  "Self-accommodation: register skill+tool under TMS-guarded self-mod.
+   Tool symbol is reader-normal (UPCASE) so (tool NAME …) resolves like core tools."
   (let* ((m (sess-mind sess))
          (cap (string-upcase (string capability-name)))
          (sym (intern (format nil "CAP-~A" cap) :metis))
-         (tool-sym (intern (string-downcase cap) :metis))
+         ;; Must match read-time symbols: (tool HYPER-TRANSLATOR …) → HYPER-TRANSLATOR
+         (tool-sym (intern cap :metis))
          (head (list sym '?input))
          (body (list (list 'true))))
     (multiple-value-bind (mod-ok mod-detail)
@@ -112,8 +111,7 @@ when the user requests an unknown capability.")
        :doc (or doc (format nil "User-accommodated tool ~A" cap))
        :schema '(&rest args)
        :safe t)
-      (pushnew (intern (string-downcase cap) :keyword)
-               (sess-capabilities sess))
+      (pushnew (intern cap :keyword) (sess-capabilities sess))
       (incf (sess-accommodations sess))
       (assert-fact m
                    (list 'capability-accommodated
@@ -125,7 +123,6 @@ when the user requests an unknown capability.")
                     :rule sym
                     :tool tool-sym
                     :mod mod-detail)))))
-
 (defun %iface-read-form-string (s)
   (let ((*package* (find-package :metis))
         (*read-eval* nil))
