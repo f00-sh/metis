@@ -13,7 +13,7 @@
                     :id id
                     :max-steps (or steps 12)
                     :resume resume
-                    :goals '((clear a))
+                    :goals '((clear b) (clear a))
                     :self-mod t)))
 
 (%epoch-cli-main (uiop:command-line-arguments))
