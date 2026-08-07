@@ -18,7 +18,7 @@
       (ok8 (%suite-ok :metis-symbols))
       (ok9 (%suite-ok :metis-frontiers))
       (ok10 (%suite-ok :metis-hybrid)))
-  (format t "~&~%=== METIS 4.3 TEST SUMMARY ===~%")
+  (format t "~&~%=== METIS 4.4 TEST SUMMARY ===~%")
   (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A  iface: ~A  nn: ~A  symbols: ~A  frontiers: ~A  hybrid: ~A~%"
           (if ok1 "PASS" "FAIL")
           (if ok2 "PASS" "FAIL")

@@ -3,7 +3,7 @@
   :description "Metis: cognitive architecture with pure-CL neural training, symbols plugins, optional GPU"
   :author "Glenda"
   :license "MIT"
-  :version "4.3.0"
+  :version "4.4.0"
   :depends-on ("alexandria"
                "bordeaux-threads"
                "cl-ppcre"

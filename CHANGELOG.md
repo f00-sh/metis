@@ -1,4 +1,14 @@
 # Changelog
+## 4.4.0 — THEORY (whitepaper CLS v2)
+
+1. Prioritized interleaved replay + forget-test
+2. Episode separation keys + constrained completion
+3. Meta-cog metrics + self-model adjust
+4. Structured explain object
+5–6. Coupled neural→symbolic accept/reject; retract→learn-rate
+7. Explicit non-goals: VAE/Hopfield/CIFAR
+8. Suite :metis-hybrid expanded
+
 
 ## 4.3.0 — HYBRID (CLS on-the-fly learning + cognitive unit)
 

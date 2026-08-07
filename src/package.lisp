@@ -219,10 +219,23 @@
    #:hippocampus-encode!
    #:hippocampus-clear!
    #:hippocampus-size
+   #:hippocampus-episodes
+   #:hippocampus-sample-prioritized
+   #:hippocampus-interleaved-batches
    #:neocortex-consolidate!
+   #:sleep-consolidate!
+   #:hybrid-forget-test
+   #:hybrid-coupled-propose
+   #:hybrid-metrics
+   #:hybrid-metrics-reset!
+   #:hybrid-metrics-adjust!
+   #:make-explain-object
    #:tms-recheck
+   #:nn-disable-path-meta
    #:*online-learn-enabled*
    #:*online-lm-name*
+   #:*replay-enabled*
+   #:*replay-k*
    #:*hybrid-thesis*
    #:install-hybrid-tools)
   (:documentation
