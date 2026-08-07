@@ -1,10 +1,12 @@
-# Metis 4.2 — FRONTIERS
+# Metis 4.3 — HYBRID
 
 **Cognitive architecture with in-process trainable models and a plugin system** — pure Common Lisp neural training by default, optional CUDA GPU acceleration as a **symbol** (plugin), bound to a full symbolic control stack (unifier, KB, RETE, TMS, STRIPS/HTN, durable continuum, multi-session EPOCH, interactive interface).
 
 No Python. No external ML runtime required for the default path. Training and generation run inside the Metis process. GPU is an installable/enableable **symbol**, not a hard dependency.
 
-**4.2 adds:** category symbols (`chat-ui`, `image-ingest`, `domain-pack`, `curriculum`), richer GPU ops (axpy/relu), remote symbol install with HMAC trust, deeper/longer LM defaults (depth 3 / seq-len 128), and packaging (`./bin/package-metis` + docs triad).
+**4.3 hybrid loop (critical):** Complementary Learning Systems–style **on-the-fly training** — hippocampus (fast episodes) + neocortex (slow consolidate with replay) + TMS re-check — as one cognitive unit. Demo: `./bin/demo-hybrid` (refuse / allow / learn / explain). Research PDFs under `research/`.
+
+Also: category symbols, GPU axpy/relu, remote install+trust, deep LM defaults, packaging.
 
 ## What this is
 

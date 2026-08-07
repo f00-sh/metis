@@ -73,6 +73,8 @@
       (install-symbol-tools m))
     (when (fboundp 'install-nn-tools)
       (install-nn-tools m))
+    (when (fboundp 'install-hybrid-tools)
+      (install-hybrid-tools m))
     (when bootstrap
       (load-bootstrap m)
       (when (and domains (fboundp 'load-domains))

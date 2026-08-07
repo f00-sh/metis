@@ -210,7 +210,21 @@
    #:domain-pack-load
    #:curriculum-apply
    #:sign-symbol-package
-   #:verify-symbol-package)
+   #:verify-symbol-package
+   ;; 4.3 hybrid CLS cognitive unit
+   #:cognitive-unit
+   #:cognitive-turn
+   #:epoch-cognitive-step
+   #:hybrid-demo
+   #:hippocampus-encode!
+   #:hippocampus-clear!
+   #:hippocampus-size
+   #:neocortex-consolidate!
+   #:tms-recheck
+   #:*online-learn-enabled*
+   #:*online-lm-name*
+   #:*hybrid-thesis*
+   #:install-hybrid-tools)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

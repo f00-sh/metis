@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Refuse / allow / learn / explain — hybrid cognitive unit demo
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+sbcl --noinform --non-interactive \
+  --eval "(pushnew (truename \"$ROOT/\") asdf:*central-registry*)" \
+  --eval "(asdf:load-system :metis)" \
+  --eval "(format t \"~%~A~%~A~%~%\" (metis:metis-version-string) metis:*hybrid-thesis*)" \
+  --eval "(pprint (metis:hybrid-demo :reset t))" \
+  --eval "(terpri)" \
+  --quit

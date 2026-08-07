@@ -1,5 +1,26 @@
 # Changelog
 
+## 4.3.0 — HYBRID (CLS on-the-fly learning + cognitive unit)
+
+### Brain-inspired on-the-fly training
+- **Hippocampus**: episodic ring buffer (`hippocampus-encode!`, replay corpus)
+- **Neocortex**: `neocortex-consolidate!` — low-lr continuous train interleaved with replay
+- TMS gates plasticity: path OUT refuses consolidation
+
+### Cognitive unit (product path)
+- `cognitive-unit` / `cognitive-turn` / `epoch-cognitive-step`
+- Loop: act → encode → optional train → TMS re-check → explain
+- `hybrid-demo`: refuse / allow / learn / explain
+- `iface-turn` attaches `:hybrid` on every turn; `/learn` teach path
+- `./bin/demo-hybrid`
+
+### Research library
+- `research/papers/` whitepapers (NeSy, CLS, continual learning, STRIPS, …)
+- `research/notes/` BIBLIOGRAPHY, CLS-MAPPING, HYBRID-LOOP
+
+### Tests
+- Suite `:metis-hybrid`
+
 ## 4.2.0 — FRONTIERS (category symbols, richer GPU, remote trust, deep LM, packaging)
 
 1. **More symbols**: `chat-ui`, `image-ingest`, `domain-pack`, `curriculum`

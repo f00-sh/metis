@@ -152,6 +152,8 @@ when the user requests an unknown capability.")
                "/nn list | /nn enable | /nn disable"
                "/symbols list | info ID | enable ID | disable ID"
                "/symbols install PATH [id] | backend"
+               "/learn TEXT  (on-the-fly neocortex consolidate + replay)"
+               "/generate MODEL [prompt]  (TMS-gated neural fire)"
                "(lisp forms…)"
                "status | help | quit")))
       (:status (session-status sess))
@@ -313,11 +315,28 @@ when the user requests an unknown capability.")
                     :time (now-iso)
                     :facts-delta (- (kb-count-facts (mind-kb m)) pre-facts))
               (sess-turns sess))
-        (list :reply reply
-              :result result
-              :turn (sess-turn-count sess)
-              :session (session-status sess)
-              :facts-delta (- (kb-count-facts (mind-kb m)) pre-facts))))))
+        ;; On-the-fly CLS: encode + optional consolidate + TMS recheck (hybrid unit)
+        (let ((hybrid
+               (when (fboundp 'cognitive-unit)
+                 (ignore-errors
+                   (cognitive-unit m text
+                                   :session sess
+                                   :skip-act t
+                                   :learn :auto
+                                   :force-learn
+                                   (or (and (consp result)
+                                            (eq (getf result :freeform) :unknown))
+                                       (and (stringp text)
+                                            (or (eql 0 (search "/learn" text
+                                                               :test #'char-equal))
+                                               (eql 0 (search "/teach" text
+                                                               :test #'char-equal))))))))))
+          (list :reply reply
+                :result result
+                :hybrid hybrid
+                :turn (sess-turn-count sess)
+                :session (session-status sess)
+                :facts-delta (- (kb-count-facts (mind-kb m)) pre-facts)))))))
 
 (defun iface-drive (turns &key (session nil))
   "Drive multi-turn without REPL. TURNS is list of user strings."

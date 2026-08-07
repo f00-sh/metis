@@ -302,11 +302,15 @@ ARC cycle — going farther than Metis 2.0 ARC as an obligatory cognitive unit."
                    id (epx-session st) (epx-open-goals st))
         st))))
 
-(defun epoch-run (st &key (max-steps 16) (suspend-each nil))
-  "Run EPOCH steps until complete, failed, or max-steps."
+(defun epoch-run (st &key (max-steps 16) (suspend-each nil) (hybrid t))
+  "Run EPOCH steps until complete, failed, or max-steps.
+   When HYBRID is true (default), each step also runs the CLS cognitive unit
+   (encode → optional consolidate → TMS re-check)."
   (loop for i from 1 to max-steps
         while (eq (epx-status st) :open)
-        do (epoch-step st)
+        do (if (and hybrid (fboundp 'epoch-cognitive-step))
+               (epoch-cognitive-step st)
+               (epoch-step st))
            (when suspend-each
              (epoch-suspend st)
              (setf (epx-status st) :open)))
