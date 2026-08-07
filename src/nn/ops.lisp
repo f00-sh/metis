@@ -350,3 +350,43 @@
                             (incf (aref wg (+ (* id dim) j))
                                   (aref g (+ (* i dim) j))))))))))
           out)))))
+
+(defun t-causal-context-mean (x &key (window nil))
+  "Causal context pool over last WINDOW positions.
+
+   X shape (T, D). For each t, output[t] = mean(X[max(0,t-W+1) .. t]).
+   WINDOW defaults to T (full prefix). Differentiable. This is the live
+   context-window path used by the multi-layer language model."
+  (let* ((x (%as-tensor x))
+         (xs (tns-shape x)))
+    (assert (= (length xs) 2) () "t-causal-context-mean expects (T,D), got ~A" xs)
+    (destructuring-bind (tt dim) xs
+      (let* ((w (min tt (or window tt)))
+             (ad (tns-data x))
+             (data (%make-storage (* tt dim)))
+             (counts (make-array tt :element-type 'fixnum))
+             (rg (%unary-needs-grad x)))
+        (dotimes (t0 tt)
+          (let* ((start (max 0 (1+ (- t0 w))))
+                 (cnt (1+ (- t0 start))))
+            (setf (aref counts t0) cnt)
+            (dotimes (j dim)
+              (let ((s 0d0))
+                (loop for i from start to t0
+                      do (incf s (aref ad (+ (* i dim) j))))
+                (setf (aref data (+ (* t0 dim) j)) (/ s cnt))))))
+        (let ((out (make-tensor xs :requires-grad rg :data data)))
+          (when rg
+            (setf (tns-children out) (list x))
+            (setf (tns-grad-fn out)
+                  (lambda (self)
+                    (let ((g (tns-grad self))
+                          (ag (%ensure-grad x)))
+                      (dotimes (t0 tt)
+                        (let* ((start (max 0 (1+ (- t0 w))))
+                               (scale (/ 1d0 (aref counts t0))))
+                          (loop for i from start to t0
+                                do (dotimes (j dim)
+                                     (incf (aref ag (+ (* i dim) j))
+                                           (* scale (aref g (+ (* t0 dim) j))))))))))))
+          out)))))

@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.0.1 — multi-layer LM, attachment continuous train, TMS neural gate
+
+### Language model
+- Multi-layer depth (`:depth`, default 2) with stack of Linear+ReLU hidden layers
+- Causal context window (`:seq-len`) used end-to-end via `t-causal-context-mean` in train and generate
+- Train history/meta records `depth`, `seq-len`, `hidden`
+
+### Corpus pipeline
+- `session-corpus` assembles text from session file + context attachments
+- `nn-continuous-train` continues a named registered model without process restart
+- `nn-train-from-session` = attachments → continuous train
+- iface: `/train attachments [name]`
+
+### TMS-gated neural fire
+- Policy fact `nn-path-enabled` must be TMS IN for generate
+- `nn-enable-path` / `nn-disable-path` / `nn-path-allowed-p` / `nn-check-path!`
+- `nn-generate` is the choke point — OUT refuses with `metis-error` (no silent sample)
+- Boot enables path by default; `/nn enable` `/nn disable` in iface
+
+### Tests
+- `:metis-nn` covers deeper/wider LM, attachment continuous train, TMS gate IN/OUT
+
 ## 4.0.0 — NEURAL (in-process trainable models + symbolic control)
 
 ### Core capability

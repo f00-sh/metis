@@ -6,6 +6,8 @@
    #:*metis-version*
    #:metis-version-string
    #:metis-build-info
+   #:metis-error
+   #:metis-error-message
    #:boot
    #:reset-mind
    #:run
@@ -46,6 +48,9 @@
    #:reinforce-skill
    ;; TMS / belief
    #:tms-why
+   #:tms-in-p
+   #:tms-assert
+   #:tms-retract-assumption
    #:tms-in-facts
    #:belief-get
    #:belief-set
@@ -173,11 +178,19 @@
    #:iface-flagship
    #:iface-thesis
    #:*iface-thesis*
-   ;; 4.0 neural substrate (pure CL)
+   ;; 4.0 neural substrate (pure CL) + continuous train + TMS gate
    #:nn-train-language-model
    #:nn-train-file
+   #:nn-continuous-train
+   #:nn-train-from-session
+   #:session-corpus
    #:nn-generate
    #:nn-train-mlp-xor
+   #:nn-enable-path
+   #:nn-disable-path
+   #:nn-path-allowed-p
+   #:nn-check-path!
+   #:*nn-path-fact*
    #:install-nn-tools)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.

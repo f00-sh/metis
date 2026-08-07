@@ -10,7 +10,7 @@ Metis is not an “X is Y” rule shell wearing a modern label. 4.0 adds a real 
 
 | Layer | Capability |
 |-------|------------|
-| **Neural (`metis.nn`)** | Dense tensors, reverse-mode autograd, linear/embedding/MLP, Adam/SGD, character language models, checkpoint save/load, model registry |
+| **Neural (`metis.nn`)** | Dense tensors, reverse-mode autograd, multi-layer LM with causal context windows, linear/embedding/MLP, Adam/SGD, continuous train, checkpoint/registry, TMS-gated generate |
 | **Symbolic control** | Unification, knowledge base, frames, forward + RETE, backward chaining, STRIPS, HTN, JTMS + formal properties |
 | **Continuum** | ARC dual-pathway mind, LMDB durable memory, EPOCH multi-session resume, TMS-guarded self-modification |
 | **Interface** | Multi-turn sessions, file/context/photo attach, `/need` self-accommodation, train/generate commands, HTTP API |
@@ -46,22 +46,31 @@ Programmatic:
 (ql:quickload :metis)
 (metis:boot)
 
-;; Train a character language model on a corpus string
+;; Multi-layer LM + context window (pure CL)
 (metis:nn-train-language-model
   (uiop:read-file-string "path/to/corpus.txt")
   :name "corpus-lm"
   :epochs 8
   :hidden 256
-  :seq-len 64)
+  :seq-len 128          ; causal context window
+  :depth 3)             ; hidden layers
 
-;; Sample
+;; Continuous train on more corpus (same registered model)
+(metis:nn-continuous-train more-text :name "corpus-lm" :epochs 4)
+
+;; Attachments → corpus → continuous train
+(let ((s (metis:session-ensure)))
+  (metis:session-attach-file s "path/to/a.txt")
+  (metis:session-attach-context s "more notes…")
+  (metis:nn-train-from-session s :name "session-lm" :depth 2 :seq-len 64))
+
+;; Sample (TMS-gated: nn-path-enabled must be IN on the mind)
 (metis:nn-generate "corpus-lm" :prompt "the " :length 200)
+(metis:nn-disable-path)   ; retract policy → generate refuses
+(metis:nn-enable-path)    ; reinstate
 
 ;; Nonlinear training verification (XOR)
 (metis:nn-train-mlp-xor :epochs 600)
-
-;; Tools on a booted mind
-(metis:list-tools metis:*mind*)  ; includes nn-train-text, nn-train-file, nn-generate, nn-list
 ```
 
 Checkpoints land under `models/` in the system tree (or `*nn-model-dir*`).
@@ -75,9 +84,11 @@ Checkpoints land under `models/` in the system tree (or `*nn-model-dir*`).
 | `/context TEXT` | freeform context |
 | `/ask` `/tell` `/goal` | cognition |
 | `/need CAPABILITY` | TMS-guarded self-accommodate |
-| `/train text …` / `/train file PATH [name]` | in-process LM train |
-| `/generate NAME [prompt]` | sample from registered model |
+| `/train text …` / `/train file PATH [name]` | continuous-train multi-layer LM |
+| `/train attachments [name]` | attachment corpus → continuous train |
+| `/generate NAME [prompt]` | TMS-gated sample from registered model |
 | `/nn list` | registered models |
+| `/nn enable` / `/nn disable` | TMS neural-path policy |
 | `(lisp forms…)` | mind language |
 
 HTTP (Hunchentoot, default `127.0.0.1:7433`): session create/turn/attach under `/v1/session/*`.
@@ -104,8 +115,12 @@ Kernel 1.x — unifier, KB, planner, HTN, tools, security
 | `tensor.lisp` | dense double-float tensors, reverse-mode AD, topological `backward` |
 | `ops.lisp` | matmul, elementwise, ReLU, softmax, cross-entropy, MSE, embedding lookup |
 | `module.lisp` | linear, embedding, MLP, SGD, Adam |
-| `train.lisp` | char vocab/corpus, language model, `train-lm!`, `lm-generate`, checkpoints, registry |
-| `bridge.lisp` | Metis tools, iface commands, KB/TMS facts for trained models |
+| `train.lisp` | char vocab, multi-layer LM + causal context, `train-lm!`, `lm-generate`, checkpoints, registry |
+| `bridge.lisp` | continuous train, session corpus, TMS-gated generate, tools, iface |
+
+### CPU / GPU
+
+Train and infer run **pure Common Lisp on CPU** (dense double-float arrays, reverse-mode AD). No GPU backend is required or loaded by default. A GPU path remains optional future work and is not part of Decision B’s in-process CL substrate.
 
 ## Tests
 

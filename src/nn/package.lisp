@@ -10,13 +10,16 @@
    #:zero-grad #:backward
    #:t+ #:t- #:t* #:t/ #:t-neg #:t-sum #:t-mean #:t-matmul #:t-transpose
    #:t-relu #:t-sigmoid #:t-tanh-act #:t-softmax #:t-log-softmax
-   #:t-cross-entropy #:t-mse #:t-embedding-lookup #:t-cat #:t-slice
+   #:t-cross-entropy #:t-mse #:t-embedding-lookup #:t-causal-context-mean
+   #:t-cat #:t-slice
    #:parameter #:linear #:embedding #:mlp #:module-parameters
    #:module-forward #:module-mode
    #:sgd #:adam #:optimizer-step #:optimizer-zero-grad
    #:char-vocab #:vocab-encode #:vocab-decode #:vocab-size
    #:build-char-vocab #:corpus-from-string #:corpus-from-file
-   #:language-model #:lm-loss #:lm-generate #:lm-forward-logits
+   #:language-model #:language-model-p
+   #:lm-vocab #:lm-hidden #:lm-seq-len #:lm-depth #:lm-emb-dim
+   #:lm-hidden-layers #:lm-loss #:lm-generate #:lm-forward-logits
    #:train! #:train-lm!
    #:save-checkpoint #:load-checkpoint
    #:nn-registry-register #:nn-registry-get #:nn-registry-list

@@ -1,4 +1,4 @@
-;;;; train.lisp — vocab, corpus, language model, training, checkpoints
+;;;; train.lisp — vocab, multi-layer LM, continuous train, checkpoints
 (in-package :metis.nn)
 
 (defstruct (char-vocab (:conc-name cv-))
@@ -39,40 +39,59 @@
 (defstruct (language-model (:conc-name lm-))
   vocab
   emb
-  fc1
-  fc2
+  hidden-layers                 ; list of LINEAR modules, length = depth
+  out                           ; linear hidden → vocab
   (hidden 256)
-  (seq-len 64))
+  (seq-len 64)                  ; context window length (used end-to-end)
+  (depth 1)                     ; number of hidden layers (≥1)
+  (emb-dim 64))
 
-(defun language-model (vocab &key (hidden 256) (seq-len 64) (emb-dim nil))
+(defun language-model (vocab &key (hidden 256) (seq-len 64) (emb-dim nil)
+                              (depth 2))
+  "Character language model with multi-layer depth and causal context window.
+
+   DEPTH hidden layers (default 2). SEQ-LEN is the live context window used
+   in train batches and generation. Forward path:
+     embed → causal-context-mean(window=seq-len) → depth×(Linear+ReLU) → logits."
   (let* ((v (vocab-size vocab))
-         (e (or emb-dim (min 64 v)))
-         (h hidden))
+         (e (or emb-dim (min 64 (max 8 v))))
+         (h hidden)
+         (d (max 1 (truncate depth)))
+         (layers (loop for i from 0 below d
+                       collect (linear (if (zerop i) e h) h))))
     (make-language-model
      :vocab vocab
      :emb (embedding v e)
-     :fc1 (linear e h)
-     :fc2 (linear h v)
+     :hidden-layers layers
+     :out (linear h v)
      :hidden h
-     :seq-len seq-len)))
+     :seq-len seq-len
+     :depth d
+     :emb-dim e)))
 
 (defmethod module-parameters ((m language-model))
   (append (module-parameters (lm-emb m))
-          (module-parameters (lm-fc1 m))
-          (module-parameters (lm-fc2 m))))
+          (mapcan #'module-parameters (lm-hidden-layers m))
+          (module-parameters (lm-out m))))
 
 (defmethod module-mode ((m language-model) mode)
   (module-mode (lm-emb m) mode)
-  (module-mode (lm-fc1 m) mode)
-  (module-mode (lm-fc2 m) mode)
+  (dolist (layer (lm-hidden-layers m))
+    (module-mode layer mode))
+  (module-mode (lm-out m) mode)
   m)
 
 (defun lm-forward-logits (m indices)
-  "indices: vector of token ids length T → logits (T, vocab) via shared emb+MLP per position."
+  "indices: vector of token ids length T → logits (T, vocab).
+
+   Uses causal context pooling over the model's seq-len window, then the
+   multi-layer hidden stack. Context window and depth both participate."
   (let* ((x (module-forward (lm-emb m) indices)) ; (T, e)
-         (h (t-relu (module-forward (lm-fc1 m) x)))
-         (logits (module-forward (lm-fc2 m) h)))
-    logits))
+         (ctx (t-causal-context-mean x :window (lm-seq-len m)))
+         (h ctx))
+    (dolist (layer (lm-hidden-layers m))
+      (setf h (t-relu (module-forward layer h))))
+    (module-forward (lm-out m) h)))
 
 (defun lm-loss (m input-ids target-ids)
   "Teacher-forced next-token NLL."
@@ -80,26 +99,29 @@
     (t-cross-entropy logits target-ids)))
 
 (defun make-lm-batches (encoded &key (seq-len 64) (batch-size 32))
-  "Return list of (input-ids . target-ids) as vectors."
+  "Return list of (input-ids . target-ids) as vectors of length ≤ SEQ-LEN.
+   Each batch is a contiguous context window from the corpus."
+  (declare (ignore batch-size))
   (let* ((n (length encoded))
          (batches nil))
     (when (< n 2) (return-from make-lm-batches nil))
-    (let ((i 0))
+    (let ((i 0)
+          (stride (max 1 (floor seq-len 2))))
       (loop while (< i (- n 1))
-            do (let ((inputs (make-array (min seq-len (- n 1 i))
-                                         :element-type 'fixnum))
-                     (targets (make-array (min seq-len (- n 1 i))
-                                          :element-type 'fixnum)))
-                 (dotimes (j (length inputs))
+            do (let* ((win (min seq-len (- n 1 i)))
+                      (inputs (make-array win :element-type 'fixnum))
+                      (targets (make-array win :element-type 'fixnum)))
+                 (dotimes (j win)
                    (setf (aref inputs j) (aref encoded (+ i j))
                          (aref targets j) (aref encoded (+ i j 1))))
                  (push (cons inputs targets) batches)
-                 (incf i (max 1 (floor seq-len 2))))))
+                 (incf i stride))))
     (nreverse batches)))
 
 (defun train-lm! (model text &key (epochs 5) (lr 1d-3) (seq-len nil)
                                (log-every 20) (max-batches nil))
-  "Train character language model on TEXT. Pure CL. Returns alist of metrics."
+  "Train character language model on TEXT. Pure CL. Returns history of metrics.
+   Uses the model's multi-layer stack and context window (seq-len)."
   (let* ((seq-len (or seq-len (lm-seq-len model)))
          (encoded (vocab-encode (lm-vocab model) text))
          (batches (make-lm-batches encoded :seq-len seq-len))
@@ -124,21 +146,29 @@
               (when (and log-every (zerop (mod step log-every)))
                 (format *error-output* "~&[nn] lm step=~A loss=~,4F~%" step lv)))))
         (let ((avg (if (plusp nb) (/ epoch-loss nb) 0d0)))
-          (push (list :epoch (1+ epoch) :loss avg :batches nb) history)
-          (format *error-output* "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A~%"
-                  (1+ epoch) avg nb))))
+          (push (list :epoch (1+ epoch)
+                      :loss avg
+                      :batches nb
+                      :depth (lm-depth model)
+                      :seq-len seq-len
+                      :hidden (lm-hidden model))
+                history)
+          (format *error-output*
+                  "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A depth=~A seq-len=~A~%"
+                  (1+ epoch) avg nb (lm-depth model) seq-len))))
     (nreverse history)))
 
 (defun lm-generate (model &key (prompt "") (length 200) (temperature 1d0))
-  "Sample from LM starting from PROMPT."
+  "Sample from LM starting from PROMPT, using the model's context window."
   (module-mode model :eval)
   (let* ((vocab (lm-vocab model))
          (ids (coerce (vocab-encode vocab prompt) 'list))
-         (temp (coerce temperature 'double-float)))
+         (temp (coerce temperature 'double-float))
+         (window (lm-seq-len model)))
     (when (null ids)
       (push 0 ids))
     (dotimes (k length)
-      (let* ((ctx (coerce (last ids (lm-seq-len model)) 'vector))
+      (let* ((ctx (coerce (last ids window) 'vector))
              (logits (lm-forward-logits model ctx))
              (ls (tensor-shape logits))
              (n (second ls))
@@ -154,7 +184,6 @@
               (setf (aref probs j) e)
               (incf sum e)))
           (dotimes (j n) (setf (aref probs j) (/ (aref probs j) sum))))
-        ;; sample
         (let ((r (random 1d0)) (acc 0d0) (pick 0))
           (dotimes (j n)
             (incf acc (aref probs j))
@@ -194,6 +223,11 @@
                          (format nil "~4,'0D-~2,'0D-~2,'0DT~2,'0D:~2,'0D:~2,'0DZ"
                                  y mo d h m s))
                 :meta meta
+                :arch (list :depth (lm-depth model)
+                            :hidden (lm-hidden model)
+                            :seq-len (lm-seq-len model)
+                            :emb-dim (lm-emb-dim model)
+                            :vocab-size (vocab-size (lm-vocab model)))
                 :weights
                 (mapcar (lambda (p)
                           (list :name (tns-name p)

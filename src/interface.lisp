@@ -147,8 +147,9 @@ when the user requests an unknown capability.")
                "/need CAPABILITY"
                "/train text CORPUS"
                "/train file PATH [name]"
+               "/train attachments [name]"
                "/generate MODEL [prompt]"
-               "/nn list"
+               "/nn list | /nn enable | /nn disable"
                "(lisp forms…)"
                "status | help | quit")))
       (:status (session-status sess))
@@ -260,21 +261,31 @@ when the user requests an unknown capability.")
                   (if (eq op :nn)
                       (case (first payload)
                         (:train-file
-                         (nn-train-file (second payload)
-                                        :name (or (third payload)
-                                                  (pathname-name (second payload)))
-                                        :epochs 4 :hidden 256 :seq-len 64))
+                         (nn-continuous-train
+                          (uiop:read-file-string (second payload))
+                          :name (or (third payload)
+                                    (pathname-name (second payload)))
+                          :epochs 4 :hidden 256 :seq-len 64 :depth 2))
                         (:train-text
-                         (nn-train-language-model (second payload)
-                                                  :name "session-lm"
-                                                  :epochs 4 :hidden 256
-                                                  :seq-len 64))
+                         (nn-continuous-train (second payload)
+                                              :name "session-lm"
+                                              :epochs 4 :hidden 256
+                                              :seq-len 64 :depth 2))
+                        (:train-attachments
+                         (nn-train-from-session sess
+                                                :name (or (second payload)
+                                                          "session-lm")
+                                                :epochs 4 :hidden 256
+                                                :seq-len 64 :depth 2))
                         (:generate
                          (list :text
                                (nn-generate (second payload)
                                             :prompt (or (third payload) "")
-                                            :length 200)))
+                                            :length 200
+                                            :mind m)))
                         (:nn-list (list :models (metis.nn:nn-registry-list)))
+                        (:nn-enable (list :enabled (nn-enable-path m)))
+                        (:nn-disable (list :disabled (nn-disable-path m)))
                         (t (list :error :bad-nn-cmd payload)))
                       (%iface-dispatch sess op payload))
                 (error (e)
