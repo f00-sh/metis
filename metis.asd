@@ -1,9 +1,9 @@
-;;;; metis.asd — Metis 4.0: symbolic mind + pure-CL neural substrate
+;;;; metis.asd — Metis: symbolic mind + neural substrate + symbols (plugins)
 (defsystem "metis"
-  :description "Metis 4.0: cognitive architecture with pure Common Lisp neural training and inference"
+  :description "Metis: cognitive architecture with pure-CL neural training, symbols plugins, optional GPU"
   :author "Glenda"
   :license "MIT"
-  :version "4.0.0"
+  :version "4.1.0"
   :depends-on ("alexandria"
                "bordeaux-threads"
                "cl-ppcre"
@@ -32,6 +32,15 @@
        (:file "ops")
        (:file "module")
        (:file "train")))
+     (:module "symbols"
+      :serial t
+      :components
+      ((:file "package")
+       (:file "protocol")
+       (:file "registry")
+       (:file "discover")
+       (:file "cuda")
+       (:file "bridge")))
      (:file "unifier")
      (:file "kb")
      (:file "frames")
@@ -87,11 +96,13 @@
      (:file "further-paths")
      (:file "epoch")
      (:file "interface")
-     (:file "nn"))))
+     (:file "nn")
+     (:file "symbols"))))
   :perform (test-op (o c)
              (symbol-call :fiveam :run! :metis)
              (symbol-call :fiveam :run! :metis-production)
              (symbol-call :fiveam :run! :metis-further)
              (symbol-call :fiveam :run! :metis-epoch)
              (symbol-call :fiveam :run! :metis-iface)
-             (symbol-call :fiveam :run! :metis-nn)))
+             (symbol-call :fiveam :run! :metis-nn)
+             (symbol-call :fiveam :run! :metis-symbols)))

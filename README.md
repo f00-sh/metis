@@ -1,8 +1,8 @@
-# Metis 4.0 — NEURAL
+# Metis 4.1 — SYMBOLS
 
-**Cognitive architecture with in-process trainable models** — pure Common Lisp neural training and inference, bound to a full symbolic control stack (unifier, KB, RETE, TMS, STRIPS/HTN, durable continuum, multi-session EPOCH, interactive interface).
+**Cognitive architecture with in-process trainable models and a plugin system** — pure Common Lisp neural training by default, optional CUDA GPU acceleration as a **symbol** (plugin), bound to a full symbolic control stack (unifier, KB, RETE, TMS, STRIPS/HTN, durable continuum, multi-session EPOCH, interactive interface).
 
-No Python. No external ML runtime required. Training and generation run inside the Metis process. Optional external LLM remains available when keys are present; it is not the substrate.
+No Python. No external ML runtime required for the default path. Training and generation run inside the Metis process. GPU is an installable/enableable **symbol**, not a hard dependency.
 
 ## What this is
 
@@ -118,9 +118,36 @@ Kernel 1.x — unifier, KB, planner, HTN, tools, security
 | `train.lisp` | char vocab, multi-layer LM + causal context, `train-lm!`, `lm-generate`, checkpoints, registry |
 | `bridge.lisp` | continuous train, session corpus, TMS-gated generate, tools, iface |
 
+### Symbols (plugins)
+
+Plugins live in `symbols/<id>/` with a `manifest.lisp`. Boot discovers and loads them. **cpu-nn** is always enabled; **gpu-nn** is optional.
+
+```bash
+./bin/metis iface
+# /symbols list
+# /symbols enable gpu-nn
+# /symbols backend
+# /symbols disable gpu-nn
+# /symbols install /path/to/my-symbol
+```
+
+```lisp
+(metis:symbol-list-info)
+(metis:enable-symbol! "gpu-nn")   ; RTX / libcuda — matmul on device
+(metis:nn-backend-status)
+(metis:disable-symbol! "gpu-nn")  ; falls back to cpu-nn
+```
+
+Write your own: directory + `manifest.lisp` calling `metis.symbols:register-symbol!` with hooks (`:activate`, `:deactivate`, capabilities like `:nn-backend`, `:tool`, `:iface`).
+
 ### CPU / GPU
 
-Train and infer run **pure Common Lisp on CPU** (dense double-float arrays, reverse-mode AD). No GPU backend is required or loaded by default. A GPU path remains optional future work and is not part of Decision B’s in-process CL substrate.
+| Symbol | Role |
+|--------|------|
+| **cpu-nn** (default) | Pure CL dense tensors + reverse-mode AD on host |
+| **gpu-nn** (optional) | CUDA driver PTX SGEMM for matmul forward; enable when `libcuda` + GPU present |
+
+The active symbol **dictates** the compute path. No global “GPU default that breaks laptops.”
 
 ## Tests
 

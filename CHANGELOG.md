@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.1.0 — SYMBOLS (plugins) + optional GPU neural backend
+
+### Symbols plugin system
+- Full plugin protocol: discover, load, enable, disable, install from directory
+- Homage naming: **symbols** under `symbols/<id>/manifest.lisp`
+- Boot: `symbols-boot!` loads in-tree symbols; `cpu-nn` enabled by default
+- Tools: `symbols-list`, `symbol-info`, `symbol-enable`, `symbol-disable`, `symbol-install`, `nn-backend`
+- Iface: `/symbols list|info|enable|disable|install|backend`
+
+### NN backends (dictated by symbols, not CLI flags)
+- **cpu-nn** — pure Common Lisp (always available)
+- **gpu-nn** — CUDA driver API (`libcuda.so`) + embedded PTX SGEMM; enable with `(enable-symbol! "gpu-nn")`
+- `t-matmul` forward path dispatches through active NN backend; autograd backward stays on host
+
+### Tests
+- Suite `:metis-symbols` — boot, tools, CPU matmul, GPU enable (when device present), install third-party sample
+
 ## 4.0.1 — multi-layer LM, attachment continuous train, TMS neural gate
 
 ### Language model

@@ -191,7 +191,19 @@
    #:nn-path-allowed-p
    #:nn-check-path!
    #:*nn-path-fact*
-   #:install-nn-tools)
+   #:install-nn-tools
+   ;; 4.1 symbols (plugins) + NN backend
+   #:symbols-boot!
+   #:discover-symbols!
+   #:symbol-list
+   #:symbol-list-info
+   #:symbol-info
+   #:load-symbol!
+   #:enable-symbol!
+   #:disable-symbol!
+   #:install-symbol!
+   #:nn-backend-status
+   #:install-symbol-tools)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

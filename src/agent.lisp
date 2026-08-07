@@ -67,6 +67,10 @@
   (let ((m *mind*))
     (init-mind-subsystems m)
     (install-core-tools (mind-tools m) (lambda () *mind*))
+    (when (fboundp 'symbols-boot!)
+      (symbols-boot!))
+    (when (fboundp 'install-symbol-tools)
+      (install-symbol-tools m))
     (when (fboundp 'install-nn-tools)
       (install-nn-tools m))
     (when bootstrap

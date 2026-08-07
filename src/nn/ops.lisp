@@ -115,8 +115,28 @@
   (let ((n (length (tns-data (%as-tensor a)))))
     (t* (t-sum a) (make-tensor '(1) :init (/ 1d0 n)))))
 
+(defun %matmul-forward-data (ad bd m k n)
+  "Forward matmul storage via active symbols NN backend when available."
+  (if (and (find-package :metis.symbols)
+           (fboundp (find-symbol "NN-BACKEND-MATMUL" :metis.symbols))
+           (fboundp (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols)))
+      (funcall (symbol-function (find-symbol "NN-BACKEND-MATMUL" :metis.symbols))
+               (funcall (symbol-function (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols)))
+               ad bd m k n)
+      ;; pure inline CPU fallback (substrate always works)
+      (let ((data (%make-storage (* m n))))
+        (dotimes (i m)
+          (dotimes (j n)
+            (let ((s 0d0))
+              (dotimes (t0 k)
+                (incf s (* (aref ad (+ (* i k) t0))
+                           (aref bd (+ (* t0 n) j)))))
+              (setf (aref data (+ (* i n) j)) s))))
+        data)))
+
 (defun t-matmul (a b)
-  "Matrix multiply (m,k)·(k,n) → (m,n). Also (k)·(k,n) and (m,k)·(k)."
+  "Matrix multiply (m,k)·(k,n) → (m,n). Forward path uses the active
+   symbols NN backend (cpu-nn or gpu-nn). Backward remains on host."
   (let* ((a (%as-tensor a)) (b (%as-tensor b))
          (as (tns-shape a)) (bs (tns-shape b))
          (ad (tns-data a)) (bd (tns-data b))
@@ -126,14 +146,7 @@
        (destructuring-bind (m k) as
          (destructuring-bind (k2 n) bs
            (assert (= k k2) () "matmul inner dim ~A vs ~A" k k2)
-           (let ((data (%make-storage (* m n))))
-             (dotimes (i m)
-               (dotimes (j n)
-                 (let ((s 0d0))
-                   (dotimes (t0 k)
-                     (incf s (* (aref ad (+ (* i k) t0))
-                                (aref bd (+ (* t0 n) j)))))
-                   (setf (aref data (+ (* i n) j)) s))))
+           (let ((data (%matmul-forward-data ad bd m k n)))
              (let ((out (make-tensor (list m n) :requires-grad rg :data data)))
                (when rg
                  (setf (tns-children out) (list a b))

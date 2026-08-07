@@ -150,6 +150,8 @@ when the user requests an unknown capability.")
                "/train attachments [name]"
                "/generate MODEL [prompt]"
                "/nn list | /nn enable | /nn disable"
+               "/symbols list | info ID | enable ID | disable ID"
+               "/symbols install PATH [id] | backend"
                "(lisp forms…)"
                "status | help | quit")))
       (:status (session-status sess))
@@ -249,45 +251,59 @@ when the user requests an unknown capability.")
            (pre-facts (kb-count-facts (mind-kb m)))
            (result nil)
            (reply nil)
-           (nn-cmd (ignore-errors (%iface-nn-commands sess text))))
+           (nn-cmd (ignore-errors (%iface-nn-commands sess text)))
+           (sym-cmd (unless nn-cmd
+                      (ignore-errors (%iface-symbol-commands text)))))
       (push (list :role :user :text text :time (now-iso))
             (sess-turns sess))
       (multiple-value-bind (op payload)
-          (if nn-cmd
-              (values :nn nn-cmd)
-              (%iface-parse-turn text))
+          (cond (nn-cmd (values :nn nn-cmd))
+                (sym-cmd (values :symbols sym-cmd))
+                (t (%iface-parse-turn text)))
         (setf result
               (handler-case
-                  (if (eq op :nn)
-                      (case (first payload)
-                        (:train-file
-                         (nn-continuous-train
-                          (uiop:read-file-string (second payload))
-                          :name (or (third payload)
-                                    (pathname-name (second payload)))
-                          :epochs 4 :hidden 256 :seq-len 64 :depth 2))
-                        (:train-text
-                         (nn-continuous-train (second payload)
-                                              :name "session-lm"
-                                              :epochs 4 :hidden 256
-                                              :seq-len 64 :depth 2))
-                        (:train-attachments
-                         (nn-train-from-session sess
-                                                :name (or (second payload)
-                                                          "session-lm")
-                                                :epochs 4 :hidden 256
-                                                :seq-len 64 :depth 2))
-                        (:generate
-                         (list :text
-                               (nn-generate (second payload)
-                                            :prompt (or (third payload) "")
-                                            :length 200
-                                            :mind m)))
-                        (:nn-list (list :models (metis.nn:nn-registry-list)))
-                        (:nn-enable (list :enabled (nn-enable-path m)))
-                        (:nn-disable (list :disabled (nn-disable-path m)))
-                        (t (list :error :bad-nn-cmd payload)))
-                      (%iface-dispatch sess op payload))
+                  (cond
+                    ((eq op :nn)
+                     (case (first payload)
+                       (:train-file
+                        (nn-continuous-train
+                         (uiop:read-file-string (second payload))
+                         :name (or (third payload)
+                                   (pathname-name (second payload)))
+                         :epochs 4 :hidden 256 :seq-len 64 :depth 2))
+                       (:train-text
+                        (nn-continuous-train (second payload)
+                                             :name "session-lm"
+                                             :epochs 4 :hidden 256
+                                             :seq-len 64 :depth 2))
+                       (:train-attachments
+                        (nn-train-from-session sess
+                                               :name (or (second payload)
+                                                         "session-lm")
+                                               :epochs 4 :hidden 256
+                                               :seq-len 64 :depth 2))
+                       (:generate
+                        (list :text
+                              (nn-generate (second payload)
+                                           :prompt (or (third payload) "")
+                                           :length 200
+                                           :mind m)))
+                       (:nn-list (list :models (metis.nn:nn-registry-list)))
+                       (:nn-enable (list :enabled (nn-enable-path m)))
+                       (:nn-disable (list :disabled (nn-disable-path m)))
+                       (t (list :error :bad-nn-cmd payload))))
+                    ((eq op :symbols)
+                     (case (first payload)
+                       (:symbols-list (list :symbols (symbol-list-info)))
+                       (:symbol-info (list :symbol (symbol-info (second payload))))
+                       (:symbol-enable (enable-symbol! (second payload)))
+                       (:symbol-disable (disable-symbol! (second payload)))
+                       (:symbol-install
+                        (install-symbol! (second payload)
+                                         :id (third payload)))
+                       (:nn-backend (list :backend (nn-backend-status)))
+                       (t (list :error :bad-symbol-cmd payload))))
+                    (t (%iface-dispatch sess op payload)))
                 (error (e)
                   (list :error (princ-to-string e)))))
         (setf reply (prin1-to-string result))
