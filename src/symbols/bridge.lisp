@@ -30,6 +30,12 @@
 (defun install-symbol! (source &rest args)
   (apply #'metis.symbols:install-symbol! source args))
 
+(defun sign-symbol-package (root &rest args)
+  (apply #'metis.symbols:sign-symbol-package! root args))
+
+(defun verify-symbol-package (root &rest args)
+  (apply #'metis.symbols:verify-symbol-package root args))
+
 (defun nn-backend-status ()
   (metis.symbols:nn-backend-status (metis.symbols:active-nn-backend)))
 

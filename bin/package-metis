@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Build a runnable Metis SBCL core image under build/metis.image
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${METIS_IMAGE:-$ROOT/build/metis.image}"
+mkdir -p "$(dirname "$OUT")"
+# clear any broken placeholder
+if [ -e "$OUT" ] && [ ! -f "$OUT" ]; then rm -rf "$OUT"; fi
+cd "$ROOT"
+sbcl --noinform --non-interactive \
+  --eval "(pushnew (truename \"$ROOT/\") asdf:*central-registry*)" \
+  --eval "(asdf:load-system :metis)" \
+  --load "$ROOT/packaging/build-image.lisp" \
+  --eval "(metis.packaging:build-image \"$OUT\")" \
+  --quit || true
+# save-lisp-and-die exits the process; success if core file exists and is large
+if [ -f "$OUT" ] && [ "$(stat -c%s "$OUT" 2>/dev/null || echo 0)" -gt 1000000 ]; then
+  echo "Wrote $OUT"
+  ls -la "$OUT"
+  exit 0
+fi
+echo "package-metis: image missing or too small at $OUT" >&2
+ls -la "$OUT" 2>&1 || true
+exit 1

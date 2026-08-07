@@ -39,6 +39,29 @@
    "Compute C = A(m×k) · B(k×n). A-DATA/B-DATA are simple-vectors or
     arrays of double-float (row-major). Return a double-float array of m*n."))
 
+(defgeneric nn-backend-axpy (backend x-data y-data n alpha)
+  (:documentation
+   "y := alpha*x + y for length-N double-float arrays. Returns new y array.
+    On-device for GPU backends; host for CPU."))
+
+(defgeneric nn-backend-relu (backend x-data n)
+  (:documentation
+   "Elementwise ReLU on length-N double-float data. Returns new array."))
+
+(defvar *nn-backend-op-counts* (make-hash-table :test #'equal)
+  "Instrumentation: op name → count for proving train uses active backend.")
+
+(defun nn-backend-note-op! (op)
+  (incf (gethash op *nn-backend-op-counts* 0)))
+
+(defun nn-backend-op-counts ()
+  (let ((out nil))
+    (maphash (lambda (k v) (push (list k v) out)) *nn-backend-op-counts*)
+    out))
+
+(defun nn-backend-reset-op-counts! ()
+  (clrhash *nn-backend-op-counts*))
+
 ;;; ---------- CPU backend (always available) ----------
 
 (defstruct (cpu-nn-backend (:constructor %make-cpu-nn-backend)
@@ -60,10 +83,13 @@
         :device (cpu-be-device b)
         :kind :cpu
         :ready t
+        :ops '(:matmul :axpy :relu)
+        :op-counts (nn-backend-op-counts)
         :provider "metis.nn pure Common Lisp"))
 
 (defmethod nn-backend-matmul ((b cpu-nn-backend) a-data b-data m k n)
   (declare (ignore b))
+  (nn-backend-note-op! :matmul)
   (let ((out (make-array (* m n) :element-type 'double-float :initial-element 0d0)))
     (dotimes (i m)
       (dotimes (j n)
@@ -72,6 +98,23 @@
             (incf s (* (aref a-data (+ (* i k) t0))
                        (aref b-data (+ (* t0 n) j)))))
           (setf (aref out (+ (* i n) j)) s))))
+    out))
+
+(defmethod nn-backend-axpy ((b cpu-nn-backend) x-data y-data n alpha)
+  (declare (ignore b))
+  (nn-backend-note-op! :axpy)
+  (let ((out (make-array n :element-type 'double-float))
+        (a (coerce alpha 'double-float)))
+    (dotimes (i n)
+      (setf (aref out i) (+ (* a (aref x-data i)) (aref y-data i))))
+    out))
+
+(defmethod nn-backend-relu ((b cpu-nn-backend) x-data n)
+  (declare (ignore b))
+  (nn-backend-note-op! :relu)
+  (let ((out (make-array n :element-type 'double-float)))
+    (dotimes (i n)
+      (setf (aref out i) (max 0d0 (aref x-data i))))
     out))
 
 (defun active-nn-backend ()

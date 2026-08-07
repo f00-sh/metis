@@ -1,11 +1,11 @@
 ;;;; version.lisp
 (in-package :metis)
 
-(defparameter *metis-version* "4.1.0"
+(defparameter *metis-version* "4.2.0"
   "Semantic version of the Metis production cognitive architecture.")
 
-(defparameter *metis-codename* "SYMBOLS"
-  "Release codename — symbols plugins + optional GPU neural backend.")
+(defparameter *metis-codename* "FRONTIERS"
+  "Release codename — category symbols, richer GPU, remote trust, deep LM, packaging.")
 
 (defparameter *metis-api-version* "v1")
 

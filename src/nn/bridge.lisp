@@ -67,23 +67,26 @@
 (defun nn-train-language-model (text &key (name "default-lm")
                                        (epochs 8)
                                        (hidden 256)
-                                       (seq-len 64)
-                                       (depth 2)
+                                       (seq-len 128)
+                                       (depth 3)
                                        (lr 1d-3)
                                        (max-batches nil)
                                        (emb-dim nil))
   "Train a multi-layer character language model on TEXT (pure Common Lisp).
 
-   DEPTH (≥1) hidden layers; SEQ-LEN is the causal context window used
-   end-to-end in train and generate. Registers model under NAME, checkpoints,
-   asserts readiness into mind KB/TMS. Does not by itself enable path policy —
-   install-nn-tools / nn-enable-path control fire."
+   Product defaults: DEPTH 3, SEQ-LEN 128 (longer/deeper than 4.1 smoke defaults).
+   When gpu-nn is the active symbol backend, train dispatches matmul/relu on GPU.
+   Registers model under NAME, checkpoints, asserts readiness into mind KB/TMS."
+  (when (and (find-package :metis.symbols)
+             (fboundp 'metis.symbols:nn-backend-reset-op-counts!))
+    (metis.symbols:nn-backend-reset-op-counts!))
   (let* ((vocab (metis.nn:build-char-vocab text))
          (model (metis.nn:language-model vocab
                                          :hidden hidden
                                          :seq-len seq-len
                                          :emb-dim emb-dim
                                          :depth depth))
+         (backend (ignore-errors (nn-backend-status)))
          (history (metis.nn:train-lm! model text
                                       :epochs epochs :lr lr
                                       :seq-len seq-len
@@ -98,6 +101,8 @@
                      :seq-len seq-len
                      :depth depth
                      :epochs epochs
+                     :backend backend
+                     :op-counts (ignore-errors (metis.symbols:nn-backend-op-counts))
                      :continuous-steps 1
                      :history history)))
     (metis.nn:save-checkpoint model path
@@ -107,7 +112,8 @@
                                           :hidden hidden
                                           :seq-len seq-len
                                           :depth depth
-                                          :epochs epochs))
+                                          :epochs epochs
+                                          :backend backend))
     (metis.nn:nn-registry-register name model :meta meta)
     (when *mind*
       (assert-fact *mind*
@@ -127,11 +133,13 @@
           :seq-len seq-len
           :depth depth
           :epochs epochs
+          :backend backend
+          :op-counts (ignore-errors (metis.symbols:nn-backend-op-counts))
           :continued nil
           :continuous-steps 1)))
 
-(defun nn-train-file (path &key (name nil) (epochs 8) (hidden 256) (seq-len 64)
-                            (depth 2) (max-batches nil))
+(defun nn-train-file (path &key (name nil) (epochs 8) (hidden 256) (seq-len 128)
+                            (depth 3) (max-batches nil))
   "Train an in-process multi-layer language model on PATH."
   (let* ((path (namestring (truename path)))
          (text (uiop:read-file-string path))
@@ -153,8 +161,8 @@
                                    (lr 1d-3)
                                    (max-batches nil)
                                    (hidden 256)
-                                   (seq-len 64)
-                                   (depth 2)
+                                   (seq-len 128)
+                                   (depth 3)
                                    (emb-dim nil))
   "Incrementally train NAME on TEXT without process restart.
 

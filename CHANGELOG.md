@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.2.0 — FRONTIERS (category symbols, richer GPU, remote trust, deep LM, packaging)
+
+1. **More symbols**: `chat-ui`, `image-ingest`, `domain-pack`, `curriculum`
+2. **Richer GPU**: on-device axpy + relu (+ matmul); CPU agreement; clean fail without CUDA
+3. **Remote install + trust**: git/HTTP/`file://` with HMAC `symbol.sig`; unsigned remote refused
+4. **Longer/deeper LM**: product defaults depth 3, seq-len 128; train records backend/op-counts
+5. **Packaging**: `./bin/package-metis`, docs triad, `docs/release-memo-4.2.md`
+6. Suite `:metis-frontiers`
+
 ## 4.1.0 — SYMBOLS (plugins) + optional GPU neural backend
 
 ### Symbols plugin system

@@ -197,13 +197,24 @@
                                 (aref g (+ (* j m) i)))))))))
           out)))))
 
+(defun %relu-forward-data (ad n)
+  "Forward ReLU via active symbols NN backend when available."
+  (if (and (find-package :metis.symbols)
+           (fboundp (find-symbol "NN-BACKEND-RELU" :metis.symbols))
+           (fboundp (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols)))
+      (funcall (symbol-function (find-symbol "NN-BACKEND-RELU" :metis.symbols))
+               (funcall (symbol-function (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols)))
+               ad n)
+      (let ((data (%make-storage n)))
+        (dotimes (i n) (setf (aref data i) (max 0d0 (aref ad i))))
+        data)))
+
 (defun t-relu (a)
   (let* ((a (%as-tensor a))
          (n (length (tns-data a)))
-         (data (%make-storage n))
          (ad (tns-data a))
+         (data (%relu-forward-data ad n))
          (rg (%unary-needs-grad a)))
-    (dotimes (i n) (setf (aref data i) (max 0d0 (aref ad i))))
     (let ((out (make-tensor (tns-shape a) :requires-grad rg :data data)))
       (when rg
         (setf (tns-children out) (list a))

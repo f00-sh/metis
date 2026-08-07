@@ -203,7 +203,14 @@
    #:disable-symbol!
    #:install-symbol!
    #:nn-backend-status
-   #:install-symbol-tools)
+   #:install-symbol-tools
+   #:chat-ui-summary
+   #:chat-ui-transcript
+   #:image-ingest-session
+   #:domain-pack-load
+   #:curriculum-apply
+   #:sign-symbol-package
+   #:verify-symbol-package)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

@@ -1,0 +1,5 @@
+the metis mind plans with strips and htn
+the metis mind trains language models in process
+the curriculum teaches depth and context windows
+symbols load plugins for chat image domain and train
+gpu backends accelerate matmul relu and axpy when enabled

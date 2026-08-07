@@ -121,13 +121,28 @@
 (defun train-lm! (model text &key (epochs 5) (lr 1d-3) (seq-len nil)
                                (log-every 20) (max-batches nil))
   "Train character language model on TEXT. Pure CL. Returns history of metrics.
-   Uses the model's multi-layer stack and context window (seq-len)."
+   Uses the model's multi-layer stack and context window (seq-len).
+   Records active NN backend id and op counts (matmul/relu) so GPU-backed
+   train loops are observable when gpu-nn is enabled."
   (let* ((seq-len (or seq-len (lm-seq-len model)))
          (encoded (vocab-encode (lm-vocab model) text))
          (batches (make-lm-batches encoded :seq-len seq-len))
          (opt (adam (module-parameters model) :lr lr))
          (history nil)
-         (step 0))
+         (step 0)
+         (backend-id
+          (when (and (find-package :metis.symbols)
+                     (fboundp (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols))
+                     (fboundp (find-symbol "NN-BACKEND-ID" :metis.symbols)))
+            (funcall (symbol-function (find-symbol "NN-BACKEND-ID" :metis.symbols))
+                     (funcall (symbol-function
+                               (find-symbol "ACTIVE-NN-BACKEND" :metis.symbols))))))
+         (ops-before
+          (when (and (find-package :metis.symbols)
+                     (fboundp (find-symbol "NN-BACKEND-OP-COUNTS" :metis.symbols)))
+            (copy-tree
+             (funcall (symbol-function
+                       (find-symbol "NN-BACKEND-OP-COUNTS" :metis.symbols)))))))
     (when max-batches
       (setf batches (subseq batches 0 (min max-batches (length batches)))))
     (module-mode model :train)
@@ -144,19 +159,34 @@
               (incf nb)
               (incf step)
               (when (and log-every (zerop (mod step log-every)))
-                (format *error-output* "~&[nn] lm step=~A loss=~,4F~%" step lv)))))
+                (format *error-output* "~&[nn] lm step=~A loss=~,4F backend=~A~%"
+                        step lv backend-id)))))
         (let ((avg (if (plusp nb) (/ epoch-loss nb) 0d0)))
           (push (list :epoch (1+ epoch)
                       :loss avg
                       :batches nb
                       :depth (lm-depth model)
                       :seq-len seq-len
-                      :hidden (lm-hidden model))
+                      :hidden (lm-hidden model)
+                      :backend backend-id)
                 history)
           (format *error-output*
-                  "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A depth=~A seq-len=~A~%"
-                  (1+ epoch) avg nb (lm-depth model) seq-len))))
-    (nreverse history)))
+                  "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A depth=~A seq-len=~A backend=~A~%"
+                  (1+ epoch) avg nb (lm-depth model) seq-len backend-id))))
+    (let* ((ops-after
+            (when (and (find-package :metis.symbols)
+                       (fboundp (find-symbol "NN-BACKEND-OP-COUNTS" :metis.symbols)))
+              (funcall (symbol-function
+                        (find-symbol "NN-BACKEND-OP-COUNTS" :metis.symbols)))))
+           (hist (nreverse history)))
+      ;; attach backend evidence on first history entry for callers
+      (when hist
+        (setf (first hist)
+              (append (first hist)
+                      (list :backend backend-id
+                            :ops-before ops-before
+                            :ops-after ops-after))))
+      hist)))
 
 (defun lm-generate (model &key (prompt "") (length 200) (temperature 1d0))
   "Sample from LM starting from PROMPT, using the model's context window."

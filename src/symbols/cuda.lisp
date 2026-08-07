@@ -84,7 +84,85 @@ STORE:
 DONE:
     ret;
 }
+
+// y = alpha*x + y  (float)
+.visible .entry metis_saxpy(
+    .param .u64 param_X,
+    .param .u64 param_Y,
+    .param .u64 param_OUT,
+    .param .u32 param_N,
+    .param .f32 param_ALPHA
+)
+{
+    .reg .pred %p<2>;
+    .reg .f32  %f<8>;
+    .reg .b32  %r<12>;
+    .reg .b64  %rd<12>;
+
+    ld.param.u64 %rd1, [param_X];
+    ld.param.u64 %rd2, [param_Y];
+    ld.param.u64 %rd3, [param_OUT];
+    ld.param.u32 %r1,  [param_N];
+    ld.param.f32 %f1,  [param_ALPHA];
+
+    mov.u32 %r2, %ctaid.x;
+    mov.u32 %r3, %ntid.x;
+    mov.u32 %r4, %tid.x;
+    mad.lo.s32 %r5, %r2, %r3, %r4;
+    setp.ge.s32 %p1, %r5, %r1;
+    @%p1 bra DONE_AXPY;
+
+    mul.wide.s32 %rd4, %r5, 4;
+    add.s64 %rd5, %rd1, %rd4;
+    add.s64 %rd6, %rd2, %rd4;
+    add.s64 %rd7, %rd3, %rd4;
+    ld.global.f32 %f2, [%rd5];
+    ld.global.f32 %f3, [%rd6];
+    fma.rn.f32 %f4, %f1, %f2, %f3;
+    st.global.f32 [%rd7], %f4;
+
+DONE_AXPY:
+    ret;
+}
+
+// out = max(0, x)
+.visible .entry metis_srelu(
+    .param .u64 param_X,
+    .param .u64 param_OUT,
+    .param .u32 param_N
+)
+{
+    .reg .pred %p<3>;
+    .reg .f32  %f<4>;
+    .reg .b32  %r<10>;
+    .reg .b64  %rd<10>;
+
+    ld.param.u64 %rd1, [param_X];
+    ld.param.u64 %rd2, [param_OUT];
+    ld.param.u32 %r1,  [param_N];
+
+    mov.u32 %r2, %ctaid.x;
+    mov.u32 %r3, %ntid.x;
+    mov.u32 %r4, %tid.x;
+    mad.lo.s32 %r5, %r2, %r3, %r4;
+    setp.ge.s32 %p1, %r5, %r1;
+    @%p1 bra DONE_RELU;
+
+    mul.wide.s32 %rd3, %r5, 4;
+    add.s64 %rd4, %rd1, %rd3;
+    add.s64 %rd5, %rd2, %rd3;
+    ld.global.f32 %f1, [%rd4];
+    mov.f32 %f2, 0f00000000;
+    max.f32 %f3, %f1, %f2;
+    st.global.f32 [%rd5], %f3;
+
+DONE_RELU:
+    ret;
+}
 ")
+
+(defvar *cuda-axpy-fn* nil)
+(defvar *cuda-relu-fn* nil)
 
 (defun %cuda-ok (code where)
   (unless (zerop code)
@@ -148,14 +226,18 @@ DONE:
                                             :pointer ptx :int)
                       "cuModuleLoadData")
             (setf *cuda-module* (cffi:mem-ref mod :pointer))))
-        (cffi:with-foreign-object (fn :pointer)
-          (cffi:with-foreign-string (fname "metis_sgemm")
-            (%cuda-ok (cffi:foreign-funcall "cuModuleGetFunction"
-                                            :pointer fn
-                                            :pointer *cuda-module*
-                                            :pointer fname :int)
-                      "cuModuleGetFunction")
-            (setf *cuda-matmul-fn* (cffi:mem-ref fn :pointer))))
+        (flet ((getfn (name)
+                 (cffi:with-foreign-object (fn :pointer)
+                   (cffi:with-foreign-string (fname name)
+                     (%cuda-ok (cffi:foreign-funcall "cuModuleGetFunction"
+                                                     :pointer fn
+                                                     :pointer *cuda-module*
+                                                     :pointer fname :int)
+                               (format nil "cuModuleGetFunction ~A" name))
+                     (cffi:mem-ref fn :pointer)))))
+          (setf *cuda-matmul-fn* (getfn "metis_sgemm")
+                *cuda-axpy-fn* (getfn "metis_saxpy")
+                *cuda-relu-fn* (getfn "metis_srelu")))
         (setf *cuda-ready* t)
         t)
     (error (e)
@@ -171,6 +253,8 @@ DONE:
   (setf *cuda-ready* nil
         *cuda-module* nil
         *cuda-matmul-fn* nil
+        *cuda-axpy-fn* nil
+        *cuda-relu-fn* nil
         *cuda-context* nil))
 
 (defun %host-double-to-float-array (data n)
@@ -278,8 +362,113 @@ DONE:
         :ready (gpu-be-ready b)
         :cuda-ready *cuda-ready*
         :cuda-error *cuda-error*
-        :provider "CUDA driver (libcuda) PTX sgemm"))
+        :ops '(:matmul :axpy :relu)
+        :op-counts (nn-backend-op-counts)
+        :provider "CUDA driver (libcuda) PTX sgemm+saxpy+srelu"))
 
 (defmethod nn-backend-matmul ((b gpu-nn-backend) a-data b-data m k n)
   (declare (ignore b))
+  (nn-backend-note-op! :matmul)
   (cuda-sgemm a-data b-data m k n))
+
+(defun cuda-saxpy (x-data y-data n alpha)
+  "GPU float axpy: out = alpha*x + y."
+  (unless *cuda-ready* (cuda-init!))
+  (let* ((xf (%host-double-to-float-array x-data n))
+         (yf (%host-double-to-float-array y-data n))
+         (of (make-array n :element-type 'single-float :initial-element 0f0))
+         (bytes (* n 4))
+         (a (float (coerce alpha 'double-float) 0f0)))
+    (cffi:with-foreign-objects ((dX :pointer) (dY :pointer) (dO :pointer))
+      (%cuda-ok (cffi:foreign-funcall "cuMemAlloc_v2" :pointer dX :ulong bytes :int) "alloc X")
+      (%cuda-ok (cffi:foreign-funcall "cuMemAlloc_v2" :pointer dY :ulong bytes :int) "alloc Y")
+      (%cuda-ok (cffi:foreign-funcall "cuMemAlloc_v2" :pointer dO :ulong bytes :int) "alloc O")
+      (let ((pX (cffi:mem-ref dX :pointer))
+            (pY (cffi:mem-ref dY :pointer))
+            (pO (cffi:mem-ref dO :pointer)))
+        (cffi:with-pointer-to-vector-data (hx xf)
+          (%cuda-ok (cffi:foreign-funcall "cuMemcpyHtoD_v2" :pointer pX :pointer hx :ulong bytes :int) "HtoD X"))
+        (cffi:with-pointer-to-vector-data (hy yf)
+          (%cuda-ok (cffi:foreign-funcall "cuMemcpyHtoD_v2" :pointer pY :pointer hy :ulong bytes :int) "HtoD Y"))
+        (cffi:with-foreign-objects ((n32 :uint32) (alpha-f :float)
+                                    (args :pointer 5)
+                                    (pX-arg :pointer) (pY-arg :pointer) (pO-arg :pointer))
+          (setf (cffi:mem-ref n32 :uint32) n
+                (cffi:mem-ref alpha-f :float) a
+                (cffi:mem-ref pX-arg :pointer) pX
+                (cffi:mem-ref pY-arg :pointer) pY
+                (cffi:mem-ref pO-arg :pointer) pO
+                (cffi:mem-aref args :pointer 0) pX-arg
+                (cffi:mem-aref args :pointer 1) pY-arg
+                (cffi:mem-aref args :pointer 2) pO-arg
+                (cffi:mem-aref args :pointer 3) n32
+                (cffi:mem-aref args :pointer 4) alpha-f)
+          (let* ((block 256) (grid (max 1 (ceiling n block))))
+            (%cuda-ok (cffi:foreign-funcall "cuLaunchKernel"
+                                            :pointer *cuda-axpy-fn*
+                                            :unsigned-int grid :unsigned-int 1 :unsigned-int 1
+                                            :unsigned-int block :unsigned-int 1 :unsigned-int 1
+                                            :unsigned-int 0
+                                            :pointer (cffi:null-pointer)
+                                            :pointer args
+                                            :pointer (cffi:null-pointer) :int)
+                      "launch saxpy"))
+          (%cuda-ok (cffi:foreign-funcall "cuCtxSynchronize" :int) "sync")
+          (cffi:with-pointer-to-vector-data (ho of)
+            (%cuda-ok (cffi:foreign-funcall "cuMemcpyDtoH_v2" :pointer ho :pointer pO :ulong bytes :int) "DtoH")))
+        (ignore-errors (cffi:foreign-funcall "cuMemFree_v2" :pointer pX :int))
+        (ignore-errors (cffi:foreign-funcall "cuMemFree_v2" :pointer pY :int))
+        (ignore-errors (cffi:foreign-funcall "cuMemFree_v2" :pointer pO :int))))
+    (let ((out (make-array n :element-type 'double-float)))
+      (dotimes (i n) (setf (aref out i) (float (aref of i) 0d0)))
+      out)))
+
+(defun cuda-srelu (x-data n)
+  "GPU float ReLU."
+  (unless *cuda-ready* (cuda-init!))
+  (let* ((xf (%host-double-to-float-array x-data n))
+         (of (make-array n :element-type 'single-float :initial-element 0f0))
+         (bytes (* n 4)))
+    (cffi:with-foreign-objects ((dX :pointer) (dO :pointer))
+      (%cuda-ok (cffi:foreign-funcall "cuMemAlloc_v2" :pointer dX :ulong bytes :int) "alloc X")
+      (%cuda-ok (cffi:foreign-funcall "cuMemAlloc_v2" :pointer dO :ulong bytes :int) "alloc O")
+      (let ((pX (cffi:mem-ref dX :pointer))
+            (pO (cffi:mem-ref dO :pointer)))
+        (cffi:with-pointer-to-vector-data (hx xf)
+          (%cuda-ok (cffi:foreign-funcall "cuMemcpyHtoD_v2" :pointer pX :pointer hx :ulong bytes :int) "HtoD"))
+        (cffi:with-foreign-objects ((n32 :uint32) (args :pointer 3)
+                                    (pX-arg :pointer) (pO-arg :pointer))
+          (setf (cffi:mem-ref n32 :uint32) n
+                (cffi:mem-ref pX-arg :pointer) pX
+                (cffi:mem-ref pO-arg :pointer) pO
+                (cffi:mem-aref args :pointer 0) pX-arg
+                (cffi:mem-aref args :pointer 1) pO-arg
+                (cffi:mem-aref args :pointer 2) n32)
+          (let* ((block 256) (grid (max 1 (ceiling n block))))
+            (%cuda-ok (cffi:foreign-funcall "cuLaunchKernel"
+                                            :pointer *cuda-relu-fn*
+                                            :unsigned-int grid :unsigned-int 1 :unsigned-int 1
+                                            :unsigned-int block :unsigned-int 1 :unsigned-int 1
+                                            :unsigned-int 0
+                                            :pointer (cffi:null-pointer)
+                                            :pointer args
+                                            :pointer (cffi:null-pointer) :int)
+                      "launch srelu"))
+          (%cuda-ok (cffi:foreign-funcall "cuCtxSynchronize" :int) "sync")
+          (cffi:with-pointer-to-vector-data (ho of)
+            (%cuda-ok (cffi:foreign-funcall "cuMemcpyDtoH_v2" :pointer ho :pointer pO :ulong bytes :int) "DtoH")))
+        (ignore-errors (cffi:foreign-funcall "cuMemFree_v2" :pointer pX :int))
+        (ignore-errors (cffi:foreign-funcall "cuMemFree_v2" :pointer pO :int))))
+    (let ((out (make-array n :element-type 'double-float)))
+      (dotimes (i n) (setf (aref out i) (float (aref of i) 0d0)))
+      out)))
+
+(defmethod nn-backend-axpy ((b gpu-nn-backend) x-data y-data n alpha)
+  (declare (ignore b))
+  (nn-backend-note-op! :axpy)
+  (cuda-saxpy x-data y-data n alpha))
+
+(defmethod nn-backend-relu ((b gpu-nn-backend) x-data n)
+  (declare (ignore b))
+  (nn-backend-note-op! :relu)
+  (cuda-srelu x-data n))

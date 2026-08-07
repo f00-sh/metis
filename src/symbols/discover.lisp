@@ -1,4 +1,4 @@
-;;;; discover.lisp — find, load, install symbols from the filesystem
+;;;; discover.lisp — find, load, install symbols (local / git / URL + trust)
 (in-package :metis.symbols)
 
 (defun symbols-roots ()
@@ -43,7 +43,6 @@
   (let ((rec (symbol-get id)))
     (when (and rec (member (sr-state rec) '(:loaded :enabled)) (not force))
       (return-from load-symbol! (symbol-info id)))
-    ;; find path
     (let ((path (or (and rec (sr-path rec))
                     (loop for root in (symbols-roots)
                           for d = (%symbol-dir root id)
@@ -53,7 +52,6 @@
         (error "cannot find manifest for symbol ~A" id))
       (let* ((manifest (merge-pathnames "manifest.lisp" path))
              (*package* (find-package :cl-user)))
-        ;; Manifest should call metis.symbols:register-symbol! or metis:register-symbol
         (let ((*symbol-load-path* path))
           (declare (special *symbol-load-path*))
           (load manifest))
@@ -61,7 +59,6 @@
                         (error "manifest for ~A did not register the symbol" id))))
           (setf (sr-path rec2) path
                 (sr-state rec2) (if (sr-enabled rec2) :enabled :loaded))
-          ;; optional companion
           (let ((symfile (merge-pathnames "symbol.lisp" path)))
             (when (probe-file symfile)
               (let ((*symbol-load-path* path))
@@ -82,34 +79,122 @@
         (when name
           (%copy-tree d (merge-pathnames (format nil "~A/" name) to)))))))
 
-(defun install-symbol! (source &key (id nil) (enable nil))
-  "Install a symbol from SOURCE (directory path) into the user symbols root.
-   SOURCE must contain manifest.lisp. Returns symbol-info."
-  (let* ((src (uiop:ensure-directory-pathname (truename source)))
-         (manifest (merge-pathnames "manifest.lisp" src)))
-    (unless (probe-file manifest)
-      (error "install-symbol!: no manifest.lisp in ~A" src))
-    (let* ((id (or id (car (last (pathname-directory src)))))
+(defun %url-p (s)
+  (and (stringp s)
+       (or (eql 0 (search "http://" s))
+           (eql 0 (search "https://" s))
+           (eql 0 (search "file://" s))
+           (eql 0 (search "git@" s))
+           (eql 0 (search "git://" s))
+           (search ".git" s))))
+
+(defun %git-url-p (s)
+  (and (stringp s)
+       (or (eql 0 (search "git@" s))
+           (eql 0 (search "git://" s))
+           (and (or (eql 0 (search "http://" s))
+                    (eql 0 (search "https://" s)))
+                (or (search ".git" s)
+                    (search "git+" s))))))
+
+(defun %fetch-remote-to-tmpdir (source)
+  "Fetch SOURCE (git URL, http(s) archive path, or file://) into a temp dir.
+   Returns directory pathname containing manifest.lisp."
+  (let* ((tmp (uiop:ensure-directory-pathname
+               (merge-pathnames
+                (format nil "metis-sym-fetch-~A/" (get-universal-time))
+                (uiop:temporary-directory)))))
+    (ensure-directories-exist tmp)
+    (cond
+      ((eql 0 (search "file://" source))
+       (let* ((path (subseq source 7))
+              (src (uiop:ensure-directory-pathname (truename path))))
+         (%copy-tree src tmp)
+         tmp))
+      ((%git-url-p source)
+       (uiop:run-program
+        (list "git" "clone" "--depth" "1" source (namestring tmp))
+        :output t :error-output t)
+       ;; if clone put files in tmp/name/, find manifest
+       (if (probe-file (merge-pathnames "manifest.lisp" tmp))
+           tmp
+           (let ((sub (first (directory (merge-pathnames "*/" tmp)))))
+             (or sub tmp))))
+      ((or (eql 0 (search "http://" source))
+           (eql 0 (search "https://" source)))
+       ;; expect a directory listing style: download tar/zip or raw tree via curl of a tarball
+       ;; For tests we support URL to a .tar.gz or a directory served as tarball.
+       (let ((archive (merge-pathnames "pkg.tar.gz" tmp)))
+         (uiop:run-program
+          (list "curl" "-fsSL" "-o" (namestring archive) source)
+          :output t :error-output t)
+         (uiop:run-program
+          (list "tar" "-xzf" (namestring archive) "-C" (namestring tmp))
+          :output t :error-output t)
+         (if (probe-file (merge-pathnames "manifest.lisp" tmp))
+             tmp
+             (or (first (directory (merge-pathnames "*/" tmp))) tmp))))
+      (t (error "unsupported remote source ~A" source)))))
+
+(defun install-symbol! (source &key (id nil) (enable nil)
+                                 (require-signature nil)
+                                 (trust-remote t))
+  "Install a symbol from SOURCE into the user symbols root.
+
+   SOURCE may be:
+   - local directory path
+   - file:// path
+   - git URL (git clone --depth 1)
+   - http(s) URL to a .tar.gz package
+
+   Remote sources require a valid symbol.sig when TRUST-REMOTE is true
+   (default). Local directory installs require signature only when
+   REQUIRE-SIGNATURE is true."
+  (let* ((remote (and (stringp source) (%url-p source)))
+         (require (if remote
+                      (or trust-remote *symbol-trust-strict*)
+                      require-signature))
+         (src-dir
+          (cond
+            (remote (%fetch-remote-to-tmpdir source))
+            (t (uiop:ensure-directory-pathname (truename source))))))
+    (unless (probe-file (merge-pathnames "manifest.lisp" src-dir))
+      (error "install-symbol!: no manifest.lisp in ~A" src-dir))
+    (when require
+      (verify-symbol-package src-dir :require t))
+    (unless require
+      ;; still record unsigned local installs
+      (ignore-errors (verify-symbol-package src-dir :require nil)))
+    (let* ((id (or id (car (last (pathname-directory src-dir)))))
            (dest-root (merge-pathnames ".metis/symbols/"
                                        (user-homedir-pathname)))
            (dest (merge-pathnames (format nil "~A/" id) dest-root)))
       (ensure-directories-exist dest)
-      (%copy-tree src dest)
-      (register-symbol! :id id :path dest)
+      (%copy-tree src-dir dest)
+      (register-symbol! :id id :path dest
+                        :meta (list :source source
+                                    :trusted (and require t)))
       (setf (sr-state (symbol-get id)) :discovered)
       (load-symbol! id :force t)
       (when enable (enable-symbol! id))
       (symbol-info id))))
 
+(defparameter *builtin-symbol-ids*
+  '("cpu-nn" "gpu-nn" "chat-ui" "image-ingest" "domain-pack" "curriculum"))
+
 (defun symbols-boot! ()
-  "Discover, load built-ins, enable cpu-nn as default NN backend."
+  "Discover, load built-ins + category symbols, enable cpu-nn as default NN backend."
   (discover-symbols!)
-  ;; Prefer in-tree built-ins
-  (dolist (id (list +cpu-nn-id+ +gpu-nn-id+))
+  (dolist (id *builtin-symbol-ids*)
     (handler-case (load-symbol! id)
       (error (e)
         (format *error-output* "~&[symbols] load ~A: ~A~%" id e))))
-  ;; Always enable CPU unless something else already active
+  ;; also load any other discovered ids
+  (dolist (id (discover-symbols!))
+    (unless (member id *builtin-symbol-ids* :test #'string=)
+      (handler-case (load-symbol! id)
+        (error (e)
+          (format *error-output* "~&[symbols] load ~A: ~A~%" id e)))))
   (handler-case (enable-symbol! +cpu-nn-id+ :force t)
     (error (e)
       (format *error-output* "~&[symbols] enable cpu-nn: ~A~%" e)

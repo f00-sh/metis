@@ -3,7 +3,7 @@
   :description "Metis: cognitive architecture with pure-CL neural training, symbols plugins, optional GPU"
   :author "Glenda"
   :license "MIT"
-  :version "4.1.0"
+  :version "4.2.0"
   :depends-on ("alexandria"
                "bordeaux-threads"
                "cl-ppcre"
@@ -38,8 +38,10 @@
       ((:file "package")
        (:file "protocol")
        (:file "registry")
+       (:file "trust")
        (:file "discover")
        (:file "cuda")
+       (:file "capabilities")
        (:file "bridge")))
      (:file "unifier")
      (:file "kb")
@@ -97,7 +99,8 @@
      (:file "epoch")
      (:file "interface")
      (:file "nn")
-     (:file "symbols"))))
+     (:file "symbols")
+     (:file "frontiers"))))
   :perform (test-op (o c)
              (symbol-call :fiveam :run! :metis)
              (symbol-call :fiveam :run! :metis-production)
@@ -105,4 +108,5 @@
              (symbol-call :fiveam :run! :metis-epoch)
              (symbol-call :fiveam :run! :metis-iface)
              (symbol-call :fiveam :run! :metis-nn)
-             (symbol-call :fiveam :run! :metis-symbols)))
+             (symbol-call :fiveam :run! :metis-symbols)
+             (symbol-call :fiveam :run! :metis-frontiers)))

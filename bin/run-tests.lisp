@@ -15,9 +15,10 @@
       (ok5 (%suite-ok :metis-epoch))
       (ok6 (%suite-ok :metis-iface))
       (ok7 (%suite-ok :metis-nn))
-      (ok8 (%suite-ok :metis-symbols)))
-  (format t "~&~%=== METIS 4.1 TEST SUMMARY ===~%")
-  (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A  iface: ~A  nn: ~A  symbols: ~A~%"
+      (ok8 (%suite-ok :metis-symbols))
+      (ok9 (%suite-ok :metis-frontiers)))
+  (format t "~&~%=== METIS 4.2 TEST SUMMARY ===~%")
+  (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A  iface: ~A  nn: ~A  symbols: ~A  frontiers: ~A~%"
           (if ok1 "PASS" "FAIL")
           (if ok2 "PASS" "FAIL")
           (if ok3 "PASS" "FAIL")
@@ -25,5 +26,6 @@
           (if ok5 "PASS" "FAIL")
           (if ok6 "PASS" "FAIL")
           (if ok7 "PASS" "FAIL")
-          (if ok8 "PASS" "FAIL"))
-  (uiop:quit (if (and ok1 ok2 ok3 ok4 ok5 ok6 ok7 ok8) 0 1)))
+          (if ok8 "PASS" "FAIL")
+          (if ok9 "PASS" "FAIL"))
+  (uiop:quit (if (and ok1 ok2 ok3 ok4 ok5 ok6 ok7 ok8 ok9) 0 1)))
