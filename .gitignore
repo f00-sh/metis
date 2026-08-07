@@ -9,3 +9,5 @@ models/*.ckpt
 .DS_Store
 system-index.txt
 *.mdb
+packaging/out/
+build/
