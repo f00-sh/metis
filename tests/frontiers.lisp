@@ -9,10 +9,9 @@
   "Four category symbols list, enable, and expose real capabilities."
   (metis:boot :bootstrap t :reset t)
   (dolist (id '("chat-ui" "image-ingest" "domain-pack" "curriculum"))
-    (is (member id (metis:symbol-list) :test #'string=)
-        "symbol ~A must be discoverable" id)
+    (is (member id (metis:symbol-list) :test #'string=))
     (let ((info (metis:enable-symbol! id)))
-      (is (getf info :enabled) "enable ~A" id)))
+      (is (getf info :enabled))))
   ;; chat-ui
   (let ((s (metis:session-create :id "fr-chat" :boot nil)))
     (metis:iface-turn s "(tell (hello-frontier))")
@@ -24,10 +23,8 @@
   ;; image-ingest
   (let* ((s (metis:session-create :id "fr-img" :boot nil))
          (scratch #P"/tmp/grok-goal-f1afa225d28d/implementer/fixtures/")
-         (_ (ensure-directories-exist scratch))
          (img (merge-pathnames "dot.png" scratch)))
-    (declare (ignore _))
-    ;; minimal PNG (1x1) via printf/base64 or write bytes
+    (ensure-directories-exist scratch)
     (with-open-file (out img :direction :output
                          :element-type '(unsigned-byte 8)
                          :if-exists :supersede)
@@ -64,61 +61,72 @@
   "GPU axpy+relu agree with CPU within float tolerance when CUDA present."
   (metis:symbols-boot!)
   (let ((available (ignore-errors (metis.symbols:cuda-available-p))))
-    (if (not available)
-        (is t) ;; environment without CUDA: still pass; code path exists
-        (progn
-          (metis:enable-symbol! "cpu-nn" :force t)
-          (let* ((x #(1d0 -2d0 3d0 -0.5d0))
-                 (y #(0.5d0 0.5d0 0.5d0 0.5d0))
-                 (be-cpu (metis.symbols:active-nn-backend))
-                 (ax-cpu (metis.symbols:nn-backend-axpy be-cpu x y 4 2d0))
-                 (re-cpu (metis.symbols:nn-backend-relu be-cpu x 4)))
-            (metis:enable-symbol! "gpu-nn")
-            (is (equal "gpu-nn" (getf (metis:nn-backend-status) :id)))
-            (let* ((be-gpu (metis.symbols:active-nn-backend))
-                   (ax-gpu (metis.symbols:nn-backend-axpy be-gpu x y 4 2d0))
-                   (re-gpu (metis.symbols:nn-backend-relu be-gpu x 4)))
-              (dotimes (i 4)
-                (is (< (abs (- (aref ax-cpu i) (aref ax-gpu i))) 1d-3))
-                (is (< (abs (- (aref re-cpu i) (aref re-gpu i))) 1d-3))))
-            (metis:disable-symbol! "gpu-nn")
-            (is (equal "cpu-nn" (getf (metis:nn-backend-status) :id))))))))
+    (cond
+      ((not available)
+       (is (fboundp 'metis.symbols:nn-backend-axpy))
+       (is (fboundp 'metis.symbols:nn-backend-relu))
+       (is (fboundp 'metis.symbols:cuda-available-p)))
+      (t
+       (metis:enable-symbol! "cpu-nn" :force t)
+       (let* ((x #(1d0 -2d0 3d0 -0.5d0))
+              (y #(0.5d0 0.5d0 0.5d0 0.5d0))
+              (be-cpu (metis.symbols:active-nn-backend))
+              (ax-cpu (metis.symbols:nn-backend-axpy be-cpu x y 4 2d0))
+              (re-cpu (metis.symbols:nn-backend-relu be-cpu x 4)))
+         (metis:enable-symbol! "gpu-nn")
+         (is (equal "gpu-nn" (getf (metis:nn-backend-status) :id)))
+         (let* ((be-gpu (metis.symbols:active-nn-backend))
+                (ax-gpu (metis.symbols:nn-backend-axpy be-gpu x y 4 2d0))
+                (re-gpu (metis.symbols:nn-backend-relu be-gpu x 4)))
+           (dotimes (i 4)
+             (is (< (abs (- (aref ax-cpu i) (aref ax-gpu i))) 1d-3))
+             (is (< (abs (- (aref re-cpu i) (aref re-gpu i))) 1d-3))))
+         (metis:disable-symbol! "gpu-nn")
+         (is (equal "cpu-nn" (getf (metis:nn-backend-status) :id))))))))
+
+(defun %frontiers-write-signed-symbol (scratch id)
+  "Write a minimal signed symbol package at SCRATCH with id ID."
+  (ensure-directories-exist scratch)
+  (with-open-file (out (merge-pathnames "manifest.lisp" scratch)
+                       :direction :output :if-exists :supersede)
+    (write-string
+     (format nil
+             "(in-package :cl-user)~%~
+(metis.symbols:register-symbol!~%~
+ :id ~S :name ~S :version \"0.1.0\"~%~
+ :description \"Signed remote install fixture\"~%~
+ :capabilities (quote (:tool :demo))~%~
+ :priority 1~%~
+ :hooks (metis.symbols:define-symbol-hooks~%~
+          :activate (lambda (r) (declare (ignore r)) t)~%~
+          :deactivate (lambda (r) (declare (ignore r)) t)))~%"
+             id id)
+     out))
+  (let ((old-sig (merge-pathnames "symbol.sig" scratch)))
+    (when (probe-file old-sig) (delete-file old-sig)))
+  (metis:sign-symbol-package scratch)
+  scratch)
 
 (test frontiers-install-trust
-  "Signed package installs; unsigned remote refused."
+  "Signed package installs via file://, git, and HTTP tarball; unsigned/bad refused."
   (metis.symbols:ensure-default-trust-key!)
-  (let* ((scratch #P"/tmp/grok-goal-f1afa225d28d/implementer/remote-symbol/")
-         (_ (ensure-directories-exist scratch))
-         (manifest (merge-pathnames "manifest.lisp" scratch)))
-    (declare (ignore _))
-    (with-open-file (out manifest :direction :output :if-exists :supersede)
-      (write-string
-       "(in-package :cl-user)
-(metis.symbols:register-symbol!
- :id \"remote-demo\"
- :name \"Remote Demo\"
- :version \"0.1.0\"
- :description \"Signed remote install fixture\"
- :capabilities (quote (:tool :demo))
- :priority 1
- :hooks (metis.symbols:define-symbol-hooks
-          :activate (lambda (r) (setf (getf (metis.symbols:sr-meta r) :activated) t) t)
-          :deactivate (lambda (r) (declare (ignore r)) t)))
-"
-       out))
-    (let ((old-sig (merge-pathnames "symbol.sig" scratch)))
-      (when (probe-file old-sig) (delete-file old-sig)))
-    ;; unsigned local with require-signature → refuse
+  (let* ((base #P"/tmp/grok-goal-f1afa225d28d/implementer/")
+         (scratch (merge-pathnames "remote-symbol/" base)))
+    (ensure-directories-exist scratch)
+    (%frontiers-write-signed-symbol scratch "remote-demo")
+    (delete-file (merge-pathnames "symbol.sig" scratch))
+    ;; unsigned refused
     (handler-case
         (progn
           (metis:install-symbol! scratch :id "remote-demo-unsigned"
                                  :require-signature t)
           (fail "unsigned should be refused"))
       (error (e)
-        (is (or (search "unsigned" (princ-to-string e) :test #'char-equal)
-                (search "symbol.sig" (princ-to-string e) :test #'char-equal)
-                (search "missing" (princ-to-string e) :test #'char-equal)))))
-    ;; sign and install via file://
+        (let ((msg (princ-to-string e)))
+          (is (or (search "unsigned" msg :test #'char-equal)
+                  (search "symbol.sig" msg :test #'char-equal)
+                  (search "missing" msg :test #'char-equal))))))
+    ;; file:// signed install
     (metis:sign-symbol-package scratch)
     (is (probe-file (merge-pathnames "symbol.sig" scratch)))
     (let* ((url (format nil "file://~A" (namestring (truename scratch))))
@@ -126,15 +134,63 @@
       (is (equal "remote-demo" (getf info :id)))
       (is (getf info :enabled))
       (is (member "remote-demo" (metis:symbol-list) :test #'string=)))
+    ;; git file-remote install
+    (let* ((git-src (merge-pathnames "git-symbol-src/" base))
+           (git-repo (merge-pathnames "git-symbol-repo/" base)))
+      (when (uiop:directory-exists-p git-src)
+        (uiop:delete-directory-tree git-src :validate t :if-does-not-exist :ignore))
+      (when (uiop:directory-exists-p git-repo)
+        (uiop:delete-directory-tree git-repo :validate t :if-does-not-exist :ignore))
+      (%frontiers-write-signed-symbol git-src "git-demo")
+      (uiop:run-program
+       (list "bash" "-c"
+             (format nil
+                     "set -e; cd ~S; git init -q; git config user.email t@t; git config user.name t; git add -A; git -c commit.gpgsign=false commit -q --no-verify -m 'chore: init symbol fixture'; git clone -q --bare . ~S"
+                     (namestring git-src) (namestring git-repo)))
+       :output t :error-output t)
+      (let* ((git-url (format nil "file://~A" (namestring (truename git-repo))))
+             (info (metis:install-symbol! git-url :id "git-demo" :enable t)))
+        (is (equal "git-demo" (getf info :id)))
+        (is (getf info :enabled))
+        (is (member "git-demo" (metis:symbol-list) :test #'string=))))
+    ;; HTTP tarball install
+    (let* ((http-src (merge-pathnames "http-symbol-src/" base))
+           (tarball (merge-pathnames "pkg.tar.gz" base))
+           (port 8765)
+           (server nil))
+      (when (uiop:directory-exists-p http-src)
+        (uiop:delete-directory-tree http-src :validate t :if-does-not-exist :ignore))
+      (%frontiers-write-signed-symbol http-src "http-demo")
+      (uiop:run-program
+       (list "bash" "-c"
+             (format nil "cd ~S && tar -czf ~S ."
+                     (namestring http-src) (namestring tarball)))
+       :output t :error-output t)
+      (setf server
+            (uiop:launch-program
+             (list "python3" "-m" "http.server" (write-to-string port)
+                   "--bind" "127.0.0.1"
+                   "--directory" (namestring base))
+             :output :stream :error-output :stream))
+      (sleep 0.5)
+      (unwind-protect
+           (let* ((http-url (format nil "http://127.0.0.1:~A/pkg.tar.gz" port))
+                  (info (metis:install-symbol! http-url :id "http-demo" :enable t)))
+             (is (equal "http-demo" (getf info :id)))
+             (is (getf info :enabled))
+             (is (member "http-demo" (metis:symbol-list) :test #'string=)))
+        (ignore-errors (uiop:terminate-process server :urgent t))
+        (ignore-errors (uiop:wait-process server))))
     ;; bad signature refused
+    (metis:sign-symbol-package scratch)
     (with-open-file (out (merge-pathnames "symbol.sig" scratch)
                          :direction :output :if-exists :supersede)
       (format out "metis-sig-v1~%metis-dev~%deadbeef~%"))
     (handler-case
         (progn
-          (metis:install-symbol! (format nil "file://~A"
-                                         (namestring (truename scratch)))
-                                 :id "remote-bad" :require-signature t)
+          (metis:install-symbol!
+           (format nil "file://~A" (namestring (truename scratch)))
+           :id "remote-bad" :require-signature t)
           (fail "bad signature should be refused"))
       (error (e)
         (is (search "mismatch" (princ-to-string e) :test #'char-equal))))))
@@ -172,14 +228,9 @@
       (when cuda
         (is (equal "gpu-nn" (getf (getf r :backend) :id)))
         (let ((ops (getf r :op-counts)))
-          (is (or (assoc :matmul ops)
-                  (assoc :relu ops)
-                  (find :matmul ops :key #'car)
-                  (find :relu ops :key #'car)
-                  (plusp (reduce #'+ (mapcar #'second ops) :initial-value 0))))
           (is (plusp
-               (loop for pair in ops sum (if (listp pair) (second pair) 0))))))
-      (when cuda
+               (loop for pair in ops
+                     sum (if (listp pair) (second pair) 0)))))
         (metis:disable-symbol! "gpu-nn")))))
 
 (test frontiers-packaging-docs

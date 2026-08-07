@@ -84,7 +84,12 @@
                  (unless (uiop:directory-pathname-p p)
                    (let ((name (enough-namestring p root)))
                      (unless (or (string= (file-namestring p) "symbol.sig")
-                                 (search ".git/" name))
+                                 (search ".git/" name)
+                                 ;; never include transfer artifacts in signed payload
+                                 (search "pkg.tar.gz" name)
+                                 (search "download.tar.gz" name)
+                                 (uiop:string-suffix-p name ".tar.gz")
+                                 (uiop:string-suffix-p name ".tgz"))
                        (push (list name p) files)))))
                (dolist (d (directory (merge-pathnames "*/" dir)))
                  (walk d))))

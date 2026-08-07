@@ -92,48 +92,79 @@
   (and (stringp s)
        (or (eql 0 (search "git@" s))
            (eql 0 (search "git://" s))
+           (eql 0 (search "git+" s))
            (and (or (eql 0 (search "http://" s))
-                    (eql 0 (search "https://" s)))
+                    (eql 0 (search "https://" s))
+                    (eql 0 (search "file://" s)))
                 (or (search ".git" s)
-                    (search "git+" s))))))
+                    (search "git+" s)
+                    ;; bare repo or working tree with .git
+                    (let* ((path (cond ((eql 0 (search "file://" s)) (subseq s 7))
+                                       (t nil)))
+                           (p (and path (ignore-errors (truename path)))))
+                      (and p
+                           (or (probe-file (merge-pathnames "HEAD" p))
+                               (probe-file (merge-pathnames ".git/" p))
+                               (probe-file (merge-pathnames "refs/heads/" p))))))))))
+
+(defun %find-manifest-root (dir)
+  "Return DIR or a single subdirectory that contains manifest.lisp."
+  (let ((dir (uiop:ensure-directory-pathname dir)))
+    (cond
+      ((probe-file (merge-pathnames "manifest.lisp" dir)) dir)
+      (t (or (find-if (lambda (d)
+                        (probe-file (merge-pathnames "manifest.lisp" d)))
+                      (directory (merge-pathnames "*/" dir)))
+             dir)))))
 
 (defun %fetch-remote-to-tmpdir (source)
-  "Fetch SOURCE (git URL, http(s) archive path, or file://) into a temp dir.
-   Returns directory pathname containing manifest.lisp."
-  (let* ((tmp (uiop:ensure-directory-pathname
-               (merge-pathnames
-                (format nil "metis-sym-fetch-~A/" (get-universal-time))
-                (uiop:temporary-directory)))))
-    (ensure-directories-exist tmp)
+  "Fetch SOURCE (git URL, http(s) archive, or file://) into a temp package dir.
+   Returns directory pathname containing manifest.lisp.
+
+   HTTP archives are downloaded *outside* the package root so they are not
+   part of the signed canonical payload (verify-symbol-package)."
+  (let* ((stamp (get-universal-time))
+         (base (uiop:ensure-directory-pathname
+                (merge-pathnames
+                 (format nil "metis-sym-fetch-~A/" stamp)
+                 (uiop:temporary-directory))))
+         (pkg (merge-pathnames "pkg/" base))
+         (stage (merge-pathnames "stage/" base)))
+    (ensure-directories-exist pkg)
+    (ensure-directories-exist stage)
     (cond
+      ;; Git before plain file:// so bare/file remotes clone rather than copy objects
+      ((%git-url-p source)
+       (uiop:run-program
+        (list "git" "clone" "--depth" "1" source (namestring stage))
+        :output t :error-output t)
+       (let ((cloned (%find-manifest-root stage)))
+         (%copy-tree cloned pkg)
+         (let ((gitdir (merge-pathnames ".git/" pkg)))
+           (when (uiop:directory-exists-p gitdir)
+             (uiop:delete-directory-tree gitdir :validate t
+                                         :if-does-not-exist :ignore)))
+         (%find-manifest-root pkg)))
       ((eql 0 (search "file://" source))
        (let* ((path (subseq source 7))
               (src (uiop:ensure-directory-pathname (truename path))))
-         (%copy-tree src tmp)
-         tmp))
-      ((%git-url-p source)
-       (uiop:run-program
-        (list "git" "clone" "--depth" "1" source (namestring tmp))
-        :output t :error-output t)
-       ;; if clone put files in tmp/name/, find manifest
-       (if (probe-file (merge-pathnames "manifest.lisp" tmp))
-           tmp
-           (let ((sub (first (directory (merge-pathnames "*/" tmp)))))
-             (or sub tmp))))
+         (%copy-tree src pkg)
+         (%find-manifest-root pkg)))
       ((or (eql 0 (search "http://" source))
            (eql 0 (search "https://" source)))
-       ;; expect a directory listing style: download tar/zip or raw tree via curl of a tarball
-       ;; For tests we support URL to a .tar.gz or a directory served as tarball.
-       (let ((archive (merge-pathnames "pkg.tar.gz" tmp)))
+       ;; Download archive next to pkg, never inside it; extract only package files into pkg.
+       (let ((archive (merge-pathnames "download.tar.gz" base)))
          (uiop:run-program
           (list "curl" "-fsSL" "-o" (namestring archive) source)
           :output t :error-output t)
          (uiop:run-program
-          (list "tar" "-xzf" (namestring archive) "-C" (namestring tmp))
+          (list "tar" "-xzf" (namestring archive) "-C" (namestring pkg))
           :output t :error-output t)
-         (if (probe-file (merge-pathnames "manifest.lisp" tmp))
-             tmp
-             (or (first (directory (merge-pathnames "*/" tmp))) tmp))))
+         ;; remove archive from any accidental nest; never leave it under pkg
+         (ignore-errors (delete-file archive))
+         (let ((nested-arch (merge-pathnames "pkg.tar.gz" pkg)))
+           (when (probe-file nested-arch) (delete-file nested-arch)))
+         (%find-manifest-root pkg)))
       (t (error "unsupported remote source ~A" source)))))
 
 (defun install-symbol! (source &key (id nil) (enable nil)
