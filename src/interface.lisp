@@ -145,6 +145,10 @@ when the user requests an unknown capability.")
                "/tell FACT"
                "/goal GOAL"
                "/need CAPABILITY"
+               "/train text CORPUS"
+               "/train file PATH [name]"
+               "/generate MODEL [prompt]"
+               "/nn list"
                "(lisp forms…)"
                "status | help | quit")))
       (:status (session-status sess))
@@ -243,14 +247,36 @@ when the user requests an unknown capability.")
     (let* ((m (sess-mind sess))
            (pre-facts (kb-count-facts (mind-kb m)))
            (result nil)
-           (reply nil))
+           (reply nil)
+           (nn-cmd (ignore-errors (%iface-nn-commands sess text))))
       (push (list :role :user :text text :time (now-iso))
             (sess-turns sess))
       (multiple-value-bind (op payload)
-          (%iface-parse-turn text)
+          (if nn-cmd
+              (values :nn nn-cmd)
+              (%iface-parse-turn text))
         (setf result
               (handler-case
-                  (%iface-dispatch sess op payload)
+                  (if (eq op :nn)
+                      (case (first payload)
+                        (:train-file
+                         (nn-train-file (second payload)
+                                        :name (or (third payload)
+                                                  (pathname-name (second payload)))
+                                        :epochs 4 :hidden 256 :seq-len 64))
+                        (:train-text
+                         (nn-train-language-model (second payload)
+                                                  :name "session-lm"
+                                                  :epochs 4 :hidden 256
+                                                  :seq-len 64))
+                        (:generate
+                         (list :text
+                               (nn-generate (second payload)
+                                            :prompt (or (third payload) "")
+                                            :length 200)))
+                        (:nn-list (list :models (metis.nn:nn-registry-list)))
+                        (t (list :error :bad-nn-cmd payload)))
+                      (%iface-dispatch sess op payload))
                 (error (e)
                   (list :error (princ-to-string e)))))
         (setf reply (prin1-to-string result))

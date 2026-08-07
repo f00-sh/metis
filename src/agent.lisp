@@ -67,6 +67,8 @@
   (let ((m *mind*))
     (init-mind-subsystems m)
     (install-core-tools (mind-tools m) (lambda () *mind*))
+    (when (fboundp 'install-nn-tools)
+      (install-nn-tools m))
     (when bootstrap
       (load-bootstrap m)
       (when (and domains (fboundp 'load-domains))

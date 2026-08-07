@@ -172,7 +172,13 @@
    #:iface-accommodate
    #:iface-flagship
    #:iface-thesis
-   #:*iface-thesis*)
+   #:*iface-thesis*
+   ;; 4.0 neural substrate (pure CL)
+   #:nn-train-language-model
+   #:nn-train-file
+   #:nn-generate
+   #:nn-train-mlp-xor
+   #:install-nn-tools)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

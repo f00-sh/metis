@@ -4,6 +4,7 @@ worlds/*.mind.lisp
 worlds/metis-lmdb/
 worlds/**/data.mdb
 worlds/**/lock.mdb
+models/*.ckpt
 *~
 .DS_Store
 system-index.txt

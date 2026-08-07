@@ -1,11 +1,11 @@
 ;;;; version.lisp
 (in-package :metis)
 
-(defparameter *metis-version* "3.1.0"
+(defparameter *metis-version* "4.0.0"
   "Semantic version of the Metis production cognitive architecture.")
 
-(defparameter *metis-codename* "INTERFACE"
-  "Release codename — full interactive files/photos/self-accommodation UI.")
+(defparameter *metis-codename* "NEURAL"
+  "Release codename — pure Common Lisp neural training + symbolic control.")
 
 (defparameter *metis-api-version* "v1")
 

@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.0.0 — NEURAL (in-process trainable models + symbolic control)
+
+### Core capability
+- **Pure Common Lisp neural substrate** (`metis.nn`): dense tensors, reverse-mode autograd, linear/embedding/MLP, Adam/SGD, character language models, checkpoint I/O, model registry
+- **No Python / no external ML runtime required** for train or generate
+- **Mind bridge**: train/infer tools installed at boot; KB/TMS facts for model readiness; iface `/train`, `/generate`, `/nn list`
+- Symbolic stack (unifier, RETE, TMS, planner, EPOCH, INTERFACE) remains first-class control — neural and symbolic share one process
+
+### Modules
+- `src/nn/tensor.lisp` — tensor + reverse-mode AD
+- `src/nn/ops.lisp` — matmul, activations, losses, embedding
+- `src/nn/module.lisp` — layers + optimizers
+- `src/nn/train.lisp` — vocab, LM, train loops, checkpoints, registry
+- `src/nn/bridge.lisp` — product integration
+
+### API
+- `nn-train-language-model`, `nn-train-file`, `nn-generate`, `nn-train-mlp-xor`, `install-nn-tools`
+- Defaults sized for real corpora (`hidden` 256, `seq-len` 64); checkpoints under `models/`
+
+### Tests
+- Suite `:metis-nn` — autograd, XOR, LM train/generate, checkpoint, tools-on-boot
+- Full battery green: core · production · bench · further · epoch · iface · nn
+
 ## 3.1.0 — INTERFACE (full interactive product surface)
 
 ### Interactive multi-turn interface

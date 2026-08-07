@@ -1,9 +1,9 @@
-;;;; metis.asd — Metis 3.0 EPOCH cognitive architecture
+;;;; metis.asd — Metis 4.0: symbolic mind + pure-CL neural substrate
 (defsystem "metis"
-  :description "Metis 3.1: full interactive interface — files, photos, multi-turn, self-accommodation"
+  :description "Metis 4.0: cognitive architecture with pure Common Lisp neural training and inference"
   :author "Glenda"
   :license "MIT"
-  :version "3.1.0"
+  :version "4.0.0"
   :depends-on ("alexandria"
                "bordeaux-threads"
                "cl-ppcre"
@@ -24,6 +24,14 @@
      (:file "util")
      (:file "log")
      (:file "config")
+     (:module "nn"
+      :serial t
+      :components
+      ((:file "package")
+       (:file "tensor")
+       (:file "ops")
+       (:file "module")
+       (:file "train")))
      (:file "unifier")
      (:file "kb")
      (:file "frames")
@@ -55,6 +63,7 @@
      (:file "arc")
      (:file "epoch")
      (:file "session")
+     (:file "nn/bridge")
      (:file "interface")
      (:file "world")
      (:file "repl")))
@@ -77,10 +86,12 @@
      (:file "bench")
      (:file "further-paths")
      (:file "epoch")
-     (:file "interface"))))
+     (:file "interface")
+     (:file "nn"))))
   :perform (test-op (o c)
              (symbol-call :fiveam :run! :metis)
              (symbol-call :fiveam :run! :metis-production)
              (symbol-call :fiveam :run! :metis-further)
              (symbol-call :fiveam :run! :metis-epoch)
-             (symbol-call :fiveam :run! :metis-iface)))
+             (symbol-call :fiveam :run! :metis-iface)
+             (symbol-call :fiveam :run! :metis-nn)))
