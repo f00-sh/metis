@@ -1,11 +1,11 @@
 ;;;; version.lisp
 (in-package :metis)
 
-(defparameter *metis-version* "4.4.0"
+(defparameter *metis-version* "4.4.1"
   "Semantic version of the Metis production cognitive architecture.")
 
 (defparameter *metis-codename* "THEORY"
-  "Release codename — whitepaper CLS v2: replay, separation, meta-cog, explain, couple.")
+  "Release codename — dual-facet sealed symbols + dep-pin unload on CLS THEORY base.")
 
 (defparameter *metis-api-version* "v1")
 

@@ -1,4 +1,25 @@
 # Changelog
+
+## 4.4.1 — dual-facet symbols + dep-pin unload (f00 release)
+
+**Dependency unload (refcount) — product law:**
+- Loading a sealed symbol **pins** each required `depends-on` dep
+- Unloading a symbol releases **only that holder’s pins**
+- Shared deps stay loaded while **any** loaded symbol still pins them
+- Auto-loaded deps (from `knowledge/sealed/`) load as **temporary overlays** and cascade-unload when the **last pin** drops
+- **Explicit** user loads are **sticky** — never cascade-unloaded with a dependent
+- Boot/reset clears pack enable/layer/dep session state so residual installs cannot mask auto-loaded tracking
+- API: `symbol-seal-unload!`, `symbol-dep-holders`, `symbol-toggle!`
+- Docs: `docs/SYMBOL-FACETS.md`, `docs/SYMBOL-TRAINING.md` §7–§9
+- Tests: `symbol-dep-refcount-keeps-shared-deps`, `symbol-dep-explicit-load-is-sticky` (`:metis-seals`, 121 checks)
+
+**Also on this line (post-4.4.0, shipped on main):**
+- Dual-facet law: math = knowledge+process; language = use+about; other domains default knowledge (`docs/SYMBOL-FACETS.md`)
+- Sealed packages: open-sealed (reproducible) + private-sealed (key-gated, no plaintext registry leak)
+- Training pipeline + five math domain symbols (math, algebra, geometry, trigonometry, calculus)
+- TUI: Ctrl+T/R/S symbols/REPL/settings (raw termios + modifyOtherKeys; F2/F3/F4 backups)
+- Site: [metis.f00.sh](https://metis.f00.sh/) · first card on [f00.sh](https://f00.sh/) · repo `f00-sh/metis`
+
 ## 4.4.0 — THEORY + sealed symbols
 
 **Sealed knowledge symbols (game-changer layer):**

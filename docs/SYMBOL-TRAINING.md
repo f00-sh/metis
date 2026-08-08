@@ -278,7 +278,9 @@ Lisp:
 ```
 
 Load path: **verify → decrypt → inject facts/rules via pack layers**.  
-Unload/disable retracts layer-owned facts (refcount-safe with base pins).
+Unload via `symbol-seal-unload!` / `symbol-toggle!` retracts layer-owned facts
+(refcount-safe with base pins **and** dependency pins — see §9 and
+`docs/SYMBOL-FACETS.md`).
 
 ---
 
@@ -333,11 +335,21 @@ Examples:
 **Load behavior (shipped):** `symbol-seal-load!` / `./bin/metis symbol load`  
 reads `:depends-on` with `:role :required` and:
 
-1. If the dep is already loaded → continue  
-2. Else if `knowledge/sealed/<dep-id>/` exists → **auto-load** it first  
+1. If the dep is already loaded → **pin** it for the loading holder and continue  
+2. Else if `knowledge/sealed/<dep-id>/` exists → **auto-load** it as a temporary
+   overlay (cascade-eligible), pin it, then continue  
 3. Else → **refuse** with an error listing missing deps  
 
-Unload does not auto-cascade; disable dependents first if you need a clean tree.
+**Unload behavior (shipped):** `symbol-seal-unload!` / `symbol-toggle!`
+
+1. Unloading a holder **releases only that holder’s pins**  
+2. A dep stays loaded while **any** still-loaded symbol pins it (shared keep)  
+3. An **auto-loaded** dep with **zero** remaining pins **cascades** unload  
+4. An **explicit** user load of a dep is **sticky** — never cascade-unloaded
+   just because a dependent went away  
+
+Details: `docs/SYMBOL-FACETS.md` · tests `symbol-dep-refcount-keeps-shared-deps`,
+`symbol-dep-explicit-load-is-sticky`.
 
 ---
 
