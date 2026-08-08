@@ -18,7 +18,7 @@ provides=('metis')
 conflicts=('metis-git')
 options=('!strip')
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/f00-sh/metis/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('610f1600af5ae8dfcec2a07c3b3cab0dbc312819a1a75b5e895e19a34829bcbb')
 
 package() {
   cd "${srcdir}/metis-${pkgver}"
