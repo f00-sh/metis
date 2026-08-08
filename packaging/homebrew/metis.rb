@@ -13,7 +13,7 @@ class Metis < Formula
   desc "Pure Common Lisp hybrid mind with dual-facet sealed knowledge symbols"
   homepage "https://metis.f00.sh/"
   url "https://github.com/f00-sh/metis/releases/download/4.5.0/metis-4.5.0-src.tar.gz"
-  sha256 "b098595da0f7977a4f1bf4a067d84273a03df5ca1f7ead01aa34040dd7f9d3e5"
+  sha256 "d0cc8cea8260472cb0519ddfaaf0ab3476cea287b7c64baf891fcffdec1774e6"
   license "MIT"
   version "4.5.0"
 
