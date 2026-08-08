@@ -1,0 +1,3 @@
+CONS constructs pairs.
+DEFUN defines functions.
+The REPL reads, evaluates, prints.

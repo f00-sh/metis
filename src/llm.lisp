@@ -2,8 +2,12 @@
 (in-package :metis)
 
 (defun llm-enabled-p ()
+  "T when a usable API key is configured. Re-resolves env/.env each call so
+   exporting XAI_API_KEY mid-session or after .env edit takes effect."
+  (ignore-errors (configure-llm!))
   (and (get-config :llm-enabled)
-       (get-config :llm-api-key)))
+       (get-config :llm-api-key)
+       (plusp (length (string (get-config :llm-api-key))))))
 
 (defun %json-bool (x)
   (if x 'yason:true 'yason:false))

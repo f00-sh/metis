@@ -1,13 +1,65 @@
 # Changelog
-## 4.4.0 — THEORY (whitepaper CLS v2)
+## 4.4.0 — THEORY + sealed symbols
 
-1. Prioritized interleaved replay + forget-test
-2. Episode separation keys + constrained completion
-3. Meta-cog metrics + self-model adjust
-4. Structured explain object
-5–6. Coupled neural→symbolic accept/reject; retract→learn-rate
-7. Explicit non-goals: VAE/Hopfield/CIFAR
-8. Suite :metis-hybrid expanded
+**Sealed knowledge symbols (game-changer layer):**
+- Source kits → `symbol train` → **open-sealed** / **private-sealed** packages (`header.lisp` + opaque `body.mse` + `symbol.sig`)
+- Verify hash/HMAC; refuse load on tamper; private-sealed key-gated decrypt
+- Free marketplace index (`knowledge/marketplace/index.lisp`) + hash/version advisories
+- CLI: `./bin/metis symbol {new,ingest,train,build,verify,load,marketplace-check}`
+- Author guide: `docs/SYMBOL-TRAINING.md` · doctrine: `docs/SYMBOL-DOCTRINE.md`
+- Five domain symbols trained from open educational citations: **math, algebra, geometry, trigonometry, calculus**
+- Tests: `:metis-seals` (62 checks) wired into `./bin/metis test`
+
+## 4.4.0 — THEORY (whitepaper CLS v2) — shipped CLS contract
+
+**Product TUI (pure Common Lisp — no Rust):**
+- `./bin/metis tui` (default on TTY): 2-column ANSI/Unicode UI — chat | status + REPL
+- Animated METIS splash, color borders, Tab focus, brain/files status pane
+- `metis:tui-run` / `metis:tui-splash`
+
+**Background brain (product train, not context-only):**
+- `@PATH` / `/attach PATH` / `/context` → extract + **hard** `nn-continuous-train` on async brain queue
+- `/watch folder PATH` — continuous poll (~0.35s); new drops train immediately (no manual poll required)
+- `/brain status|start|stop` — concurrent learner while user chats; idle corpus consolidation
+- Hard defaults: 6 epochs / 64 batches (chat); ingest/watch intensity separate; tests: `:metis-iface`
+
+**Shipped CLS contract (stabilize):**
+1. Prioritized interleaved replay (*k*-old+1-new) + **fair** forget-test (identical hyperparams; only replay on/off)
+2. Explicit `:replay nil` force-off on `neocortex-consolidate!` (default sentinel `:default`)
+3. Episode separation keys + constrained completion
+4. Meta-cog metrics + self-model adjust
+5. Structured explain object (`supporters`, `tms-label`, `episodes-used`, `weights-stepped`)
+6. Coupled neural→symbolic: path-IN `:coupled-reject` via unifier templates (not assert-fact gate)
+7. **#7 non-goals remain closed**: no product VAE + Modern Hopfield + CIFAR-100 stack; pure-CL default (Decision B)
+8. Suite `:metis-hybrid`
+
+**Session hardenin (product):**
+- Default `iface-turn` and `epoch-cognitive-step` always return `:explain` + `:metrics`
+- `durable-save-hybrid!` / `durable-load-hybrid!` round-trip hippocampus + hybrid metrics/self-model
+- Pure-CL train caps (`*train-max-batches-cap*`, `*train-max-epochs-cap*`)
+
+**Domain depth:**
+- `symbols/domain-kinship` pack with couple-templates + rules
+- `curriculum-ladder-run` — A→B retention + refuse/allow/learn
+- Trust policy: `trust-policy-allows-p`, `nn-enable-path-policy`, `hybrid-teach-policy`
+
+**Marketplace (same repo, not separate product):**
+- In-tree catalog + `/marketplace list|install` iface
+- Signed packages required for marketplace install path
+- External sample: `samples/external-echo/` (signed)
+
+**Research slices (still no #7):**
+- Separation probe with fixed cue + retention threshold (`:pass`)
+- `hybrid-offline-schedule!` first-class sleep/EPOCH offline mode
+- `hybrid-plan-explain` multi-supporter STRIPS/HTN/TMS explain
+
+**Paper-fidelity product slices (without #7):**
+- Soft latent replay: episode `:summary` / `:key` text (not VAE vectors) consumed by interleaved batches
+- `hybrid-separation-probe`: A→B then goal-A cue generate A-token retention **and** NLL
+- Domain packs register `couple-templates` into accept gate (`register-coupled-templates!`)
+
+**Research library:**
+- OCR text sidecars for McClelland 1995 and Doyle AIM-521; Forgy PDF honest failed-fetch note
 
 
 ## 4.3.0 — HYBRID (CLS on-the-fly learning + cognitive unit)

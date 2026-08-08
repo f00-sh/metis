@@ -25,8 +25,11 @@ percept/text
 
 Return plist always includes:
 
-- `:decision` — `:allow` | `:refuse` | `:learn` | `:act`
+- `:decision` — `:allow` | `:refuse` | `:learn` | `:act` | `:coupled-reject`
 - `:neural` — generate result or refuse reason
 - `:learned` — train metrics or nil
 - `:tms` — path IN/OUT before and after
+- `:explain` — structured object (`make-explain-object`: supporters, tms-label, episodes-used, weights-stepped)
 - `:why` — human-readable justification strings
+
+Coupled path: `hybrid-coupled-propose` → neural draft optional; `hybrid-coupled-accept-p` (unify templates / prove) is the fail-capable gate; learn only on accept.

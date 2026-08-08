@@ -69,6 +69,10 @@
     (install-core-tools (mind-tools m) (lambda () *mind*))
     (when (fboundp 'symbols-boot!)
       (symbols-boot!))
+    (when (fboundp 'symbol-pack-boot!)
+      (symbol-pack-boot!))
+    (when (fboundp 'symbol-runtime-boot!)
+      (symbol-runtime-boot! :mind m :defaults t))
     (when (fboundp 'install-symbol-tools)
       (install-symbol-tools m))
     (when (fboundp 'install-nn-tools)
@@ -498,6 +502,6 @@
   (cognitive-cycle (ensure-mind mind)))
 
 (defun run (&optional mind)
-  "Interactive REPL entry."
+  "Interactive product entry: English chat + @files + slash commands + (forms)."
   (let ((m (or mind (boot))))
     (metis-repl m)))

@@ -1,0 +1,353 @@
+=== p-01.png ===
+. p
+— :
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY ‘
+; ARTIFICIAL INTELLIGENCE LABORATORY ;
+. A.I. Memo 521 . June 1979
+; A TRUTH MAINTENANCE SYSTEM
+Jon Doyle .
+e
+oN. Abstract: To choose their actions, reasoning programs must be able to make assumptions :
+-* and subsequently revise their beliefs when discoveries contradict these assumptions. The
+; Truth Maintenance System (TMS) is a problem solver subsystem for performing these
+functions by recording and maintaining the reasons for program beliefs. Such recorded :
+reasons are useful in constructing explanations of program actions and in guiding the
+course of action of a problem solver. This paper describes (1) the representations and
+structure of the TMS, (2) the mechanisms used to revise the current set of beliefs, (3) how
+dependency-directed backtracking changes the current set of assumptions, (4) techniques for
+summarizing explanations of beliefs, (5) how to organize problem solvers into “dialectically
+arguing” modules, (6) how to revise models of the belief systems of others, and (7) methods .
+for embedding control structures in patterns of assumptions. We stress the need of problem
+solvers to choose between alternative systems of beliefs, and outline a mechanism by which a
+problem solver can employ rules guiding choices of what to believe, what to want, and what
+to do. ;
+This research was conducted at the Artificial Intelligence Laboratory of the Massachusetts ;
+Institute of Technology. Support for the Laboratory's artificial intelligence research is
+provided in part by the Advanced Research Projects Agency of the Department of Defense
+under Office of Naval Research contract number N00014-75-C-0643, and in part by NSF
+grant MCS77-04828, |
+on ; MAS. -
+© MASSACHUSETTS INSTITUTE OF TECHNOLOGY 1979
+aan een een nnEEEEREE ene... usaTLEEeeamyreeEeEeEeEeErOrr LL eee
+
+=== p-02.png ===
+Acknowledgements: This paper is based on a thesis submitted in partial fulfillment of the
+degree of Master of Science to the department of Electrical Engineering and Computer
+Science of the Massachusetts Institute of Technology on May 12, 1977. Sections 6 and 7
+contain material not reported in that thesis. Although I have held the views expressed in
+Section Ll for several years, I found my prior attempts at explaining them unsatisfactory, so
+these views appear here for the first time as well. I thank Gerald Jay Sussman (thesis .
+advisor), Johan de Kleer, Scott Fahlman, Philip London, David McAllester, Drew
+McDermott, Marvin Minsky, Howard Shrobe, Richard M. Stallman, Guy L. Steele, Jr., and
+Alan Thompson for ideas and comments. de Kleer, Steele, Marilyn Matz, Richard Fikes,
+Randall Davis, Shrobe, and the referees of the Journal Artificial Intelligence gave me
+: valuable editorial advice. I thank’the Fannie and John Hertz Foundation for supporting
+my research with a graduate fellowship.
+Contents:
+1. Introduction 3
+I The Essence of the Theory a) :
+mn ; 1.2 Basic Terminology 7
+2. Representation of Reasons for Beliefs 9 ;
+2.1 States of Belief 9
+2.2 Justifications 10
+2.3 Support-List Justifications 11
+2.4 Terminology of Dependency Relationships 12
+2.5 Conditional-Proof Justifications 13
+2.6 Other Types of Justifications 14
+3. Truth Maintenance Mechanisms 14
+3.1 Circular Arguments 14
+; 3.2 The Truth Maintenance Process , 16
+3.3 Analyzing Conditional-Proofs - 19
+4. Dependency-Directed Backtracking 20
+5. Summarizing Arguments 23
+6. Dialectical Arguments 25
+7. Models of Other's Beliefs 27
+8. Assumptions and the Problem of Control 29
+8.1 Default Assumptions 30
+8.2 Sequences of Alternatives 32
+8.3 Equivalence Class Representatives 7 33
+9. Experience and Extensions 35
+10. Discussion , 36
+~ Il. Bibliography 39
+ee
+
+=== p-03.png ===
+Pees ee ee ‘n memory of John Sheridan Mac Nerney ee
+x oo I Introduction Duagss
+eg pac tied gh Computer reasoning programs usually construct computational models of situations. To ;
+vee? keep ‘these models consistent with new information and changes in the situations being
+ee ee "modelled, the reasoning programs frequently need to remove or change portions of their ee
+< “models. These changes sometimes lead to further changes, for the reasoner often constructs '
+Pe some parts of the model by making inferences from other Parts of the model. This paper
+~~ Studies both the problem of how to make changes in computational models, and the ;
+; “underlying problem of how the models should be constructed in order to make making ,
+ere - changes convenient. Our approach is to record the reasons for believing or using each
+; "program belief, inference rule, or procedure. To allow new information to displace previous
+wot conclusions, we employ "non-monotonic" reasons for beliefs, in which one belief depends on
+; a lack of belief in some other statement. We use a program called the Truth Maintenance
+. : System! (TMS) to determine the current set of beliefs from the current set of reasons, and to
+PONE update the current set of beliefs in accord with new reasons in a (usually) incremental
+; : a fashion. To perform these revisions, the TMS traces the reasons for beliefs to find the
+“consequences of changes in the set of assumptions.
+fat eee gets Lt The Essence of the Theory
+EPPS Sn Many treatments of formal and informal reasoning in mathematical logic and artificial
+“+ intelligence have been shaped in large part by a seldom acknowledged view: the view that
+: : the process of reasoning is the process of deriving new knowledge from old, the process of
+oe = discovering new truths contained in known truths. This view, as it is simply understood,
+ee has several severe difficulties as a theory of reasoning. In this section, I propose another,
+eae quite different view about the nature of reasoning. I incorporate some new concepts into
+; Pals - this view, and the combination overcomes the problems exhibited by the conventional view.
+pe Briefly put, the problems with the conventional view of reasoning stem from the
+es “monotonicity of the sequence of states of the reasoner’s beliefs: his beliefs are true, and truths ~
+cee ; : never change, so the only action of reasoning is to augment the current set of beliefs with
+Ge rege more beliefs. This monotonicity leads to three Closely related problems involving
+se etal “commonsense reasoning, the frame problem, and control. To some extent, my criticisms here
+Ss of the conventional view of reasoning will be amplifications of Minsky’s (36) criticisms of
+Belge a 1. As we shall see, this term not only sounds like Orwellian Newspeak, but also is probably
+MOP a misnomer. The name stems from historical accident, and rather than change it here, I
+: retain it to avoid confusion in the literature.
+a
+
+=== p-04.png ===
+‘ -4-
+: :
+oo
+the logistic approach to problem solving.
+
+One readily recalls examples of the ease with which we resolve apparent
+contradictions involving our commonsense beliefs about the world, For example, we
+routinely make assumptions about the permanence of objects and the typical features or
+Properties of objects, yet we smoothly accommodate corrections to the assumptions and can
+quickly explain our errors away. In such cases, we discard old conclusions in favor of new
+
+‘ evidence. Thus, the set of our commonsense beliefs changes non-monotonically.
+
+Our beliefs of what is current also change non-monotonically. If we divide the
+trajectory of the temporally evolving set of beliefs into discrete temporal situations, then at
+each instant the most recent situation is the set of current beliefs, and the preceding
+Situations are past sets of beliefs. Adjacent sets of beliefs in this trajectory are usually closely
+related, ‘as most of our actions have only a relatively small set of effects. The important
+
+- point is that the trajectory does not form a Sequence of monotonically increasing sets of a5
+beliefs, since many actions change what we expect is true in the world. Since we base our ;
+actions on what we currently believe, we must continually update our current set of beliefs.
+
+The problem of describing and perfoming this updating efficiently is sometimes called the
+frame problem. In connection with the frame problem, the conventional view suffers not
+only from monotonicity, but also from atomicity, as it encourages viewing each belief as an
+~ isolated statement, related to other beliefs only through its semantics. Since the semantics of
+beliefs are usually not explicitly represented in the system, if they occur there at all,
+atomicity means that these incremental changes in the set of current beliefs are difficult to
+compute. .
+The third problem with the conventional view actually subsumes the problem of
+commonsense reasoning and the frame problem. The problem of control is the problem of
+: deciding what to do next. Rather than make this choice blindly, many have suggested that
+; we might apply the reasoner to this task as well, to make inferences about which inferences
+to make. This approach to the problem of control has not been explored much, in part
+because such control inferences are useless in monotonic systems. In these systems, adding
+more inference rules or axioms just increases the number of inferences possible, rather than
+preventing some inferences from being made. One gets the unwanted inferences together
+with new conclusions confirming their undesireability.
+
+Rather than give it up, we pursue this otherwise attractive approach, and make
+the deliberation required to choose actions a form of reasoning as well. For our purposes,
+we take the desires and intentions of the reasoner to be represented in his set of current
+beliefs as beliefs about his own desires and intention. We also take the set of inference rules
+by which the reasoning process occurs to be represented as beliefs about the reasoner’s own ,
+computational structure. By using this self-referential, reflexive representation of the
+reasoner, the inference rules become rules for self-modification of the reasoncr's set of beliefs
+(and hence his desires and intentions as well). The control problem of choosing which
+inference rule to follow takes the form "Look at yourself as an object (as a set of beliefs), and
+choose what (new set of beliefs) you would like to become.”
+
+os The language of such inference rules, and the language for evaluating which
+self-change to make, are for the most part outside the language of inference rules
+~~ reentrant
+
+=== p-05.png ===
+Se encouraged by the conventional view of reasoning. For example, when the current set of :
+: beliefs is inconsistent, one uses rules like "Reject the smallest set of beliefs possible to restore =.
+; ; consistency” and "Reject those beliefs which represent the simplest explanation of the ~
+af _ __iticonsistency." These sorts of rules are all we have, since we cannot infallibly analyze errors Pagirc
+or predict the future, yet these rules are non-monotonic, since they lead to removing beliefs
+“cue ces, puse)from the set of current beliefs. . ; :
+AOS EE SESE SEG repeat, one source of each of these problems is the monotonicity inherent in
+aaa the conventional view of reasoning. I now propose a different view, and some new concepts
+Les “which have far reaching consequences for these issues. oes
+, ; a . Rational thought is the process of finding reasons for attitudes: | ;
+- . To Say that some attitude (such as belief, desire, intent, or action) is rational is to say that ‘
+there is some acceptable reason for holding that attitude. Rational thought is the process of
+; _ finding such acceptable reasons. Whatever purposes the reasoner may have, such as
+solving problems, finding answers, or taking action, it operates by constructing reasons for
+believing things, desiring things, intending things, or doing or willing things. The actual
+a. "attitude in the reasoner occurs only as a by-product of constructing reasons. The current set ;
+: of beliefs and desires arises from the current set of reasons for beliefs and desires, reasons
+ae phrased in terms of other beliefs and desires. When action is taken, it is because some
+; reason for the action can be found in terms of the beliefs and desires of the actor. I stress
+“: again, the only real component of thought is the current set of reasons - the attitudes such ;
+eit as beliefs and desires arise from the set of reasons, and have no independent existence.
+sects biitplatel ais j One consequence of this view is that to study rational thought, we should study
+: “-- justified belief or reasoned argument, and ignore questions of truth. Truth enters into the
+ee Study of extra-psychological rationality and into what commonsense truisms we decide to
+: Bl Shee - Supply to our programs, but truth does not enter into the narrowly psychological rationality ©
+, he by which our programs operate.
+Ba : Of course, this sort of basic rationality is simpler to realize than human belief.
+cae Humans exhibit "burn-in" phenomena in which long-standing beliefs come to be believed
+‘3 independently of their reasons, and humans sometimes undertake “leaps of faith” which
+ark vault them into self-justifying sets of beliefs, but we will not study these issues here. Instead,
+; we restrict ourselves to the more modest goal of making rational programs in this simpler ;
+sense.
+; The view stated above entails that for each statement or Proposition P just one of
+= two states obtains: Either
+; (A) P has at least one currently acceptable (valid) reason, and is thus a member of the
+current set of beliefs, or ~
+on : (B) P has no currently acceptable reasons (either no reasons at all, or only unacceptable
+: ones), and is thus not a member of the current set of beliefs. :
+eee
+
+=== p-06.png ===
+- If P falls in state (A), we say that P is in (the current set of beliefs), and otherwise, that P is
+-* out (of the current set of beliefs). These states are not symmetric, for while reasons can be
+° mAs constructed to make P in, no reason can make P out. (At most, it can make +P in as well.) ; :
+~ os *= This shows that the proposed view also succumbs to monotonicity problems, for ;
+- the set of reasons grows’ monotonically, which (with the normal sense of "reason") leads to
+© gy sees aeps,Only monotonic increases in the set of current beliefs. To solve the problem of monotonicity,
+owe introduce hovel meanings for the terms "a reason” and "an assumption.” ae
+TE SEE ace OO _. Traditionally, a reason for a belief consists of a set of other beliefs, such that if
+; - 5" “each of these basis beliefs is held, so also is the reasoned belief. To get off the ground, this ;
+analysis of reasons requires either circular arguments between beliefs (and the appropriate
+initial state of belief) or some fundamental type of belief which grounds all other arguments.
+os The traditional view takes these fundamental beliefs, often called assumptions (or premises),
+. as believed without reason. On this view, the reasoner makes changes in the the current set
+_ Of beliefs by removing some of the current assumptions and adding some new ones. :
+a To conform with the proposed view, we introduce meanings for “reason” and ;
+5 “assumption” such that assumptions also have reasons. A reason (or justification) for a
+; belief consists of an ordered pair of sets of other beliefs, such that the reasoned belief is in
+om ce by virtue of this reason only if each belief in the first set is in, and each belief in the second
+: 3 Set is owt. An assumption is a current belief one of whose valid reasons depends on a
+ae ~~ non-current belief, that is, has a non-empty second set of antecedent beliefs. With these
+UEERERCE notions we can create “ungrounded” yet reasoned beliefs by making assumptions. (Eg. give
+ea ; P the reason ({},{-P}).) We can also effect non-monotonic changes in the set of current
+sole beliefs by giving reasons for some of the out statements used in the reasons for current
+Se cee assumptions. (Eg. to get rid of P, justify -P.) We somewhat loosely say that when. we
+steer ont Justify some out belief supporting an assumption, (e.g. -P), we are denying or retracting the
+ies _ assumption (P).
+ie : These new notions solve the monotonicity problem. Following from this solution a
+ae we find ways of treating the commonsense reasoning, frame, and control problems plaguing
+eee the conventional view of reasoning. Commonsense default expectations we represent as
+- I new-style assumptions. Part of the frame problem, namely how to non-monotonically
+os change the set of current beliefs, follows from this non-monotonic notion of reason.
+ae However, much of the frame problem (eg. how to give the “laws of motion” and how to -
+retrieve them efficiently) lies outside the scope of this discussion. The control problem can |
+car be dealt with partially by embedding the sequence of procedural states of the reasoner in i
+: ; Patterns of assumptions. We will treat this idea, and the rest of the control problem, in
+; ; more detail later.
+; Other advantages over the conventional view -also follow, One of these
+‘ : advantages involves how the reasoner retracts assumptions. With the traditional notion of
+: assumption, retracting assumptions was unreasoned. If the reasoner removed an assumption
+: from the current set of beliefs, the assumption remained out until the reasoner specifically
+“o™ a put it back into the set of current beliefs, even if changing circumstances obviated the value
+of removing this belief. The new notions introduce instead the reasoned retraction of
+assumptions. This means that the reasoner retracts an assumption only by giving a reason
+ent nenernnennpaenmnipriie e
+
+=== p-07.png ===
+' -7-
+om
+for why it should be retracted. If later this reason becomes invalid, then the retraction is no :
+longer effective and the assumption is restored to the current set of beliefs.
+
+. The reasoned retraction of assumptions helps in formulating a class of
+backtracking procedures which revise the set of current assumptions when inconsistencies -
+are discovered. The paradigm procedure of this sort we call dependency-directed
+backtracking after Stallman and Sussman [53]. It is the least specialized procedure for
+revising the current set of assumptions in the sense that it only operates on the reasons for ;
+
+beliefs, not on the forri or content of the beliefs. In short, it traces backwards through the
+reasons for the conflicting beliefs, finds the set of assumptions reached in this way, and then
+retracts one of the assumptions. with a reason involving the other assumptions. (We
+‘ . describe the procedure in detail later.) Dependency-directed backtracking serves as a
+template for more specialized revision procedures. These specialized procedures are
+necessary in almost all practical applications, and go beyond the general procedure by
+taking the form of the beliefs they examine into account when choosing which assumption
+to reject.
+1.2 Basic Terminology
+fn The TMS records and maintains arguments for potential program beliefs, so as to
+distinguish, at all times, the current set of program beliefs. It manipulates two data ;
+structures: nodes, which represent beliefs, and justifications, which represent reasons for
+beliefs. We write St(N) to denote the statement of the potential belief represented by the
+node N. We say the TMS believes in (the potential belief represented by) a node if it has
+. an argument for the node and believes in the nodes involved in the argument. This may
+_ Seem circular, but some nodes will have arguments which involve no other believed nodes, :
+ahd so form the base step for the definition. ,
+
+As its fundamental actions, (I) the TMS can create a new node, to which the
+problem solving program using the TMS can attach the statement of a belief (or inference
+rule, or procedure, or data structure). The TMS leaves all manipulation of the statements
+of nodes (for inference, representation, etc.) to the program using the TMS. (2) It can add
+(or retract) a new justification for a node, to represent a step of an argument for the belief
+represented by the node. This argument step usually represents the application of some rule :
+of procedure in the problem solving program. Usually, the rules or procedures also have
+TMS nodes, which they include in the justifications they create. (3) Finally, the TMS can
+mark a node as a contradiction, to represent the inconsistency of any set of beliefs which :
+enter into an argument for the node.
+
+‘ A new justification for a node may lead the TMS to believe in the node. If the
+
+TMS did not believe in the node previously, this may in turn allow other nodes to be
+
+believed by previously existing but incomplete arguments. In this case, the TMS invokes
+
+the fruth maintenance procedure to make any necessary revisions in the set of beliefs. The
+
+TMS revises the current set of beliefs by using the recorded justifications to compute
+
+ons non-circular arguments for nodes from premises and other special nodes, as described later.
+These non-circular arguments distinguish one justification as the well-founded supporting
+
+enn rerornananneeeene
+
+=== p-08.png ===
+, ; - fustification of each node representing a current belief. The TMS locates the set of nodes to
+update by finding those nodes whose well-founded arguments depend on changed nodes. ;
+“The program using the TMS can indicate the inconsistency of the beliefs
+_ represented by certain currently believed nodes by using these nodes in an argument for a
+; ‘new node, and by then’ marking the new node as a contradiction. When this happens,
+ial itis Seon, “another: Process of the TMS, dependency-directed backtracking, analyzes the well-founded :
+oo  atgument of the contradiction node to locate the assumptions (special types of nodes defined
+: coos = later) occurring in the argument. It then makes a record of the inconsistency of this set of e
+Oe assumptions, and uses this record to change one of the assumptions. After this change, the
+~~" contradiction node is no longer believed. We explain this process in Section 4. ,
+joes “so The TMS employs a_ special type of justification, called a non-monotonic
+meee Justification, to make tenative guesses. A non-monotonic justification bases an argument for
+“a node not only on current belief in other nodes, as occurs in the most familiar forms of
+‘ deduction and reasoning, but also on lack of current belief in other nodes. For example,
+One might justify a node N-1 representing a statement P on the basis of lack of belief in
+5 node N-2 representing the statement —P. In this case, the TMS would hold N-1 as a
+2 -.-_ current belief as long as N-2 was not among the current beliefs, and we would say that it
+cn” : had assumed belief in N-1. More generally, by an assumption we mean any node whose
+; well-founded support is a non-monotonic justification. .
+Bae : As a small example of the use of the TMS, suppose that a hypothetical office
+cng a scheduling program considers holding a meeting on Wednesday. To do this, the program :
+assumes that the meeting is on Wednesday. The inference system of the program includes a
+saa . tule which draws the conclusion that due to regular commitments, any meeting on
+DSR oe Wednesday must occur at 1:00 P.M. However, the fragment of the schedule for the week
+: constructed so far has some activity scheduled for that time already, and so another rule
+che concludes the meeting cannot be on Wednesday. We write these nodes and rule-constructed
+ae “justifications as follows:
+i Node — Statement . Justification , Comment
+entra NGL DAY (M) = WEDNESDAY (SLO (N-2)} an assumption ;
+CONS NA DAY (M) * WEDNESDAY no justification yet :
+N-3 TIME(M) = 13:88 (SL (R-37 N-1) ())
+; , The above notation for the justifications indicates that they belong to the class of
+oe Support-list (SL) justifications. Each of these’ justifications consists of two lists of nodes. A
+SL-justification is a valid reason for belief if and only if each of the nodes in the first list is
+see believed and each of the nodes in the second list is not believed. In the example, if the two
+justifications listed above are the only existing justifications, then N-2 is not a current belief
+. Since it has no justifications at all. N-1 is believed since the justification for N-1 specifies
+that this node depends on the lack of belief in N-2. The justification for N-3 shows that ‘
+on N-3 depends on a (presumably believed) node R-37. In this case, R-37 represents a rule i
+acting on (the statement represented by) N-1. :
+; Subsequently another rule (represented by a node R-9) acts on beliefs about the
+—_—reeneeneneeeneercensennennr=rweriwraierietesnrereriinnie ip pe ee oe
+

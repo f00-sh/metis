@@ -118,12 +118,17 @@
                  (incf i stride))))
     (nreverse batches)))
 
+(defparameter *nn-train-verbose* nil
+  "When T, print per-epoch train progress to *error-output*. Default quiet for chat.")
+
 (defun train-lm! (model text &key (epochs 5) (lr 1d-3) (seq-len nil)
-                               (log-every 20) (max-batches nil))
+                               (log-every 20) (max-batches nil)
+                               (verbose *nn-train-verbose*))
   "Train character language model on TEXT. Pure CL. Returns history of metrics.
    Uses the model's multi-layer stack and context window (seq-len).
    Records active NN backend id and op counts (matmul/relu) so GPU-backed
-   train loops are observable when gpu-nn is enabled."
+   train loops are observable when gpu-nn is enabled.
+   VERBOSE defaults to *nn-train-verbose* (nil) so chat stays readable."
   (let* ((seq-len (or seq-len (lm-seq-len model)))
          (encoded (vocab-encode (lm-vocab model) text))
          (batches (make-lm-batches encoded :seq-len seq-len))
@@ -158,7 +163,7 @@
               (incf epoch-loss lv)
               (incf nb)
               (incf step)
-              (when (and log-every (zerop (mod step log-every)))
+              (when (and verbose log-every (zerop (mod step log-every)))
                 (format *error-output* "~&[nn] lm step=~A loss=~,4F backend=~A~%"
                         step lv backend-id)))))
         (let ((avg (if (plusp nb) (/ epoch-loss nb) 0d0)))
@@ -170,9 +175,10 @@
                       :hidden (lm-hidden model)
                       :backend backend-id)
                 history)
-          (format *error-output*
-                  "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A depth=~A seq-len=~A backend=~A~%"
-                  (1+ epoch) avg nb (lm-depth model) seq-len backend-id))))
+          (when verbose
+            (format *error-output*
+                    "~&[nn] lm epoch ~A avg-loss=~,4F batches=~A depth=~A seq-len=~A backend=~A~%"
+                    (1+ epoch) avg nb (lm-depth model) seq-len backend-id)))))
     (let* ((ops-after
             (when (and (find-package :metis.symbols)
                        (fboundp (find-symbol "NN-BACKEND-OP-COUNTS" :metis.symbols)))

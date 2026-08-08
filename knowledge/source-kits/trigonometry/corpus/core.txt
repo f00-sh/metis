@@ -1,0 +1,8 @@
+sine: opposite over hypotenuse in a right triangle
+cosine: adjacent over hypotenuse
+tangent: sine over cosine
+Pythagorean identity: sin^2 θ + cos^2 θ = 1
+angle sum sine: sin(a+b) = sin a cos b + cos a sin b
+angle sum cosine: cos(a+b) = cos a cos b - sin a sin b
+double angle sine: sin(2θ) = 2 sin θ cos θ
+Source orientation: OpenStax Algebra and Trigonometry (CC-BY).

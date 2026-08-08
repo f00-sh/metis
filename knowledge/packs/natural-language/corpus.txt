@@ -1,0 +1,2 @@
+Natural language symbol provides English dialogue.
+Load domain symbols for specialized knowledge.

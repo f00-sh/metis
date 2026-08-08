@@ -89,10 +89,10 @@
   t)
 
 (defun durable-save-mind (mind &optional (key "mind-default"))
-  "Serialize mind KB/rules/goals/beliefs into durable store."
+  "Serialize mind KB/rules/goals/beliefs + hybrid hippocampus/self-model."
   (let* ((m (ensure-mind mind))
          (payload
-          (list :metis-durable 1
+          (list :metis-durable 2
                 :saved (now-iso)
                 :version *metis-version*
                 :kb (kb-snapshot (mind-kb m))
@@ -100,13 +100,37 @@
                 :beliefs (and (mind-beliefs m)
                               (belief-snapshot (mind-beliefs m)))
                 :tms (and (mind-tms m) (tms-snapshot (mind-tms m)))
-                :cycle (mind-cycle m))))
+                :cycle (mind-cycle m)
+                :hippocampus (when (boundp '*hippocampus*)
+                               (copy-tree *hippocampus*))
+                :hybrid-metrics (when (fboundp 'hybrid-metrics)
+                                  (ignore-errors (hybrid-metrics)))
+                :self-model
+                (list :hybrid-mode
+                      (ignore-errors
+                        (and (mind-tms m)
+                             (find-if (lambda (f)
+                                        (and (consp f)
+                                             (eq (first f) 'hybrid-mode)))
+                                      (tms-in-facts (mind-tms m)))))
+                      :learn-rate
+                      (ignore-errors
+                        (and (mind-tms m)
+                             (find-if (lambda (f)
+                                        (and (consp f)
+                                             (eq (first f) 'learn-rate)))
+                                      (tms-in-facts (mind-tms m)))))
+                      :consolidation-lr
+                      (and (boundp '*consolidation-lr*) *consolidation-lr*)
+                      :consolidation-max-batches
+                      (and (boundp '*consolidation-max-batches*)
+                           *consolidation-max-batches*)))))
     (durable-put key payload)
     (metis-log :info "durable-save-mind ~A" key)
     key))
 
 (defun durable-load-mind (mind &optional (key "mind-default"))
-  "Restore mind state from durable store key. Returns T if loaded."
+  "Restore mind + hippocampus + hybrid self-model from durable store."
   (let* ((m (ensure-mind mind))
          (payload (durable-get key)))
     (unless payload
@@ -125,8 +149,35 @@
           (tms-assert (mind-tms m) (getf n :fact)
                       :informant :durable
                       :belief (or (getf n :belief) 1.0)))))
+    ;; Hybrid continuum restore
+    (when (getf payload :hippocampus)
+      (setf *hippocampus* (copy-tree (getf payload :hippocampus))))
+    (when (and (getf payload :hybrid-metrics)
+               (boundp '*hybrid-metrics*))
+      (setf *hybrid-metrics* (copy-list (getf payload :hybrid-metrics))))
+    (let ((sm (getf payload :self-model)))
+      (when sm
+        (when (getf sm :consolidation-lr)
+          (setf *consolidation-lr* (getf sm :consolidation-lr)))
+        (when (getf sm :consolidation-max-batches)
+          (setf *consolidation-max-batches*
+                (getf sm :consolidation-max-batches)))
+        (when (and (mind-tms m) (getf sm :hybrid-mode))
+          (tms-assert (mind-tms m) (getf sm :hybrid-mode)
+                      :informant :durable))
+        (when (and (mind-tms m) (getf sm :learn-rate))
+          (tms-assert (mind-tms m) (getf sm :learn-rate)
+                      :informant :durable))))
     (metis-log :info "durable-load-mind ~A" key)
     t))
+
+(defun durable-save-hybrid! (&key (mind *mind*) (key "hybrid-default"))
+  "Shipped hybrid durable save (hippo + self-model + mind)."
+  (durable-save-mind mind key))
+
+(defun durable-load-hybrid! (&key (mind *mind*) (key "hybrid-default"))
+  "Shipped hybrid durable load. Returns T if restored."
+  (durable-load-mind mind key))
 
 (defun durable-roundtrip-ok-p (mind &optional (key "roundtrip-test"))
   "Write current mind, wipe marker fact, restore; prove durable path works."

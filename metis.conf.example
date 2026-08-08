@@ -9,4 +9,8 @@
 (:max-proof-depth 64)
 (:verbose t)
 (:trace-reasoning t)
-(:llm-enabled nil)
+;; LLM: leave unset to auto-enable when XAI_API_KEY / METIS_LLM_API_KEY / ~/.metis/llm.key is present.
+;; Default provider is SpaceXAI/xAI (https://api.x.ai/v1). Override if needed:
+;; (:llm-base-url "https://api.x.ai/v1")
+;; (:llm-model "grok-3")
+;; (:llm-api-key "xai-…")   ; prefer env / keyfile over conf for secrets

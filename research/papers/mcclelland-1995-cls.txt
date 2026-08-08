@@ -1,0 +1,662 @@
+=== p-01.png ===
+Why There Are Complementary Learning Systems in the Hippocampus
+and Neocortex: Insights From the Successes and Failures of
+Connectionist Models of Learning and Memory
+James L. McClelland Bruce L. McNaughton
+Carnegie Mellon University University of Arizona
+
+and the Center for the Neural Basis of Cognition
+Randall C. O’Reilly
+‘ Carnegie Mellon University
+and the Center for the Neural Basis of Cognition
+Damage to the hippocampal system disrupts recent memory but leaves remote memory intact. The
+account presented here suggests that memories are first stored via synaptic changes in the hippo-
+campal system, that these changes support reinstatement of recent memories in the neocortex, that
+neocortical synapses change a little on each reinstatement, and that remote memory is based on
+accumulated neocortical changes. Models that learn via changes to connections help explain this
+organization. These models discover the structure in ensembles of items if learning of each item is
+gradual and interleaved with learning about other items. This suggests that the neocortex learns
+slowly to discover the structure in ensembles of experiences. The hippocampal system permits rapid
+learning of new items without disrupting this structure, and reinstatement of new memories in-
+terleaves them with others to integrate them into structured neocortical memory systems.
+
+One of the most striking neuropsychological phenomena ever is temporally graded retrograde amnesia. Considerable evi-
+reported is the dramatic amnesia produced by bilateral lesions dence now supports the conclusion that the influence of the hip-
+to the hippocampus and related temporal lobe structures pocampal system on the ability to exploit information derived
+(Scoville & Milner, 1957). A crucial aspect of this phenomenon from past experience in a wide range of tasks is temporally cir-
+
+cumscribed: Performance is impaired if the hippocampal sys-
+——_-__—_-. tem is damaged before or within a window of time after the
+
+James L. McClelland and Randall C. O’Reilly, Department of Psy- initial experience; however, if the hippocampal system is left
+chology, Carnegie Mellon University, and the Center for the Neural Basis intact both during the experience and for a period of time there-
+of Cognition; Bruce L. McNaughton, Departments of Psychology and —_— after’ subsequent damage may have little or no impact on
+Physiology and Arizona Research Laboratories, Division of Neural Sys- formance
+tems, Memory and Aging, University of Arizona. pe . .
+
+The work reported herein was supported by National Institute of . This change in dependence on the hippocampal system over
+Mental Health Grants MH00385, MH47566, and MH46823; byacol- __ time appears to be a slow, gradual process. This gradual change
+laborative grant from the Human Frontiers Program; by a Center Grant has often been called consolidation, but the term really only
+from the McDonnell-Pew Program in Cognitive Neuroscience; and by labels the phenomenon. In this article, we focus on consolida-
+a fellowship from the Office of Naval Research. tion and consider what produces it and why it occurs. We ask,
+
+We thank Carol Barnes, Sue Becker, Marlene Behrmann, Loren _Js the phenomenon a reflection of an arbitrary property of the
+Frank, Mark Gluck, Robert French, Patrick Lynn, Mort Mishkin, nervous system, or does it reflect some crucial aspect of the
+Catherine Myers, David Plaut, William Skaggs, Craig Stark, Robert mechanisms of learning and memory? Is the fact that consoli-
+Sutherland, Larry Squire, and Matthew Wilson for useful discussions or dati k . 1 . .
+comments on earlier versions of this article. Lynn Nadel’s contributions ation can tal € quite a ong time—up to 15 years: or more in
+to the initial formulation of some of these ideas and to several revisions SMe cases—just an arbitrary parameter, or does it reflect an
+of the article were extensive and are gratefully acknowledged. important design principle?
+
+The computational arguments developed here were sketched in a So- We begin with a brief overview of the neuropsychology of
+ciety for Neurosciences abstract (McClelland, McNaughton, O’Reilly, memory, emphasizing the temporally circumscribed role of the
+& Nadel, 1992) and an invited review of several projects involving —_ hippocampal system, and elaborate one possible account of the
+James L. McClelland that referred to the present article as a work in functional organization of memory that is broadly consistent
+Progress (McClelland, 1994b). Preliminary versions of the simulations with the neuropsychological evidence, as well as aspects of the
+of retrograde amnesia in rats and monkeys were previously presented derlyi t d physiol We then d ibe 1
+in a Psychonomic Society abstract (McClelland, McNaughton, & underlying ana omy an Pp ysiology. We then describe results
+O'Reilly, 1993). from connectionist modeling research that suggest reasons for
+
+Correspondence concerning this article should be addressed to James _ this organization and for the phenomenon of gradual consolida-
+L. McClelland, Department of Psychology, Carnegie Mellon University, tion. From the insights gained through the consideration of
+Pittsburgh, Pennsylvania 15213. Electronic mail may be sent via In- these models, we develop illustrative simulation models of the
+ternet to mcclelland+@cmu.edu. phenomenon of temporally graded retrograde amnesia. These
+
+419
+
+=== p-02.png ===
+420 J. MCCLELLAND, B. MCNAUGHTON, AND R. O’REILLY ;
+are not detailed neural models; rather, they illustrate, at an ab- word are unhelpful in this task, which depends on recall of the
+stract level, what we take consolidation to be about. We discuss word that previously occurred with the cue word in the list
+the implications of our view of the role of consolidation for study context. Hippocampal system lesions produce profound
+findings related to age, species, and task differences in neocorti- impairments in learning arbitrary paired associates (Scoville &
+cal learning and for the form of representations used in the hip- Milner, 1957). However, it should be noted that deficits are not
+pocampus, and we conclude with a comparison of our views apparently restricted to tasks that rely on memories that are
+and those of others who have theorized about the role of the explicitly accessed and used to govern task performance. For
+hippocampal system in learning and memory. Although there example, amnesics are also impaired in acquisition of arbitrary
+are many points of compatibility, our approach differs from new factual information, whether or not the use of this infor-
+some others in treating gradual consolidation as reflecting a mation is accompanied by deliberate or conscious recollection
+principled aspect of the design of the mammalian memory of previous experience (Shimamura & Squire, 1987). Also,
+system. normal participants show sensitivity to novel associations after
+a single presentation in stem completion tasks, but profound
+Role of the Hippocampal System in Learning and amnesics do not (Schacter & Graf, 1986; Shimamura & Squire,
+Memory 1989). Although recent evidence (Bowers & Schacter, 1993)
+suggests that normal participants who show sensitivity to novel
+
+The phrase the hippocampal system is widely used to refer associations are conscious of having accessed these associations
+to a system of interrelated brain regions found in a range of _ on at least some trials, sensitivity to novel associations is disso-
+mammalian species that appear to play a special role in learning ciable in several ways from standard measures of explicit or de-
+and memory. The exact boundaries of the hippocampal system clarative memory (Graf & Schacter, 1987; Schacter & Graf,
+are difficult to define, but it includes at least the hippocampus 1989). Thus, at this point the extent to which deficits in amne-
+itself—the CA 1-3 fields of Ammon’s Horn and the dentate gy- sics are restricted to tasks that depend on conscious access to
+rus—the subicular complex, and the entorhinal cortex. It prob- the contents of prior episodes or events is unclear. It does appear
+ably also encompasses adjacent structures including the peri- that, in humans, an intact hippocampal system is necessary for
+rhinal and parahippocampal cortices. the formation of an association between arbitrarily paired
+
+The literature on the effects of damage to the hippocampal words that is sufficiently strong after a single presentation to
+system is quite vast. Here we summarize what we believe are have an effect on subsequent performance, whether explicit
+the main points. memory is involved or not.
+
+1. An extensive lesion of the hippocampal system can pro- In the animal literature, the exact characterization of the
+duce a profound deficit in new learning while leaving other cog- forms of learning that depend on the hippocampal system re-
+nitive functions and memory performance based on material mains a matter of intense investigation and debate. Sutherland
+acquired well before the lesion apparently normal. Dramatic and Rudy (1989) suggested that the hippocampal system is cru-
+evidence of this effect was first reported by Scoville and Milner cial for learning to make appropriate responses that depend not
+(1957) in their description of the anterograde amnesia pro- on individual cues but on specific combinations or conjunctions
+duced in patient HM as a result of bilateral removal of large of cues, what they called cue configurations. The paradigm ex-
+portions of the hippocampal system and other temporal lobe ample of a task depending on cue configurations is the negative
+structures. HM presented initially with a profound deficit in patterning task, in which animals receive reward for operant
+memory for events that occurred either after the lesion or dur- responses to a light and a tone but not the tone-light compound.
+ing the weeks and months before it, but with intact intellectual Hippocampal system lesions lead to deficits in responding
+function and information-processing skills and apparent spar- differently to the compound than to the individual cues (Rudy
+ing of his memory for more remote time periods. & Sutherland, 1989). N. J. Cohen and Eichenbaum (1993)
+
+2. The effects of lesions to the hippocampal system appear to have emphasized the importance of the hippocampal system
+be selective to certain forms of learning. In humans, the hippo- for flexible access to memory traces, a characteristic that may
+campal system appears to be essential for the rapid formation be closely related to declarative memory in humans. A major
+of comprehensive associations among the various elements of alternative viewpoint is that of O’Keefe and Nadel (1978), who
+specific events and experiences, in a form sufficient to sustain have suggested that the hippocampal system is especially rele-
+an explicit (Schacter, 1987) retrieval of the contents of the ex- vant in the formation of memories involving places or locations
+perience, so that they can be attested (explicitly recognized as in the environment, and there is a vast body of evidence that
+memories), verbally described, or flexibly used to govern sub- spatial learning is impaired after hippocampal lesions in rats.
+sequent behavior. N. J. Cohen and Squire (1980) introduced One view of spatial learning that is compatible with both the
+the term declarative memory to encompass these forms of | Sutherland and Rudy (1989) and the O’Keefe and Nadel
+memory. Included in the category of declarative memories are (1978) theories is that place learning involves forming config-
+episodic memories (Tulving, 1983)—-memories for the specific ural associations of locations and movements that would enable
+contents of individual episodes or events—as well as what are prediction of the spatial consequence of a given movement in a
+generally termed semantic memories, including knowledge of given spatial context (McNaughton, Leonard, & Chen, 1989).
+the meanings of words, factual information, and encyclopedic This can be seen as a special case of the Sutherland and Rudy
+memories (see Squire, 1992, for a recent discussion). A para- (1989) theory, and it is possible that it may be the evolutionary
+digm example of this form of memory is paired-associates forerunner of the more general processing capability. In any
+learning of arbitrary word pairs. Prior associations to the cue case, increasing evidence suggests that damage restricted to the
+
+=== p-03.png ===
+COMPLEMENTARY LEARNING SYSTEMS 421
+hippocampus affects tasks that require the animal to learn re- system damage (for reviews, see Barnes, 1988; O’Keefe & Na-
+sponses specific to particular nonspatial combinations of cues, del, 1978; Rudy & Sutherland, 1994). A fuller consideration of
+or to specific contexts, as well as tasks that depend on learning _ these forms of conditioning is presented in a later section.
+to navigate in a previously unfamiliar spatial environment 4. Lesions to the hippocampal system and bilateral electro-
+(Jarrard, 1993; Rudy & Sutherland, 1994).' More extensive le- convulsive treatment (ECT) appear to give rise to a temporally
+sions of the hippocampal system lead to deficits in a broader graded retrograde amnesia for material acquired in the period
+range of tasks. In some cases, selective lesions to just the hippo- of time preceding the lesion. Recent electrophysiological studies
+campus produce little or no effect, although performance is se- (Barnes et al., 1994; Stewart & Reid, 1993) indicate that ECT
+verely disturbed by a complete lesion of the entire hippocampal has profound effects on hippocampal synapses. Although tem-
+system (for reviews, see Eichenbaum, Otto, & Cohen, 1994; porally graded retrograde amnesia has been the subject of con-
+Jarrard, 1993). troversy (Warrington & McCarthy, 1988; Warrington & Weis-
+
+3. Some kinds of learning appear to be completely unaffected krantz, 1978), we believe the evidence is substantial enough to
+by hippocampal system lesions. Squire (1992) characterized be taken seriously, and it plays a major role in the theory devel-
+these forms of memory as nondeclarative or implicit (Schacter, oped here. Early indications that retrograde amnesia may be
+1987), emphasizing that they influence behavior without de- temporally graded, at least in certain forms of amnesia, came
+pending on conscious or deliberate access to memory for the from the observations of Ribot ( 1882) and from the early report
+contents of the events that led to these influences. Another char- of patient HM by Scoville and Milner (1957). More recent
+acterization emphasizes inflexibility of use of such memories; quantitative studies of a wide range of hippocampal amnesics
+they appear to influence behavior maximally when there is a suggest several conclusions (Squire, 1992).
+close match between the processing carried out during the 1. Hippocampal amnesics show a selective memory deficit
+learning event and the processing carried out when the later in- for material acquired shortly before the date of their lesion.
+fluence of the learning event is assessed (N. J. Cohen & Eichen- Memory for very remote material appears to be completely
+baum, 1993). This greater specificity appears to characterize spared; in between, there is an apparent gradient.
+implicit memory as it is observed in normals as well as amnesics 2. The severity and temporal extent of the retrograde amnesia
+(Schacter, 1987). Examples of forms of learning that are spared appear to vary with the extent of damage to the hippocampus
+are gradually acquired skills that emerge over several sessionsof and related structures.
+practice, such as the skill of tracing a figure viewed in a mirror 3. In some severe cases, the retrograde gradient can extend
+(B. Milner, 1966), reading mirror-reversed print (N. J. Cohen over periods of 15 years or more.
+
+& Squire, 1980), or anticipating subsequent items in a sequence Results from animal studies are generally consistent with the
+governed by a complex stochastic grammar (Cleeremans, human data, although in the case of the animal work the retro-
+1993). Hippocampal patients also appear to be spared in their grade gradient appears to cover a much briefer span of time.
+ability to learn the structure common to a set of items: They are Studies in rats (Kim & Fanselow, 1992; Winocur, 1990) have
+as good as normals in judging whether particular test items produced retrograde gradients covering a period of days or
+come from the same prototype, or were generated by the same weeks. Primate experiments (Zola-Morgan & Squire, 1990)
+finite-state grammar, as the members of a previously studied have shown a severe impairment relative to controls for mem-
+list (Knowlton, Ramus, & Squire, 1992; Knowlton & Squire, ory acquired 2 or 4 weeks before surgery but not for older
+1993). Spared learning is also exhibited in repetition priming memories.
+tasks. These are tasks that require participants to emit some A key observation is that there is a correspondence between
+response already within their capabilities, such as naming a the kinds of tasks that show retrograde amnesia and those that
+word or picture (B. Milner, Corkin, & Teuber, 1968), reading show anterograde amnesia. For example, Kim and Fanselow
+aloud a pronounceable nonword (Haist, Musen, & Squire, (1992) observed that the same rats who showed retrograde am-
+1991), or completing a word fragment with a lexically valid. _nesia for the spatial context of a tone-shock association exhib-
+completion (Graf, Squire, & Mandler, 1984). Repetition prim- ited no retrograde amnesia for the simple tone-shock associa-
+ing is exhibited when the participant is later required to process tion itself. This same dissociation holds in anterograde amnesia.
+a previously presented item, and a single prior presentation is A second crucial aspect of temporally graded retrograde am-
+often sufficient. In many such tasks, hippocampal patients ap- nesia is the fact that, after hippocampal lesions, performance
+pear indistinguishable from normals in the extent to which they on recent material can actually be worse than performance on
+show facilitation from prior presentations, as long as care is somewhat older material. As Squire (1992) pointed out, this
+taken to avoid the possibility that explicit recall is used to aid finding is crucial for the claim that some real consolidation
+performance. Hippocampal patients exhibit spared priming of
+existing associations (i.¢., an increase in the likelihood of pro- —_—_
+ducing table when giving a free associate to chair after prior ' Jarrard (1993) treated the fact that Davidson, McKernan, and Jar-
+presentation of table and chair together) but, as previously rard ( 1993) found no effect of alesion selective to the hippocampus per
+noted, do not show priming, as normals do, aftera single prior © 1" "©BAtive patterning as evidence against a role of the hippocampus
+presentation of an arbitrary, novel pair of words. Such priming ” configural learning, but Rudy and Sutherland (1994) cited a total of
+effects can be obtained after multiple presentations of thenovel *” studies finding that selective hippocampal lesions lead to a deficit in
+: . . : we negative patterning. Several of these studies used the ibotenate lesion of
+arbitrary word pair ( Squire, 1992 ). In animal studies, Its clear —_ Jarrard (1989). Clearly, the debate is not yet settled. Further discussion
+that some forms of classical or instrumental conditioning of re- of the relationship between spatial and configural approaches may be
+sponses to discrete salient cues are unaffected by hippocampal found in the General Discussion section.
+
+=== p-04.png ===
+422 J. MCCLELLAND, B. MCNAUGHTON, AND R. O’REILLY
+takes place because it rules out the alternative interpretation a) Winocur, 1990 b) Kim & Faneslow, 1992
+that memories are initially stored in two forms whose effects are ows 08
+additive: a relatively transient, hippocampal-system-dependent § 0.80 to Fy 0 ee
+form and a more persistent, hippocampal-system-independent = 0.75 . 3 0s H
+form. On this account, there is no alteration of the form of E 0.70 i 0.4
+memory over time; rather, there is merely decay. Nevertheless, = 065 i Fy 0.3 P }
+because the decay of the hippocampal memory is more rapid, g 0.60 & 0.2
+there would be a gradually diminishing difference between the * 0s ie 0.1 §
+two groups. Three animal studies now provide clear evidence oo 12 3 4 5 678910 “9 5 10 15 2 25 30
+against this simple dual-store interpretation (Kim & Fanselow, c) Zola-Morgan & Squire, 1990 d) Squire & Cohen, 1979
+1992; Winocur, 1990; Zola-Morgan & Squire, 1990); we show 0.90 20
+the data from these studies in Figure |. In all three studies, per- o.8s < ie
+formance of lesioned animals at test was better when there was z ve F 214
+a longer delay between study and test, supporting a real change S 070 2 er 2 " Ld
+in the form or location of memory. Also shown are data from 5 0.65 1 1 Ss PS
+human ECT patients (Squire & Cohen, 1979) taken from a = 060 U 5 6
+measure called the TV test developed by Squire and Slater 0.55 ; —
+(1975). This test examined knowledge of single-season TV 050 1955075 loo 0 “seo 1008 1500 2000 2500 3000
+shows, for which memory depended primarily on exposure to Days Since Lesion Days Since Lesion
+the shows during the year in which they were aired. It is difficult
+to rule out the possibility that the depression in the years just Figure 1, Panels a-c: Behavioral responses of animals receiving exten-
+before treatment affected initial storage. It also must be noted sive hippocampal system lesions (circles) or control lesions (squares) as
+that the treatment may have affected more than just the hippo- 2 function of the numbers of days elapsing between exposure to the
+campal system. But no such difficulties a pply to the findings relevant experiences and the occurrence of the lesion. Bars surrounding
+from the animal studies, which are very clear in two of the cases: each data point indicate the standard error. Panel a shows the percent-
+. > : y . age choice of a specific sample food (out of two alternatives) by rats
+In both Winocur ( 1990) and Kim and Fanselow (1992), lesions exposed to a conspecific that had eaten the sample food. Panel b shows
+occurring within 24 hr of the experience led to performance fear (freezing) behavior shown by rats when returned to an environ-
+indistinguishable from chance, whereas lesions occurring at ment in which they had experienced paired presentations of tones and
+later points in time led to much better performance. footshock. Panel c shows choices of reinforced objects by monkeys ex-
+posed to 14 training trials with each of 20 object pairs. Panel d: Recall
+or : by depressed human participants of details of TV shows aired different
+One Account of the Organization of Memory in the numbers of years before the time of test after electroconvulsive treat-
+Brain ment [circles] or just before treatment [squares]. Here years have been
+What follows is one account of the mechanisms of learning translated into days to allow comparison with the results from the ani-
+: . . : . . mal studies. The curves shown in each panel are based on a simple
+in the mammalian brain. The account is consistent with the model discussed in the text and depicted in Figure 14 (with the param-
+data summarized earlier and with several important anatomical _ eters shown in Table 1). Note. Data in Panel a are from “Anterograde
+and physiological findings that we summarize later, and it has and Retrograde Amnesia in Rats With Dorsal Hippocampal or Dor-
+many points in common with the accounts offered in several somedial Thalamic Lesions,” by G. Winocur, 1990, Behavioral Brain
+other synthetic treatments, beginning with Marr (1971). A Research, 38, p. 149. Copyright 1990 by Elsevier Science Publishers.
+comparison with these other treatments can be found in the Reprinted with permission. Data in Panel b are from “‘Modality-Spe-
+General Discussion section. cific Retrograde Amnesia of Fear,” by J. J. Kim and M. S. Fanselow,
+Our account begins with the assumption that the brain ex- 1992; Science, 256, p. 676. Copyright 1992 by the American Associa-
+ploits complementary learning systems. One system relies on tion for the Advancement of Science. Reprinted with permission. Data
+. . ‘ : in Panel c are from “The Primate Hippocampal Formation: Evidence
+adaptation of synaptic connections among the neurons directly for a Time-Limited Role in Memory Storage,” by S. Zola-Morgan and
+responsible for information processing and behavior. The other —_ 1. R. Squire, 1990, Science, 250, p. 289. Copyright 1990 by the Ameri-
+relies on adaptation of synaptic connections within a special can Association for the Advancement of Science. Reprinted with per-
+memory system that includes the hippocampus and related mission. Data in Panel d are from “Memory and Amnesia: Resistance
+structures. to Disruption Develops for Years after Learning,” by L. R. Squire and
+N. Cohen, 1979, Behavioral and Neural Biology, 25, p. 118. Copyright
+The Neocortical Processing System 1979 by Academic Press, Inc. Reprinted with permission.
+Adaptation of synaptic connections undoubtedly occurs in a
+wide range of neural processing systems in the brain; however, including the basal ganglia and the cerebellum. We comment in
+for the cognitive forms of learning that are the principal focus a later section on adaptive changes produced by animal condi-
+of this article, we are concerned primarily with adaptive learn- tioning paradigms in other systems such as the amygdala and
+ing that is likely, in most cases, to occur in the neocortex. We various other subcortical brain structures.
+suspect that the principles we propose for the neocortical sys- We view the neocortex as a collection of partially overlapping
+tem also apply to other adaptive processing systems in the brain processing systems; for simplicity of reference, however, we re-
+such as those that are involved in some forms of skill learning, fer to these systems collectively as the neocortical processing
+
+=== p-05.png ===
+COMPLEMENTARY LEARNING SYSTEMS 423
+system. We include in this system those neocortical structures synaptic connections among neurons in the neocortical system
+that we take to share the role of providing the neural substrate —_ will accumulate. When the changes arise from the repetition of
+for higher level control of behavior and cognitive processing, as the same specific content (¢.g., the association between a partic-
+well as other neocortical structures involved in sensory, percep- ular word and its meaning), the accumulation of such changes
+tual, and output processes. Most but not all of the neocortex will provide the basis for correct performance in tasks that de-
+belongs to this system: The perirhinal and parahippocampal _—_ pend on the specific content in question. When they reflect
+cortices are anatomically defined as neocortex, but they appear _—_ different examples of some sort of structured relationship be-
+functionally to belong at least in part to the hippocampal mem- tween inputs and outputs (e.g., the structured relation that
+ory system. It may be best to consider these as borderline areas holds between the spellings of words and their sounds), they will
+in which the neocortical processing system and the hippocam- _ provide the basis of an acquired cognitive skill.
+pal memory systems overlap. They certainly play a crucial role
+in mediating communication between the other parts of the hip- The Hippocampal Memory System
+pocampal system and the neocortex. . . . .
+
+We assume that performance of higher level behavioral and The representation of an experience in the neocortical sys-
+cognitive tasks depends on the elicitation of patterns of activa. tem consists of a widely distributed pattern of neural activity.
+tion over the populations of neurons in various regions of the ASJust noted, we assume that each experience gives rise to small
+neocortical system by other patterns of activation over the same adaptive changes but that these changes will generally not be
+or different regions. For example, in an acquired skill (such as _Sufficient to allow rapid learning of arbitrary associative con-
+reading), the pattern produced by an input (such asa printed Junctions that we assume provide the substrate for explicit recall
+word) elicits a corresponding pattern representing an output _f the contents of specific episodes and for other hippocampal-
+(such as the motor program for pronouncing the word). Ina _System-dependent tasks. We assume that performance in such
+free-association task, a pattern representing a stimulus word _aSks depends initially on substantial changes to the strengths of
+elicits another pattern representing the response word. When Connections among neurons in the hippocampal system. Infor-
+an arbitrary list associate in a paired-associates leaning task is ation is carried between the hippocampal system and the neo-
+retrieved, the stimulus pattern must specify not only the stimu- __C0Ftical system via bidirectional pathways that translate pat-
+lus word but also some information about the encoding context; _ terns of activity in the neocortical system into corresponding
+however, the principle remains the same: Task performance oc- _ Patterns in the hippocampal system, and vice versa. We do not
+curs through the elicitation of one pattern of activation in re. @8Sume that the hippocampal system receives a direct copy of
+sponse to another that serves as a cue. For this to work in tasks _ the pattern of activation distributed over the higher level regions
+requiring the contextually appropriate retrieval of patterns of of the neocortical system; instead, the neocortical representa-
+activation representing specific propositions, events, and so tion is thought to be re-represented in a compressed format over
+forth, the system must be structured in such a way that any a much smaller number of neurons in the hippocampal system,
+aspect of the content of the target pattern, as well-as patterns McNaughton (1989) has referred to this compressed pattern as
+representing material associated with the target pattern, can a “summary sketch” of the current neocortical representation.
+serve as retrieval cues. Such compression can often occur without loss of essential in-
+
+Patterns are elicited by the propagation of activation via syn- formation if there is redundancy in the neocortical representa-
+aptic connections among the neurons involved. The knowledge tions. The familiar data compression schemes that are used for
+that underlies the processing capabilities of the neocortex is Computer files exploit such redundancy, and very high levels of
+stored in these connections. Thus, the knowledge is assumed to compression may be possible if the patterns being compressed
+be embedded in the very neural circuits that carry out the tasks are highly constrained or redundant. Artificial neural networks
+that use the information. structurally similar to those suggested by Figure 2 are quite
+
+We assume that every occasion of information processing in commonly used to perform pattern compression and decom-
+the neocortical system gives rise to adaptive adjustments to the Pression (Ackley, Hinton, & Sejnowski, 1985; Cottrell, Munro,
+connections among the neurons involved. The adjustments are | & Zipser, 1987). Compression is carried out in these models
+widely distributed across all of the relevant connections but we by the connections leading from the input to a much smaller
+assume they have relatively subtle effects; they tend to facilitate | ‘Presentation layer, and decompression occurs via connections
+a repetition of the same act of processing or an essentially sim- leading back from the representation layer to the input layer.
+ilar one at a later time or to facilitate reaching the same global _!ntermediate layers can be interposed on either the input or the
+state of activation (corresponding, for example, to an entire  Utput side to increase the sophistication of the compression
+Proposition or image) when given any fragment or associate of Process, the decompression process, or both (for further discus-
+it as a cue.” We assume, however, that the changes that result Sion, see the section on binding in the General Discussion).
+from one or a few repetitions of an experience are not sufficient Within the hippocampus itself, we assume that the event or
+to support the reinstatement of a pattern representing a specific
+Conjunction of arbitrary elements, such as the conjunction of ~ 2 tn gener al, one expects adjustments of connection weights to pro-
+
+. . 5 . : ly at
+an arbitrary pair of words in a paired-associates learning exper~ ce a general facilitation of retrieval of the overall pattern through
+junction of elements that together compose a changes that occur among the neurons active in the retrieved
+specific episode or event. itself eu rons active in the retrieved pattern
+Over the course of many repetitions of the same or substan- ree gaat MEHL aS @ more specific facilitation of retrieval from the same
+. ae . “ . cue as a result of changes that occur between the neurons representing
+tially similar acts of information processing, the changes to the the retrieved pattern and those representing the cue.
+
+=== p-06.png ===
+424 J. MCCLELLAND, B. MCNAUGHTON, AND R. O’REILLY
+ae sufficiently close to the stored pattern, and if the changes to the
+mm & A 2 relevant synaptic efficacies were sufficiently large, this input
+iN y, Va would then lead the hippocampal memory system to tend to
+19 NN ‘ ME) () YK .' DQ settle into the attractor, thereby filling in the missing aspects of
+YA Qi > :
+IN , \ \ (/ A) the memory trace. The return pathways from the hippocampal
+SS N \ f7 system to the neocortex, together with preexisting intracortical
+wa Ss Y connections, then reverse the translation carried out by the for-
+YY, ward connections, thereby completing the neocortical rein-
+statement of the event pattern and enabling appropriate overt
+. responses. Reinstatement in such a system is assumed to be a
+Paranippocampat Vl A ®) perithinat matter of degree, varying with the adequacy of the probe, the
+Gyrus (TF/TH) (oe WZ Cortex (35/36) amount of initial learning, subsequent interference, and decay,
+S rts and the sufficiency of a particular degree of pattern reinstate-
+Oo ») 2 s ment for overt behavior will depend on the exact nature of the
+Entorhinal Cortex task and behavioral response required.
+Cingulste Cortex Reinstatement and Consolidation of Hippocampal
+Olfactory Bulb Memories in the Neocortical System
+Bn av »>) As just described, reinstatement of patterns stored in the hip-
+(J ev) pocampal memory system may occur in task-relevant situa-
+4 tions, in which the memory trace is needed for task perfor-
+mance. We assume that reinstatement also occurs in off-line
+we situations, including active rehearsal, reminiscence, and other
+USA Nilo) inactive states including sleep (Marr, 197] ). In such cases, we
+S&S Ny assume that reinstatement in the hippocampal memory system
+* Orbitoirontal YP 2 < st¢ gives rise, via the return connections, to reinstatement in the
+Cortex Insuis neocortical processing system. This would have two important
+. . . . consequences. First, reinstatement of the stored event in an ap-
+
+Figure 2. Schematic representation of the inputs and outputs of the propriate context would allow the stored information to be used
+
+hippocampal system in the primate. The upper panel shows the frontal, for controlling behavioral responses. Second, reinstatement
+
+temporal, and parietal areas reciprocally connected with the parahip- : i - > :
+
+pocampal gyrus and the perirhinal cortex, which in turn connect recip- would provide the opportunity for an incremental adjustment
+rocally with the entorhinal cortex. The lower panel shows the areas that Of neocortical connections, thereby allowing memories initially
+have direct reciprocal connections with the entorhinal cortex. Note. dependent on the hippocampal system gradually to become in-
+
+From “Memory and the Hippocampus,” p. 227, by L. R. Squire, A. P. dependent of it. To the extent that the hippocampal memory
+
+Shimamura, and D. G. Amaral, in Neural Models of Plasticity: Experi- system participates in this reinstatement process, it can be
+
+mental and Theoretical Approaches, edited by J. H. Byrne and W. O. viewed not just as a memory store but as the teacher of the neo-
+
+Berry, 1989, New York: Academic Press. Copyright 1989 by Academic cortical processing system.
+
+Press, Inc. Reprinted with permission. In our view, the same consolidation process applies to the de-
+velopment of a neocortical substrate for performance in seman-
+tic, encyclopedic, and episodic memory tasks. As we define
+
+experience is represented by a sparse pattern of activity in these terms here, semantic memory tasks are simply those that
+
+which the individual neurons represent specific combinations require the use of information about categories and concepts,
+or conjunctions of elements of the event that gave rise to the encyclopedic tasks require the use of specific factual informa-
+pattern of activation. We assume that once such a pattern of _ tion, and episodic memory tasks are those that require the use
+activity arises in the hippocampal memory system, it may po- of information contained in a specific previous event or episode
+tentially become a stable memory. Plastic changes to the syn- in which the individual was an observer or participant. In our
+apses on fibers coming into the hippocampus tend to increase view, there is no special distinction between such tasks. Perfor-
+the likelihood that a subsequent fragment of the pattern will mance in all three depends initially on plastic changes within
+elicit the entire pattern, and plastic changes to synaptic connec- the hippocampal system, but the knowledge underlying the
+tions among the neurons active in the pattern tend to make this tasks can eventually be stored in the neocortical system via the
+pattern an attractor (i.e., a pattern toward which neighboring gradual accumulation of small changes. Consider the specific
+patterns or incomplete versions of the pattern will tend to episode or event in which one first encounters some particular
+converge). Several repetitions may be required for these fact, such as Neil Armstrong uttering the words ‘‘That’s one
+changes to reach sufficient strength to subserve memory task small step for [a] man” when he first set foot on the moon. Such
+performance. During recall, if a part of the pattern representing factual information would be encountered first in a particular
+the episode arises again in the neocortical system, this will be context, in this case, perhaps, in the context of watching Arm-
+translated into a part of the pattern corresponding to the previ- strong live on TV as he set foot on the moon during a family
+ous event in the hippocampal memory system. If the input is reunion celebrating a grandfather’s 70th birthday. If the event of
+
+=== p-07.png ===
+COMPLEMENTARY LEARNING SYSTEMS 425
+Armstrong’s landing is reinstated repeatedly, the accumulated _ evidence of changes in functional connectivity in the neocortex
+changes to neocortical connections could eventually come to _as. a consequence of experience (Gilbert, 1994; Greenough et
+preserve the common aspects of the reinstated event. The result al., 1994; Kaas, 1994; Merzenich, Recanzone, Jenkins, & Graj-
+would allow the individual to perform correctly in the encyclo- ski, 1990; Singer & Artola, 1994). Much of this work, however,
+pedic memory task of recalling what Armstrong said. If the pre- has been restricted to primary sensory systems, and it remains
+vious reinstatements had specifically included information to be determined exactly what signals govern the plastic
+about the time and place of initial learning, then this informa- changes. Although neocortical synapses exhibit experience-de-
+tion, too, would gradually become incorporated into the con- pendent plasticity (Lee, 1983), the bulk of the understanding
+nection weights in the neocortical system and would sustain _ of synaptic plasticity comes from physiological studies of the
+performance in an episodic memory task. If, however, the rein- hippocampal system.
+statements occur in many different contexts, and if these rein- Hippocampal involvement in some forms of memory. Our
+statements do not include other aspects of the original context account requires that patterns of activity be propagated into
+of encoding, no reliable memory for any particular context and out of the hippocampal system during information
+would remain. Much the same process would also apply to the processing. Neuroanatomically, it is clear that the necessary
+learning of semantic information, such as the fact that giraffes reciprocal pathways exist to perform these proposed func-
+have long necks or the fact that a particular category labelisthe tions (see Figure 2 [reprinted from Squire, Shimamura, &
+correct name to apply to a set of items derived from the same = Amaral, 1989b]). The entorhinal cortex is the final con-
+prototype. Knapp and Anderson (1984) and McClelland and vergence zone for neocortical inputs to the hippocampus and
+Rumelhart (1985) have both presented connectionist models is the main structure mediating return projections from the
+in which semantic memory and category learning can arise hippocampus to the neocortex. The entorhinal cortex is
+from the gradual accumulation of small changes resulting from quite small relative to the combined size of all of the neocor-
+individual events and experiences, tical regions that project to it, suggesting the need for a high
+degree of data compression, as previously discussed. As Fig-
+Evidence and Comment ure 2 indicates, some of the neocortical inputs to the entorhi-
+nal cortex and return pathways from the entorhinal cortex
+Our accounts of neocortical processing and learning, of hip- are mediated by the parahippocampal and perirhinal corti-
+pocampal involvement in some forms of memory, and of rein- ces, which may serve as the intermediate layers in a sophisti-
+statement of hippocampal memories during off-line periods are cated compression-decompression operation.
+all grounded in evidence from neuroanatomical and neuro- Our account also asserts that the hippocampal system makes
+physiological investigations. We discuss the evidence foreach of _use of representations that are highly specific to the particular
+these aspects of our account in turn. There are certainly gaps, conjunctions or combinations of inputs that are active in par-
+but we do not dwell on these; we simply describe the evidence ticular experiences. A growing body of data from single unit
+that is available. recording in rats is consistent with the idea that these represen-
+Neocortical processing and learning. The basic notion that _ tations arise in the hippocampus itself. Part of this evidence
+information processing takes place through the propagation of comes from recordings of neurons in the CA3 and CA1 regions
+activation among neurons via synaptic connections does not ap- of the hippocampus in spatial tasks (e.g., a task in which the
+pear to be in dispute; it is based on more than 100 years of animal explores an eight-arm radial maze to find food rewards
+neurophysiological investigation. The evidence is also strong at the ends of the arms). In contrast to neurons in the entorhi-
+that the neocortical processing system consists ofa large num- _nal cortex, neurons in these regions fire in a highly selective
+ber of interconnected brain areas. A compelling example is the manner, exhibiting “place fields” (O’Keefe & Conway, 1978;
+parallel and hierarchical organization of the visual system O’Keefe & Dostrovsky, 1971). Although spatially tuned to
+(Felleman & Van Essen, 1991). Neurons in each area project to some extent, entorhinal neurons tend to fire much less selec-
+other neurons, both within the same area and in several other _ tively. This is illustrated in Figure 3 (reprinted from McNaugh-
+areas. Activation is propagated into and out of this system of ton & Barnes, 1990), which contrasts the spatial firing pattern
+brain regions via a number of different pathways specific to par- of a typical neuron in CA3 with that of a typical entorhinal
+ticular sensory modalities, effector systems, or both. Generally, neuron on the basis of data from Barnes, McNaughton, Mizu-
+the projections between brain areas are bidirectional, so that mori, Leonard, and Lin (1990). Place fields of hippocampal
+activity in one part of the system can potentially influence ac- neurons can be seen as representing conjunctions of cues
+tivity in many other parts in both feed-forward and feedback (including cues arising from the animal’s inertial sense of direc-
+directions. tion and location; Knierim, Kudrimoti, & McNaughton, in
+The idea that processing depends on the pattern of synaptic press) that, together, define a place in the environment. In fact,
+connections among neurons and that adaptive changes in pro- it may be better to think of these neurons as coding for conjunc-
+cessing occur through the modification of such connections is tions that define situations rather than simply places, because
+axiomatic in neuroscience. The notion that higher level, cogni- the firing of a hippocampal neuron jin a particular location in
+tive forms of learning are mediated by plastic changes in these space is conditional on the task as well as the animal’s location
+connections goes back at least to James (1890) and Hebb in the environment (Gothard, Skaggs, Moore, & McNaughton,
+(1949), At a physiological level, these changes probably occur 1994; Qin, Markus, McNaughton, & Barnes, 1994). Also, note
+through strengthening and weakening, as well as creation and _ that the hippocampal representation is very sparse in compari-
+pruning, of synaptic contacts between neurons. There is strong son with the entorhinal input. In a given situation, a far smaller
+
+=== p-08.png ===
+426 J. MCCLELLAND, B. MCNAUGHTON, AND R. O’REILLY
+ENTORHINAL CAB and postsynaptic depolarization (Wigstrém, Gustaffson, &
+Huang, !986). Chemical agents that block the NMDA receptor
+} | prevent long-term potentiation with little effect on the transmis-
+ay, -. \ / sion process per se (Collingridge, Kehl, & McLennan, 1983;
+> Harris, Ganong, & Cotman, 1984). Crucially, these agents also
+ein “oF —_ block learning in spatial memory tasks without interfering with
+f ey, So \ expression of learning that occurred at a previous time or pro-
+i | ducing retrograde amnesia (Morris, Anderson, Lynch, &
+Baudry, 1986). In addition, electrical stimulation that suffi-
+Figure 3. Response profiles of a representative neuron in the CA3 re- fently ans cTP ial the hippocampus also produces pro-
+gion of the hippocampus and of a representative neuron in entorhinal found de cits in spatial learning (Barnes et al., 1994) and a
+cortex during performance in a spatial working memory task in the temporally limited retrograde amnesia (McNaughton, Barnes,
+eight-arm radial maze. Response profiles are shown in the form of bars Rao, Baldwin, & Rasmussen, 1986 ).
+perpendicular to the arms of the runway, indicating the number of times As previously noted, there is evidence from lesion studies of
+the particular neuron fired as the animal repeatedly traversed the maze. involvement of parts of the hippocampal system other than the
+Black bars indicate firing as the animal progressed inward on the indi- hippocampus itself in several ferms of learning. Lesions includ-
+cated arm, and white bars indicate firing as the animal progressed out- ing these structures can produce deficits that are more severe
+ward. Note. From “From Cooperative Synaptic Enhancement to Asso- _ than lesions restricted to the hippocampus, suggesting that
+Ciative Memory: Bridging the Abyss,” by B. L. McNaughton andC.A. some of the plastic changes underlying performance in some
+aw Gardens Con nan peeiuclonces a B. 412 Copyright 1990 hippocampal-system-dependent tasks may lie outside the hip-
+“ * . pocampus itself. Exactly how plasticity in other zones con-
+tributes to memory performance is a matter of considerable on-
+going discussion (see Eichenbaum et al., 1994, and the accom-
+percentage of neurons in the hippocampus itself are firing than panying commentary). There are several possibilities that are
+in the entorhinal cortex (Barnes et al., 1990; Quirk, Muller, & consistent with our overall account. First, particular subareas
+Kubie, 1990). The use of sparse, conjunctive coding in the hip- of the parahippocampal region may be involved in bidirectional
+pocampus means that its representations of situations that communication of specific types of information between the
+differ only slightly may have relatively little overlap (Marr, 1969; hippocampal system and the neocortex; ifso, one would expect
+McNaughton & Morris, 1987; O’Reilly & McClelland, 1994). lesions to these subareas to have specific effects on memories
+Our account requires the availability of a mechanism for syn- that involve the relevant types of information, as Suzuki (1994)
+aptic plasticity in the hippocampus and specifically assumes has suggested. Second, as a borderline area between the hippo-
+that the synaptic changes provided by these changes serve as the campus and the neocortex, the brain areas surrounding the hip-
+substrate of initial learning in hippocampal-system-dependent pocampus may participate in some forms of information pro-
+memory tasks. There is now considerable evidence that such a cessing, including, for example, retention of information about
+mechanism exists in the hippocampus (for reviews, see Mc- the recent occurrence of novel stimuli for short periods of time
+Naughton & Morris, 1987; McNaughton & Nadel, 1990). The (Gaffan & Murray, 1992). Such functions may coexist with
+mechanism is a form of plasticity known as associative long- _ these areas’ involvement in bidirectional communication be-
+term potentiation (LTP). LTP has been studied extensively in tween the hippocampus itself and the rest of the neocortical
+the rodent hippocampus since the studies of Bliss and Gardner- system. A third possibility is that there is a hierarchy of plastic-
+Medwin (1973) and Bliss and Lomo (1973). Associative LTP ity such that learning in the hippocampus itself is very rapid,
+is found particularly in the synapses from the axons of the prin- learning in the neocortical system is very slow, and learning in
+cipal neurons of the entorhinal cortex onto the dendrites of the the regions around the hippocampus occurs at an intermediate
+principal neurons in the dentate and CA3 regions of the hippo- rate. This could explain why damage restricted to the hippo-
+campus, as well as the synapses from the axons of the principal campus itself may produce a milder deficit in new learning and
+neurons in CA3 onto the dendrites of other neurons in CA3 and a milder retrograde amnesia than more extensive hippocampal
+neurons in CA1, LTP may be the experimental manifestation system lesions (Squire, Zola-Morgan, & Alvarez, 1994; Zola-
+of the synaptic modifications that underlie the contribution of Morgan, Squire, & Amaral, 1986).
+the hippocampus to some forms of learning and memory Reinstatement of hippocampal memories. There is little di-
+(Marr, 1971; McNaughton & Morris, 1987). LTP in these syn- rect evidence of hippocampal involvement in the reinstatement
+apses can last for days to weeks depending on the intensity and of patterns of activity in the neocortex, but there is evidence of
+duration of the inducing stimulation (Abraham & Otani, 1991; reinstatement in the hippocampus itself of patterns derived
+Barnes, 1979), and it is associative in that it normally depends —_ from recent experiences. The evidence is based on activity re-
+on near-synchronous input to the receiving neuron by a large corded in rats during periods of slow wave sleep. In both pri-
+number of convergent fibers (Barrionuevo & Brown, 1983; mates and rodents, hippocampal electrical activity during slow
+Levy & Steward, 1979; McNaughton, Douglas, & Goddard, wave sleep (as well as during quiet wakefulness) is characterized
+1978). This form of LTP depends critically on the activation of by a unique pattern called sharp waves ( Buzsaki, 1989; O’Keefe
+a special type of postsynaptic receptor known as the N-methyl- & Nadel, 1978). Hippocampal sharp waves are brief periods of
+D-aspartate (NMDA) receptor, which is activated by the con- quasi-synchronous, high-frequency burst discharge of hippo-
+junction of transmitter release from the presynaptic terminal campal neurons lasting about 100 ms. In theory, such activity
+
+=== p-09.png ===
+COMPLEMENTARY LEARNING SYSTEMS 427
+provides the optimal conditions for synaptic plasticity indown- —_ follows from the assumption that the learning actually takes
+stream neurons (Buzsaki, 1989; Douglas, 1977; McNaughton, place directly within the connections among the neural popula-
+1983). Buzsaki (1989) and his colleagues (Chrobak & Buzsaki, tions that were activated during the acquisition process.
+
+1994) have provided a strong case that sharp waves arise in the Our account of the organization of learning in the brain is
+CA3 region of the hippocampus and are propagated both to the intended as a provisional factual characterization. It embodies
+CAI region and to the output layers of the entorhinal cortex, some unproven assumptions, and so it might be viewed as a
+from which they can be propagated widely to the neocortical theory of memory in some sense. We offer it, however, not as a
+system. Thus, patterns stored in the hippocampus might com- theory in itself but as a starting place for theoretical discussion.
+plete themselves during hippocampal sharp waves, thereby pro- Although it is neither fully explicit nor complete (some gaps,
+viding an opportunity for reinstatement in the neocortex. Sim- such as a consideration of spared conditioning of responses to
+ulation studies (Shen & McNaughton, 1994) demonstrate that _ individual salient cues, are discussed in later sections), the ac-
+random activity can‘sometimes lead to reinstatement ofattrac- count appears to be broadly compatible with a large body of
+tors previously stored in a hippocampuslike associative net- data, and it is consistent enough with many of the other ac-
+work. In support of these proposals, Pavlides and Winson counts considered in the General Discussion section that we
+(1989) have shown that hippocampal neurons that have been suggest it is useful to treat it as provisionally correct, at least in
+selectively activated during a prior episode of waking behavior its essentials.
+are selectively more active during subsequent slow wave and
+paradoxical sleep. More recently, Wilson and McNaughton Key Questions About the Organization of Memory in
+(1994a, 1994b) have found that the cross-correlation structure the Brain
+that arises in a large population (50~100) of simultaneously re-
+corded CAI neurons during exploration of an environment is Supposing provisionally that our account is basically correct,
+preserved in subsequent sharp wave activity while the animal is | we can now ask, why is it that the system is organized in this
+resting or sleeping in an entirely different apparatus. This cor- _ particular way? Two key functional questions arise:
+relational structure is absent during sleep periods before explo- : : spe
+tation. Thus, there is now strong empirical support for the idea I. wey isa hi pel ets l mn necessary, i ultimately
+that memory traces—or, at least, correlations of activity associ- performance in all sorts of memory tasks Ccpends on
+
+: . i . changes in connections within the neocortical system?
+ated with such traces—are indeed reactivated in the rat hippo- hr he ch: t made directly in th tical
+campus during “off-line” periods. Why are the changes not made directly in the neocortic
+
+system in the first place?
+Summary 2. Why does incorporation of new material into the neo-
+cortical system take such a long time? Why are the changes
+
+We can now summarize our account of the organization of to neocortical connections not made more rapidly, shortly
+the memory system by noting how it accounts for the main fea- after initial storage in the hippocampal system?
+tures of the pattern of deficits and spared performance found
+piter a hippocampal system lesion. we deficit in the aby to Successes and Failures of Connectionist Models of
+
+cal ew ‘y ions Invi ng con) jons ues .
+
+from a few exposures would arise from the fact that these asso- Learning and Memory
+
+ciations would have been stored in the (now destroyed) hippo- The answers we suggest to these questions arise from the
+campal system; the small changes that would occur in the neo- _ study of learning in artificial neural network or connectionist
+cortical system could contribute to repetition priming effects models that adhere to many aspects of the account of the mam-
+but would be insufficient to support normal rates of acquisition malian memory system provided earlier, but do not incorporate
+in semantic and episodic memory tasks and other tasks that de- a special system for rapid acquisition of the contents of specific
+pend on the acquisition of novel conjunctions of arbitrary episodes and events. Such networks are similar to the neocorti-
+material. cal processing system in that they may consist of several mod-
+
+The spared acquisition of skills would arise from the gradual ules and pathways interconnecting the modules, but they are
+accumulation of small changes in the connections among the monolithic in the sense that knowledge is stored directly in the
+relevant neural populations in the neocortical system, as well connections among the units of the system that carries out in-
+as other relevant brain systems. The temporally extended and formation processing, and there is no separate system for rapid
+graded nature of retrograde amnesia would reflect the fact that learning of the contents of particular inputs.
+information initially stored in the hippocampal memory sys-
+tem can become incorporated into the neocortical system only —_yiscovery of Shared Structure Through Interleaved
+very gradually, as a result of the small size of the changes made Learnin:
+
+A Ig
+on each reinstatement.
+
+The ability of even very profound amnesics to acquire often- The first and perhaps most crucial point is that, in such
+repeated material gradually (Glisky, Schacter, & Tulving, monolithic connectionist systems, there are tremendous ulti-
+1986a, 1986b; B. Milner et al., 1968) would likewise reflect this mate benefits of what we call interleaved learning. By in-
+slow accumulation of changes in the neocortical system after terleaved learning we mean learning in which a particular item
+the onset of amnesia. The fact that such learning is often re- is not learned all at once but is acquired very gradually, through
+stricted to the specific task contexts in which it was acquired a series of presentations interleaved with exposure to other ex-
+
+=== p-10.png ===
+428 J. MCCLELLAND, B. MCNAUGHTON, AND R. O’REILLY
+amples from the domain. The adjustments made to connection networks can store knowledge of concepts in a succinct form,
+weights on each exposure to an example are small; thus, the with information that is true of all of the concepts in an entire
+overall direction of connection adjustment is governed not by branch of the tree at the top of the branch. For example, the
+the particular characteristics of individual associations but by Predicate has feathers can be stored at the bird node because it
+the shared structure common to the environment from which is true of all birds. This allows generalization to new instances.
+these individual associations are sampled. When a new type of thing is encountered, such as an egret, peo-
+Consider, in this context, some of the facts known about rob- ple need only to be told that it is a bird and to link the new
+ins. It is known that a robin is a bird, it has wings, it has feathers, node for egret to the node for bird by an isa link. Then their
+it can fly, it breathes, it must eat to stay alive, and so on. This knowledge of egrets can inherit all that is known about birds.
+knowledge is not totally arbitrary knowledge about robins but Semantic networks of this type were very popular vehicles for
+is, in fact, part of a system of knowledge about robins, herons, representation for a period of time in the 1970s, but apparent
+eagles, sparrows, and many other things. Indeed, much of the experimental support (Collins & Quillian, 1969) for the hy-
+information accumulated about robins probably does not come pothesis that people’s knowledge of concepts is organized in this
+from specific experience with robins but from other, related way was illusory (Rips, Shoben, & Smith, 1973). Computation-
+things. Some such knowledge comes from very closely related ally, semantic networks of this type become cumbersome to use
+things of which people may have knowledge (e.g., other birds), when they contain a large amount of information (Fahlman,
+whereas other knowledge may come from other things less 1981), It becomes very difficult to determine when it is appro-
+closely related but still related enough in particular ways to sup- priate to consider a property to be essentially common to a cat-
+port some knowledge sharing (e.g., other animals or even other egory, even though there are exceptions, and when it is appro-
+living things). A key issue in the use of concepts is the fact that priate to consider a property sufficiently variable that it must be
+what counts as related is by no means obvious and is not, in enumerated separately on the instances. The problem is com-
+general, predictable from surface properties. Birds are more re- pounded by the fact that most concepts are constituents of
+lated to, for example, reptiles and fish than they are to insects. multiple intersecting hierarchies, in which case intractable in-
+Connectionist models that use interleaved learning suggest heritance conflicts can arise.
+how knowledge of relations among concepts may develop. Both Connectionist models offer a very different way of accounting
+Hinton (1989) and Rumelhart (1990; Rumelhart & Todd, for the ability to generalize knowledge from one concept to an-
+1993) developed simulations to illustrate how connectionist other. According to this approach (Hinton, 1981; Touretzky &
+networks can learn representations appropriate for organized Geva, 1987), generalization depends on a process that assigns
+bodies of conceptual knowledge. We use the Rumelhart exam- each concept an internal representation that captures its con-
+ple here because it relates to the domain of knowledge about ceptual similarity to other concepts. This alternative approach
+living things that we have already begun to consider as an exam- appears to be more consistent with the psychological evidence
+ple and because, as shown later, there are some empirical data (Rips et al., 1973), because the evidence favors the view that
+about the development of children’s knowledge that this model _ conceptual similarity judgments are made by comparing repre-
+can help one understand. The specific example is highly simpli- sentations of concepts directly rather than searching for com-
+fied and abstract. It captures approximately the constraints that mon parents in a hierarchically structured tree. This alternative
+may be operative in the discovery of conceptual structure from also overcomes the vexing questions about how to handle par-
+an ensemble of sentences that convey simple propositional __ tially regular traits and exceptions, because idiosyncratic as well
+statements about living things, in that concepts are represented as common properties can be captured in these representations.
+by arbitrary tokens (akin to words) rather than by percepts that The approach depends on exploiting the ability of a network
+directly provide some information about the concepts under to discover the relations among concepts through interleaved
+consideration. The conceptual structure resides not in the di- learning. The network is trained on a set of specific propositions
+rect appearance of the words that convey the concepts but in about various concepts, and, in the course of training, it learns
+the relations that the concepts referred to by the words enter similar representations for similar concepts. By similar con-
+into with other concepts. cepts, we mean concepts that enter into overlapping sets of
+Human knowledge of the domain of living things appears to propositions.
+be organized hierarchically, with a principal grouping into Rumelhart (1990) trained a network on propositions about
+plants and animals and then other, finer subgroupings within a number of concepts: living things, plants, animals, trees, oaks,
+each of these broad classes (we refer not to objective biological pines, flowers, roses, daisies, animals, birds, canaries, robins,
+information per se but to the cognitive representations that peo- fish, salmon, and sunfish. The training data were the set of true
+ple have of this information). Previous symbolic approaches propositions either explicitly represented in or derivable from
+to knowledge representation directly imported the hierarchical the semantic network shown in Figure 4. The connectionist net-
+organization of knowledge into their structure, representing work used to learn these propositions is shown in Figure 5. It
+knowledge about concepts in a data structure known as a se- consists of a number of nonlinear connectionist processing
+mantic network (Quillian, 1968; see Figure 4). Such networks units organized into several modules, connected as illustrated
+are not to be confused with connectionist networks, because in the figure. Arrows signify complete connectivity from all of
+they represent and process information in fundamentally the units in the module at the sending end of the arrows to all of
+different ways. In the semantic network, concepts are organized the units at the receiving end. Input to the network is presented
+hierarchically by means of links called isa links, as a short form by activating the unit for a concept name in the concept input
+of the statement Ar_X is a Y. Given this organization, semantic module on the upper left and the unit for a relation term in the
+

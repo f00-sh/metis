@@ -2,29 +2,58 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CL_SOURCE_REGISTRY="${ROOT}/:${CL_SOURCE_REGISTRY:-}"
-MODE="${1:-repl}"
-shift || true
+
+# Default = TUI (pure Common Lisp). Opt out with chat|line|notui|repl.
+MODE="${1:-}"
+if [[ -z "${MODE}" ]]; then
+  MODE="tui"
+elif [[ "${MODE}" == -* ]]; then
+  MODE="tui"
+else
+  shift || true
+fi
+
+# Always: no LDB, process exits when the UI returns.
+SBCL=(sbcl --noinform --non-interactive --disable-debugger)
+
 case "$MODE" in
-  repl)
-    exec sbcl --noinform \
+  tui|ui|default)
+    # Force-load sources after quickload so key/math fixes always win over stale fasls.
+    exec "${SBCL[@]}" \
+      --eval '(ql:quickload :metis :silent t)' \
+      --eval '(load (merge-pathnames "src/interface.lisp" (asdf:system-source-directory :metis)))' \
+      --eval '(load (merge-pathnames "src/tui.lisp" (asdf:system-source-directory :metis)))' \
+      --eval '(metis:boot)' \
+      --eval '(metis:tui-run)' \
+      --quit
+    ;;
+  chat|line|notui|no-tui|iface|interactive|repl|run)
+    exec "${SBCL[@]}" \
       --eval '(ql:quickload :metis :silent t)' \
       --eval '(metis:boot)' \
-      --eval '(metis:run)'
+      --eval '(metis:run)' \
+      --quit
     ;;
   production|prod)
-    exec sbcl --noinform --load "$ROOT/bin/production.lisp" -- "$@"
+    exec sbcl --noinform --non-interactive --disable-debugger \
+      --load "$ROOT/bin/production.lisp" --quit -- "$@"
     ;;
   epoch|flagship)
-    exec sbcl --noinform --load "$ROOT/bin/epoch.lisp" -- "$@"
-    ;;
-  iface|chat|interactive)
-    exec sbcl --noinform --load "$ROOT/bin/iface.lisp" -- "$@"
+    exec sbcl --noinform --non-interactive --disable-debugger \
+      --load "$ROOT/bin/epoch.lisp" --quit -- "$@"
     ;;
   test)
-    exec sbcl --noinform --load "$ROOT/bin/run-tests.lisp"
+    exec sbcl --noinform --non-interactive --disable-debugger \
+      --load "$ROOT/bin/run-tests.lisp" --quit
+    ;;
+  symbol|symbols)
+    exec "$ROOT/bin/symbol" "$@"
     ;;
   *)
-    echo "Usage: metis [repl|production|epoch|iface|test] ..."
+    echo "Usage: metis [chat|production|epoch|test|symbol] ..."
+    echo "  (default)  full-screen TUI — /quit exits to shell"
+    echo "  chat       line interface (no TUI)"
+    echo "  symbol     train/seal/verify/load knowledge packages (see symbol help)"
     exit 2
     ;;
 esac

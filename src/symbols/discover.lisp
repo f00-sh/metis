@@ -17,16 +17,36 @@
   (merge-pathnames (format nil "~A/" id)
                    (uiop:ensure-directory-pathname root)))
 
+(defun %knowledge-pack-manifest-p (manifest-path)
+  "T if MANIFEST-PATH is an open-knowledge hybrid pack (not a loadable code symbol)."
+  (ignore-errors
+    (with-open-file (in manifest-path :direction :input
+                        :if-does-not-exist nil)
+      (when in
+        (let ((form (let ((*read-eval* nil)
+                          (*package* (find-package :keyword)))
+                      (read in nil nil))))
+          (and (consp form)
+               (or (eql (getf form :metis-symbol-pack) 1)
+                   (eql (getf form :|metis-symbol-pack|) 1)
+                   ;; keyword package read → :METIS-SYMBOL-PACK
+                   (eql (getf form :metis-symbol-pack) 1))))))))
+
 (defun discover-symbols! (&key (roots nil))
-  "Scan roots for symbols/*/manifest.lisp; register as :discovered if new."
-  (let ((found nil))
+  "Scan roots for symbols/*/manifest.lisp; register as :discovered if new.
+   Skips registry/ and open-knowledge pack manifests (loaded via packs runtime)."
+  (let ((found nil)
+        (skip-ids '("registry" "packs" "cache" "tmp")))
     (dolist (root (or roots (symbols-roots)))
       (let ((root (probe-file root)))
         (when root
           (dolist (dir (directory (merge-pathnames "*/" root)))
             (let* ((id (car (last (pathname-directory dir))))
                    (manifest (merge-pathnames "manifest.lisp" dir)))
-              (when (and id (probe-file manifest))
+              (when (and id
+                         (probe-file manifest)
+                         (not (member id skip-ids :test #'string-equal))
+                         (not (%knowledge-pack-manifest-p manifest)))
                 (unless (symbol-get id)
                   (register-symbol!
                    :id id
@@ -39,7 +59,8 @@
     (remove-duplicates found :test #'equal)))
 
 (defun load-symbol! (id &key (force nil))
-  "Load symbol ID by evaluating its manifest.lisp (and optional symbol.lisp)."
+  "Load symbol ID by evaluating its manifest.lisp (and optional symbol.lisp).
+   Knowledge packs are not LOAD'd — use symbol-pack-enable! instead."
   (let ((rec (symbol-get id)))
     (when (and rec (member (sr-state rec) '(:loaded :enabled)) (not force))
       (return-from load-symbol! (symbol-info id)))
@@ -50,21 +71,23 @@
                           return d))))
       (unless (and path (probe-file (merge-pathnames "manifest.lisp" path)))
         (error "cannot find manifest for symbol ~A" id))
-      (let* ((manifest (merge-pathnames "manifest.lisp" path))
-             (*package* (find-package :cl-user)))
-        (let ((*symbol-load-path* path))
-          (declare (special *symbol-load-path*))
-          (load manifest))
-        (let ((rec2 (or (symbol-get id)
-                        (error "manifest for ~A did not register the symbol" id))))
-          (setf (sr-path rec2) path
-                (sr-state rec2) (if (sr-enabled rec2) :enabled :loaded))
-          (let ((symfile (merge-pathnames "symbol.lisp" path)))
-            (when (probe-file symfile)
-              (let ((*symbol-load-path* path))
-                (declare (special *symbol-load-path*))
-                (load symfile))))
-          (symbol-info id))))))
+      (let ((manifest (merge-pathnames "manifest.lisp" path)))
+        (when (%knowledge-pack-manifest-p manifest)
+          (error "refusing to LOAD knowledge pack ~A — use symbol-pack-enable!" id))
+        (let ((*package* (find-package :cl-user)))
+          (let ((*symbol-load-path* path))
+            (declare (special *symbol-load-path*))
+            (load manifest))
+          (let ((rec2 (or (symbol-get id)
+                          (error "manifest for ~A did not register the symbol" id))))
+            (setf (sr-path rec2) path
+                  (sr-state rec2) (if (sr-enabled rec2) :enabled :loaded))
+            (let ((symfile (merge-pathnames "symbol.lisp" path)))
+              (when (probe-file symfile)
+                (let ((*symbol-load-path* path))
+                  (declare (special *symbol-load-path*))
+                  (load symfile))))
+            (symbol-info id)))))))
 
 (defun %copy-tree (from to)
   "Recursive file tree copy (pure CL)."
@@ -196,7 +219,10 @@
     (unless require
       ;; still record unsigned local installs
       (ignore-errors (verify-symbol-package src-dir :require nil)))
-    (let* ((id (or id (car (last (pathname-directory src-dir)))))
+    (let* ((id (or id
+                   (let* ((p (uiop:ensure-directory-pathname src-dir))
+                          (dir-id (car (last (pathname-directory p)))))
+                     (or dir-id (pathname-name src-dir) "symbol"))))
            (dest-root (merge-pathnames ".metis/symbols/"
                                        (user-homedir-pathname)))
            (dest (merge-pathnames (format nil "~A/" id) dest-root)))

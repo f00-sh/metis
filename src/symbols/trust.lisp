@@ -96,20 +96,26 @@
       (walk root))
     (sort files #'string< :key #'first)))
 
+(defun %symbol-package-root (root)
+  "Absolute directory pathname for a symbol package (stable for sign/verify)."
+  (uiop:ensure-directory-pathname (truename root)))
+
 (defun symbol-canonical-payload (root)
   "Canonical string over relative paths + digests for signing."
-  (with-output-to-string (out)
-    (dolist (pair (%list-symbol-files root))
-      (format out "~A ~A~%" (first pair) (%file-digest (second pair))))))
+  (let ((root (%symbol-package-root root)))
+    (with-output-to-string (out)
+      (dolist (pair (%list-symbol-files root))
+        (format out "~A ~A~%" (first pair) (%file-digest (second pair)))))))
 
 (defun sign-symbol-package! (root &key (key-id "metis-dev"))
   "Write symbol.sig for package at ROOT using KEY-ID from trust store."
   (ensure-default-trust-key!)
-  (let* ((secret (or (cdr (assoc key-id *symbol-trust-keys* :test #'string=))
+  (let* ((root (%symbol-package-root root))
+         (secret (or (cdr (assoc key-id *symbol-trust-keys* :test #'string=))
                      (error "unknown trust key-id ~A" key-id)))
          (payload (symbol-canonical-payload root))
          (sig (%hmac-sha256-hex secret payload))
-         (sigpath (merge-pathnames "symbol.sig" (uiop:ensure-directory-pathname root))))
+         (sigpath (merge-pathnames "symbol.sig" root)))
     (with-open-file (out sigpath :direction :output :if-exists :supersede)
       (format out "metis-sig-v1~%")
       (format out "~A~%" key-id)
@@ -118,7 +124,7 @@
 
 (defun verify-symbol-package (root &key (require t))
   "Verify symbol.sig under ROOT. Returns (:ok key-id) or signals error if REQUIRE."
-  (let* ((root (uiop:ensure-directory-pathname root))
+  (let* ((root (%symbol-package-root root))
          (sigpath (merge-pathnames "symbol.sig" root)))
     (unless (probe-file sigpath)
       (if require

@@ -1,0 +1,9 @@
+variable: symbol standing for an unknown or varying quantity
+polynomial: sum of terms a_i x^i with nonnegative integer powers
+linear-equation: equation of degree one in the unknown
+quadratic-equation: ax^2 + bx + c = 0
+difference of squares: a^2 - b^2 = (a-b)(a+b)
+perfect square: (a+b)^2 = a^2 + 2ab + b^2
+quadratic formula: x = (-b ± sqrt(b^2-4ac))/(2a)
+zero product property: if ab=0 then a=0 or b=0
+Source orientation: OpenStax Algebra and Trigonometry / College Algebra (CC-BY).

@@ -1,0 +1,2 @@
+Math symbol: evaluate expressions with PEMDAS.
+Algebra: solve linear equations in one variable.

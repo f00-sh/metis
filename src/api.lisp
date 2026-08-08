@@ -223,17 +223,22 @@
              (att
               (cond
                 ((equalp kind "context")
-                 (session-attach-context s (or text "") :caption caption))
+                 (session-attach-context s (or text "") :caption caption
+                                         :train t :async t :intensity :hard))
                 ((equalp kind "photo")
                  (session-attach-photo s path :caption caption))
                 (t
-                 (session-attach-file s path :caption caption)))))
+                 (session-attach-file s path :caption caption
+                                      :train t :async t :intensity :hard)))))
         (%api-respond (list :id (att-id att)
                             :kind (symbol-name (att-kind att))
                             :path (att-path att)
                             :media-type (att-media-type att)
                             :size (att-size att)
-                            :has-text (and (att-text att) t))))
+                            :has-text (and (att-text att) t)
+                            :train (and (att-meta att)
+                                        (getf (att-meta att) :train))
+                            :brain (brain-status))))
     (error (e)
       (%api-respond (list :error (princ-to-string e)) 400))))
 

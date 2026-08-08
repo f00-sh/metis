@@ -65,15 +65,17 @@
           :corpus (format nil "~{~A~%~}" (nreverse corpus-parts)))))
 
 (defun domain-pack-load (mind pack-path)
-  "Load domain pack file (facts + rules) into MIND."
+  "Load domain pack file (facts + rules + optional couple-templates) into MIND."
   (let* ((path (truename pack-path))
          (form (with-open-file (in path)
                  (let ((*package* (find-package :metis)))
                    (read in))))
          (facts (cdr (assoc 'facts form)))
          (rules (cdr (assoc 'rules form)))
+         (templates (cdr (assoc 'couple-templates form)))
          (n-facts 0)
-         (n-rules 0))
+         (n-rules 0)
+         (tmpl-info nil))
     (dolist (f facts)
       (assert-fact mind f :support :domain-pack :forward nil)
       (incf n-facts))
@@ -81,11 +83,97 @@
       ;; r = (head body) where body is list of premise literals
       (assert-rule mind (first r) (second r) :name :domain-pack)
       (incf n-rules))
+    (when templates
+      (setf tmpl-info
+            (register-coupled-templates! templates
+                                         :source (intern (file-namestring path)
+                                                         :keyword))))
     (list :loaded t
           :path (namestring path)
           :facts n-facts
           :rules n-rules
+          :couple-templates (and templates (length templates))
+          :template-registration tmpl-info
           :mind (mind-name mind))))
+
+(defun symbol-marketplace-catalog (&key (root nil))
+  "Open marketplace: knowledge symbol packs + in-tree code symbols.
+   No payments/accounts. GPU is core (not listed as a knowledge product)."
+  (declare (ignore root))
+  (symbol-pack-ensure-seeds!)
+  (let* ((knowledge (getf (symbol-pack-catalog) :catalog))
+         (sys-root (asdf:system-source-directory :metis))
+         (sym-root (merge-pathnames "symbols/" sys-root))
+         (code-packs nil))
+    (when (probe-file sym-root)
+      (dolist (d (directory (merge-pathnames "*/" sym-root)))
+        (let* ((id (car (last (pathname-directory d))))
+               (manifest (merge-pathnames "manifest.lisp" d))
+               (sig (merge-pathnames "symbol.sig" d)))
+          ;; skip gpu-nn as marketplace knowledge; still a built-in accel
+          (when (and (probe-file manifest)
+                     (not (string-equal id "gpu-nn"))
+                     (not (string-equal id "knowledge")))
+            (push (list :id id
+                        :path (namestring d)
+                        :manifest (namestring manifest)
+                        :signed (and (probe-file sig) t)
+                        :installable t
+                        :kind :code
+                        :open t
+                        :payment nil)
+                  code-packs)))))
+    (list :marketplace t
+          :payments nil
+          :accounts nil
+          :unit "symbols"
+          :knowledge knowledge
+          :knowledge-count (length knowledge)
+          :packages (sort (append
+                           (mapcar (lambda (e)
+                                     (list :id (getf e :id)
+                                           :path (getf e :path)
+                                           :kind :knowledge
+                                           :license (getf e :license)
+                                           :open t
+                                           :payment nil
+                                           :installable t))
+                                   knowledge)
+                           code-packs)
+                          #'string<
+                          :key (lambda (p) (getf p :id)))
+          :count (+ (length knowledge) (length code-packs))
+          :install-via 'install-symbol!
+          :knowledge-install-via 'symbol-pack-catalog-install
+          :note "Open knowledge packs via /symbol-pack; GPU is built-in accel not a store SKU")))
+
+(defun symbol-marketplace-install (id-or-path &key (enable t)
+                                              (require-signature t))
+  "Install a marketplace package by id (in-tree symbols/) or path/URL.
+   REQUIRE-SIGNATURE defaults T (signed packages are the product norm).
+   In-tree first-party boot remains unsigned via symbols-boot! / enable-symbol!."
+  (let* ((catalog (symbol-marketplace-catalog))
+         (by-id (find id-or-path (getf catalog :packages)
+                      :key (lambda (p) (getf p :id))
+                      :test #'string=))
+         (src (if by-id (getf by-id :path) id-or-path))
+         (remote (and (stringp src)
+                      (or (eql 0 (search "http://" src))
+                          (eql 0 (search "https://" src))
+                          (eql 0 (search "file://" src))))))
+    (let ((nid (cond (by-id (getf by-id :id))
+                     ((and (stringp id-or-path)
+                           (not (or (search "/" id-or-path)
+                                    (search "\\" id-or-path)
+                                    (search ":" id-or-path))))
+                      id-or-path)
+                     (t (let ((p (uiop:ensure-directory-pathname src)))
+                          (or (car (last (pathname-directory p)))
+                              "symbol"))))))
+      (install-symbol! src :id nid
+                       :enable enable
+                       :require-signature require-signature
+                       :trust-remote (or remote require-signature)))))
 
 (defun curriculum-apply (curriculum-path &key (name "curriculum-lm")
                                             (epochs 2)

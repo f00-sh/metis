@@ -166,6 +166,20 @@
    #:session-attach-file
    #:session-attach-photo
    #:session-attach-context
+   #:session-attach-folder
+   #:session-ingest-path
+   #:session-train-on-text!
+   #:session-watch-folder
+   #:session-watch-poll!
+   #:brain-start!
+   #:brain-stop!
+   #:brain-status
+   #:brain-enqueue-train!
+   #:brain-queue-depth
+   #:*brain-auto-start*
+   #:*brain-interval*
+   #:*session-folder-watches*
+   #:extract-text-from-path
    #:session-list-attachments
    #:session-get-attachment
    #:session-attachment-text
@@ -177,7 +191,31 @@
    #:iface-accommodate
    #:iface-flagship
    #:iface-thesis
+   #:iface-tokenize-query
+   #:iface-retrieve-attachments
+   #:iface-extractive-answer
+   #:iface-rank-sentences
+   #:iface-split-sentences
+   #:iface-freeform-answer
+   #:eval-math-expression
+   #:llm-complete
+   #:llm-enabled-p
+   #:configure-llm!
+   #:llm-status
+   #:llm-save-key!
+   #:llm-clear-key!
+   #:llm-set-model!
+   #:llm-set-base-url!
+   #:llm-keyfile-path
+   #:load-dotenv
    #:*iface-thesis*
+   ;; product TUI (pure Common Lisp, ANSI/Unicode)
+   #:tui-run
+   #:run-tui
+   #:tui-splash
+   #:*tui-use-color*
+   #:*tui-use-unicode*
+   #:*tui-quit-process*
    ;; 4.0 neural substrate (pure CL) + continuous train + TMS gate
    #:nn-train-language-model
    #:nn-train-file
@@ -211,6 +249,70 @@
    #:curriculum-apply
    #:sign-symbol-package
    #:verify-symbol-package
+   ;; open-knowledge hybrid symbol packs
+   #:make-symbol-pack-manifest
+   #:symbol-pack-validate-manifest
+   #:symbol-pack-write!
+   #:symbol-pack-load-into-mind!
+   #:symbol-export-snapshot!
+   #:symbol-import-snapshot!
+   #:symbol-pack-install!
+   #:symbol-pack-enable!
+   #:symbol-pack-disable!
+   #:symbol-pack-overlay-unload!
+   #:symbol-pack-catalog
+   #:symbol-pack-catalog-install
+   #:symbol-pack-ensure-seeds!
+   #:symbol-pack-boot!
+   #:symbol-pack-list-installed
+   #:symbol-pack-query
+   #:symbol-pack-query-all
+   #:symbol-pack-clear-layers!
+   #:*symbol-pack-overlays*
+   #:*symbol-pack-layer-store*
+   #:*symbol-pack-fact-refcount*
+   #:*symbol-pack-base-pins*
+   ;; capability runtime (math/nl/local-user)
+   #:symbol-runtime-boot!
+   #:symbol-capability-enabled-p
+   #:symbol-tree-model
+   #:symbol-toggle!
+   #:symbol-default-enable!
+   #:symbol-math-answer
+   #:symbol-nl-chitchat
+   #:symbol-nl-concept
+   #:symbol-nl-pick
+   #:symbol-nl-bank-add!
+   #:symbol-local-user-answer
+   #:symbol-local-user-facts
+   #:symbol-local-learning-p
+   #:symbol-loaded-summary
+   #:symbol-catalog-download!
+   #:*symbol-default-ids*
+   #:*nl-phrase-banks*
+   ;; sealed symbols (open-sealed + private-sealed)
+   #:make-symbol-seal-header
+   #:symbol-seal-header-validate
+   #:symbol-seal!
+   #:symbol-seal-sign!
+   #:symbol-seal-verify
+   #:symbol-seal-decrypt-body
+   #:symbol-seal-load!
+   #:symbol-seal-read-header
+   #:symbol-seal-dir-p
+   #:symbol-seal-body-opaque-p
+   #:symbol-marketplace-load-index!
+   #:symbol-marketplace-register!
+   #:symbol-marketplace-save-index!
+   #:symbol-marketplace-check
+   #:symbol-source-kit-new!
+   #:symbol-source-kit-read
+   #:symbol-source-kit-ingest!
+   #:symbol-train-from-kit!
+   #:symbol-build!
+   #:symbol-source-kit-root
+   #:symbol-sealed-root
+   #:make-symbol-source-manifest
    ;; 4.3 hybrid CLS cognitive unit
    #:cognitive-unit
    #:cognitive-turn
@@ -226,6 +328,19 @@
    #:sleep-consolidate!
    #:hybrid-forget-test
    #:hybrid-coupled-propose
+   #:hybrid-coupled-accept-p
+   #:register-coupled-templates!
+   #:*coupled-accept-templates*
+   #:episode-summary-key
+   #:hybrid-a-token-retention
+   #:hybrid-separation-probe
+   #:hybrid-long-context-train!
+   #:hybrid-offline-schedule!
+   #:hybrid-plan-explain
+   #:curriculum-ladder-run
+   #:trust-policy-allows-p
+   #:nn-enable-path-policy
+   #:hybrid-teach-policy
    #:hybrid-metrics
    #:hybrid-metrics-reset!
    #:hybrid-metrics-adjust!
@@ -236,8 +351,18 @@
    #:*online-lm-name*
    #:*replay-enabled*
    #:*replay-k*
+   #:*train-max-batches-cap*
+   #:*train-max-epochs-cap*
+   #:*separation-retention-threshold*
    #:*hybrid-thesis*
-   #:install-hybrid-tools)
+   #:install-hybrid-tools
+   #:symbol-marketplace-catalog
+   #:symbol-marketplace-install
+   #:society-trust!
+   #:society-trust-p
+   #:society-trusted-send
+   #:durable-save-hybrid!
+   #:durable-load-hybrid!)
   (:documentation
    "Metis 1.0 — production introspective multi-agent cognitive architecture.
     Code is data; minds reason, plan (STRIPS+HTN), maintain truth, learn, and collaborate."))

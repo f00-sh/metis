@@ -1,0 +1,8 @@
+limit: value a function approaches as the input approaches a point
+derivative: instantaneous rate of change as limit of [f(x+h)-f(x)]/h
+integral: accumulation; antiderivative linked by the fundamental theorem of calculus
+power rule: d/dx x^n = n x^(n-1)
+sum rule: derivative of sum is sum of derivatives
+chain rule: d/dx f(g(x)) = f'(g(x)) g'(x)
+fundamental theorem: derivative of integral from a to x of f is f(x)
+Sources: OpenStax Calculus Vol 1 (CC-BY); MIT OCW 18.01 concept map (CC-BY-NC-SA).

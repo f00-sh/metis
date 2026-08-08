@@ -139,3 +139,61 @@
     (when *mind*
       (society-register soc *mind* :name "conductor" :role :conductor))
     soc))
+
+;;; ------------------------------------------------------------------
+;;; Multi-mind trust (product frontier)
+;;; ------------------------------------------------------------------
+
+(defparameter *society-trust-edges*
+  (make-hash-table :test #'equal)
+  "Directed trust edges as (from . to) → level. Survives actors not yet registered.")
+
+(defun society-trust-clear! ()
+  (clrhash *society-trust-edges*)
+  t)
+
+(defun society-trust! (society from to &key (level 1.0))
+  "Establish directed trust FROM → TO.
+   Edge always recorded in *society-trust-edges*; also asserts facts when minds exist."
+  (setf (gethash (cons from to) *society-trust-edges*) level)
+  (let ((fm (society-get society from))
+        (tm (society-get society to)))
+    (when fm
+      (assert-fact fm (list 'trusts to level) :support :society-trust
+                   :forward nil)
+      (when (mind-tms fm)
+        (tms-assert (mind-tms fm) (list 'trusts to level)
+                    :informant :society-trust)))
+    (when tm
+      (assert-fact tm (list 'trusted-by from level) :support :society-trust
+                   :forward nil)
+      (when (mind-tms tm)
+        (tms-assert (mind-tms tm) (list 'trusted-by from level)
+                    :informant :society-trust)))
+    (when (soc-blackboard society)
+      (bb-post (soc-blackboard society) :message
+               (list :trust from to :level level)
+               :author (or from "trust") :priority 2))
+    (list :trusted t :from from :to to :level level)))
+
+(defun society-trust-p (society from to)
+  "T if FROM trusts TO (edge table or mind KB/TMS)."
+  (or (and (gethash (cons from to) *society-trust-edges*) t)
+      (let ((fm (society-get society from)))
+        (when fm
+          (or (ask fm (list 'trusts to '?l))
+              (and (mind-tms fm)
+                   (tms-in-p (mind-tms fm) (list 'trusts to 1.0)))
+              (some (lambda (f)
+                      (and (consp f)
+                           (eq (first f) 'trusts)
+                           (equal (second f) to)))
+                    (kb-all-facts (mind-kb fm))))))))
+
+(defun society-trusted-send (society from to content &key (priority 0))
+  "Send only if society-trust-p holds; otherwise error (exercisable trust gate)."
+  (unless (society-trust-p society from to)
+    (error 'metis-error
+           :message (format nil "no trust edge ~A → ~A" from to)))
+  (society-send society from to content :priority priority)
+  (list :sent t :from from :to to :trusted t :content content))

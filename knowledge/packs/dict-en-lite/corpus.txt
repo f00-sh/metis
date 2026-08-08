@@ -1,0 +1,3 @@
+cat: a small domesticated carnivorous mammal
+dog: a domesticated carnivorous mammal
+metis: cunning intelligence

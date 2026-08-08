@@ -1,0 +1,9 @@
+natural-number: positive whole counting number 1,2,3,...
+integer: whole number that may be positive, negative, or zero
+rational-number: number expressible as ratio of integers p/q with q≠0
+pemdas: parentheses exponents multiplication/division addition/subtraction
+additive-identity: a + 0 = a
+multiplicative-identity: a * 1 = a
+commutative addition: a + b = b + a
+distributive law: a*(b+c) = a*b + a*c
+Open educational note: arithmetic foundations as taught in elementary algebra courses (OpenStax).

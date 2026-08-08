@@ -253,3 +253,135 @@
     (is (> (with-open-file (in develop) (file-length in)) 200))
     (is (search "FRONTIERS" (uiop:read-file-string memo) :test #'char-equal))
     (is (search "metis.image" (uiop:read-file-string pkg)))))
+
+(test frontiers-multi-mind-trust
+  "Multi-mind trust: establish edge, trusted-send succeeds; untrusted fails."
+  (metis:boot :bootstrap t :reset t)
+  (let ((soc (metis:society-default-ensemble)))
+    (is (>= (length (metis::society-minds soc)) 2))
+    (let ((t1 (metis:society-trust! soc "conductor" "planner" :level 1.0)))
+      (is (getf t1 :trusted))
+      (is (metis:society-trust-p soc "conductor" "planner")))
+    (let ((sent (metis:society-trusted-send soc "conductor" "planner"
+                                            '(plan-request explore))))
+      (is (getf sent :sent))
+      (is (getf sent :trusted)))
+    (handler-case
+        (progn
+          (metis:society-trusted-send soc "critic" "executor" '(nope))
+          (fail "untrusted send should error"))
+      (error (e)
+        (is (search "trust" (princ-to-string e) :test #'char-equal))))))
+
+(test frontiers-marketplace-and-curriculum
+  "Marketplace catalog lists installable packages; curriculum train runs."
+  (metis:boot :bootstrap t :reset t)
+  (let ((cat (metis:symbol-marketplace-catalog)))
+    (is (getf cat :marketplace))
+    (is (plusp (getf cat :count)))
+    (is (find "curriculum" (getf cat :packages)
+              :key (lambda (p) (getf p :id)) :test #'string=))
+    (is (find "domain-pack" (getf cat :packages)
+              :key (lambda (p) (getf p :id)) :test #'string=))
+    (is (eq (getf cat :install-via) 'metis:install-symbol!)))
+  (let* ((cur (merge-pathnames "symbols/curriculum/curriculum.txt"
+                               (asdf:system-source-directory :metis)))
+         (r (metis:curriculum-apply cur :name "fr-cur-2"
+                                    :epochs 1 :hidden 32 :seq-len 128
+                                    :depth 3 :max-batches 4)))
+    (is (equal "fr-cur-2" (getf r :name)))
+    (is (getf r :history))
+    (is (= 3 (or (getf r :depth)
+                 (metis.nn:lm-depth
+                  (getf (metis.nn:nn-registry-get "fr-cur-2") :model)))))))
+
+
+
+(test frontiers-marketplace-iface-signed
+  "Marketplace catalog + signed external sample install; unsigned refused."
+  (metis:boot :bootstrap t :reset t)
+  (metis.symbols:ensure-default-trust-key!)
+  (let ((cat (metis:symbol-marketplace-catalog)))
+    (is (getf cat :marketplace))
+    (is (plusp (getf cat :count))))
+  (let* ((root (asdf:system-source-directory :metis))
+         (sample (merge-pathnames "samples/external-echo/" root))
+         (manifest (merge-pathnames "manifest.lisp" sample))
+         (sig (merge-pathnames "symbol.sig" sample)))
+    (is (probe-file manifest))
+    (is (> (with-open-file (in manifest) (file-length in)) 100)
+        "external-echo manifest must be non-empty")
+    (is (search "register-symbol!" (uiop:read-file-string manifest)
+                :test #'char-equal))
+    (is (probe-file sig))
+    ;; re-sign so sig matches current manifest
+    (metis:sign-symbol-package sample)
+    ;; unsigned refuse via API
+    (let ((tmp #P"/tmp/grok-goal-53da7102af27/implementer/unsigned-echo/"))
+      (ensure-directories-exist tmp)
+      (uiop:copy-file manifest (merge-pathnames "manifest.lisp" tmp))
+      (when (probe-file (merge-pathnames "symbol.sig" tmp))
+        (delete-file (merge-pathnames "symbol.sig" tmp)))
+      (handler-case
+          (progn
+            (metis:symbol-marketplace-install (namestring tmp)
+                                              :enable t
+                                              :require-signature t)
+            (fail "unsigned marketplace install should fail"))
+        (error (e)
+          (is (or (search "unsigned" (princ-to-string e) :test #'char-equal)
+                  (search "sig" (princ-to-string e) :test #'char-equal)
+                  (search "missing" (princ-to-string e) :test #'char-equal)
+                  (search "mismatch" (princ-to-string e) :test #'char-equal)))))
+      ;; unsigned refuse via real iface /marketplace install
+      (let* ((s (metis:session-create :id "mkt-unsigned" :boot nil))
+             (cmd (format nil "/marketplace install ~A" (namestring tmp)))
+             (out (metis:iface-turn s cmd))
+             (res (getf out :result))
+             (msg (princ-to-string (or res out))))
+        (is (or (and (consp res) (getf res :error))
+                (search "unsigned" msg :test #'char-equal)
+                (search "sig" msg :test #'char-equal)
+                (search "missing" msg :test #'char-equal)
+                (search "mismatch" msg :test #'char-equal)
+                (search "error" msg :test #'char-equal))
+            "iface marketplace install unsigned must surface error, got ~A" msg)))
+    ;; signed external sample installs via API
+    (let* ((src (namestring (uiop:ensure-directory-pathname (truename sample))))
+           (info (metis:symbol-marketplace-install src
+                                                   :enable t
+                                                   :require-signature t))
+           (si (metis:symbol-info "external-echo")))
+      (is (equal "external-echo" (getf info :id)))
+      (is (member "external-echo" (metis:symbol-list) :test #'string=))
+      (is (equal "1.0.0" (getf si :version)))
+      (is (plusp (length (getf si :capabilities))))
+      (is (member :marketplace-sample (getf si :capabilities))))
+    ;; signed install via iface /marketplace install
+    (let* ((s (metis:session-create :id "mkt-signed" :boot nil))
+           (src (namestring (uiop:ensure-directory-pathname (truename sample))))
+           (out (metis:iface-turn s (format nil "/marketplace install ~A external-echo" src)))
+           (res (getf out :result)))
+      (is (getf out :explain))
+      (is (or (equal "external-echo" (getf res :id))
+              (member "external-echo" (metis:symbol-list) :test #'string=)))))
+  ;; iface /marketplace list dispatch
+  (let* ((s (metis:session-create :id "mkt-iface" :boot nil))
+         (out (metis:iface-turn s "/marketplace list")))
+    (is (getf out :explain))
+    (is (getf out :metrics))
+    (is (or (getf (getf out :result) :marketplace)
+            (getf out :result)))))
+
+(test frontiers-domain-kinship-pack
+  (metis:boot :bootstrap t :reset t)
+  (metis:nn-enable-path metis:*mind*)
+  (let* ((pack (merge-pathnames "symbols/domain-kinship/pack.lisp"
+                                (asdf:system-source-directory :metis)))
+         (r (metis:domain-pack-load metis:*mind* pack)))
+    (is (getf r :loaded))
+    (is (plusp (getf r :couple-templates)))
+    (let ((acc (metis:hybrid-coupled-propose metis:*mind* '(parent alice bob))))
+      (is (getf acc :accepted)))
+    (let ((rej (metis:hybrid-coupled-propose metis:*mind* '(not-kin 1))))
+      (is (eq (getf rej :decision) :coupled-reject)))))

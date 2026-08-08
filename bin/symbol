@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Metis symbol authoring CLI — source kit → train → seal → verify → load
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export CL_SOURCE_REGISTRY="${ROOT}/:${CL_SOURCE_REGISTRY:-}"
+CMD="${1:-help}"
+shift || true
+
+run_lisp () {
+  sbcl --noinform --non-interactive --disable-debugger \
+    --eval "(push (truename \"$ROOT/\") asdf:*central-registry*)" \
+    --eval "(asdf:load-system :metis)" \
+    --eval "$1" \
+    --quit
+}
+
+case "$CMD" in
+  help|-h|--help)
+    cat <<'EOF'
+metis symbol — train and seal knowledge packages
+
+  symbol new <id> [--name NAME] [--license LIC]
+      Create a source kit under knowledge/source-kits/<id>/
+
+  symbol ingest <kit-dir> <file.txt> [more.txt ...]
+      Copy text corpora into kit corpus/
+
+  symbol train <kit-dir>
+      Train/build knowledge from kit (facts + corpus extraction)
+
+  symbol build <kit-dir> [--private --key PASS] [--trust TIER]
+      Train + seal → knowledge/sealed/<id>/
+      Modes: open-sealed (default) | private-sealed (requires --key)
+
+  symbol verify <sealed-dir>
+      Verify hash + signature (refuses bad packages)
+
+  symbol load <sealed-dir> [--key PASS]
+      Verify, decrypt, load into mind
+
+  symbol marketplace-check <id> [version] [body-sha256]
+      Compare against free marketplace index
+
+See docs/SYMBOL-TRAINING.md for the full guide.
+EOF
+    ;;
+  new)
+    ID="${1:?id required}"
+    run_lisp "(progn (format t \"~S~%\" (metis:symbol-source-kit-new! \"$ID\")) (uiop:quit 0))"
+    ;;
+  ingest)
+    KIT="${1:?kit dir}"
+    shift
+    FILES="("
+    for f in "$@"; do FILES+=" \"$f\""; done
+    FILES+=")"
+    run_lisp "(progn (format t \"~S~%\" (metis:symbol-source-kit-ingest! \"$KIT\" (list $FILES))) (uiop:quit 0))"
+    ;;
+  train)
+    KIT="${1:?kit dir}"
+    run_lisp "(let ((r (metis:symbol-train-from-kit! \"$KIT\"))) (format t \"trained id=~A facts=~A extracted=~A~%\" (getf r :id) (length (getf r :facts)) (getf r :extracted)) (uiop:quit 0))"
+    ;;
+  build)
+    KIT="${1:?kit dir}"
+    shift || true
+    MODE=":open-sealed"
+    KEY="nil"
+    TIER=":community"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --private) MODE=":private-sealed"; shift ;;
+        --key) KEY="\"$2\""; shift 2 ;;
+        --trust) TIER=":$2"; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    run_lisp "(let ((r (metis:symbol-build! \"$KIT\" :mode $MODE :key $KEY :trust-tier $TIER))) (format t \"~S~%\" (list :built (getf r :built) :id (getf r :id) :path (getf r :path) :body-sha256 (getf r :body-sha256) :mode (getf r :mode))) (uiop:quit 0))"
+    ;;
+  verify)
+    DIR="${1:?sealed dir}"
+    run_lisp "(let ((r (metis:symbol-seal-verify \"$DIR\" :require nil))) (format t \"~S~%\" r) (uiop:quit (if (getf r :ok) 0 1)))"
+    ;;
+  load)
+    DIR="${1:?sealed dir}"
+    shift || true
+    KEY="nil"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --key) KEY="\"$2\""; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    run_lisp "(progn (metis:boot) (let ((r (metis:symbol-seal-load! \"$DIR\" :key $KEY))) (format t \"~S~%\" (list :loaded (getf r :loaded) :id (getf r :id) :facts (getf r :facts) :marketplace (getf r :marketplace))) (uiop:quit 0)))"
+    ;;
+  marketplace-check)
+    ID="${1:?id}"
+    VER="${2:-}"
+    HASH="${3:-}"
+    run_lisp "(progn (format t \"~S~%\" (metis:symbol-marketplace-check \"$ID\" :version (and (plusp (length \"$VER\")) \"$VER\") :body-sha256 (and (plusp (length \"$HASH\")) \"$HASH\"))) (uiop:quit 0))"
+    ;;
+  *)
+    echo "Unknown command: $CMD (try: symbol help)"
+    exit 2
+    ;;
+esac

@@ -1,0 +1,9 @@
+point: location in space with no size
+line: straight one-dimensional figure extending without end
+triangle: polygon with three sides and three angles
+circle: set of points at fixed distance radius from a center
+Pythagorean theorem: in a right triangle a^2 + b^2 = c^2
+triangle angle sum: interior angles sum to 180 degrees in Euclidean geometry
+circumference: C = 2*pi*r
+circle area: A = pi*r^2
+Sources: Euclid Elements (public domain) + standard open geometry curricula.
