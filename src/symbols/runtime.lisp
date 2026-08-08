@@ -641,12 +641,16 @@
     (list :downloaded id :result r :enabled enable)))
 
 (defun symbol-runtime-boot! (&key (mind nil) (defaults t))
-  "Boot open-knowledge + core capability symbols (math, NL, local-user)."
+  "Boot open-knowledge + core capability symbols (math, NL, local-user).
+   Clears pack enable/layer/dep session state so residual installs cannot
+   shadow auto-loaded dep tracking across reboots."
   (clrhash *symbol-capabilities*)
   (clrhash *symbol-facet-store*)
   (when (boundp '*symbol-dep-pins*) (clrhash *symbol-dep-pins*))
   (when (boundp '*symbol-required-deps*) (clrhash *symbol-required-deps*))
   (when (boundp '*symbol-auto-loaded*) (clrhash *symbol-auto-loaded*))
+  (when (boundp '*symbol-pack-enabled*) (clrhash *symbol-pack-enabled*))
+  (when (fboundp 'symbol-pack-clear-layers!) (symbol-pack-clear-layers!))
   (symbol-pack-boot!)
   (symbol-ensure-core-packs!)
   (when defaults

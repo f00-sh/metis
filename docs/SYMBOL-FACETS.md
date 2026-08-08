@@ -43,10 +43,12 @@ If `:facets` omitted, Metis infers from capabilities (`symbol-default-facets-for
 When A `depends-on` B and C also depends on B:
 
 - Loading A or C **pins** B.
+- Required deps auto-loaded from `knowledge/sealed/` load as **temporary overlays** and are marked cascade-eligible.
 - Unloading A **releases A’s pin only**.
 - B stays loaded while **any** loaded symbol still pins it.
 - B may cascade-unload only if it was **auto-loaded as a dependency** and has **zero** remaining pins.
 - Explicit user loads of B are never cascade-unloaded just because a dependent went away.
+- Boot/reset clears pack enable, layer, and dep-pin session state so residual installs cannot mask auto-loaded tracking.
 
 API: `symbol-seal-unload!`, `symbol-dep-holders`, used by `symbol-toggle!`.
 

@@ -280,6 +280,8 @@
     (metis:symbol-seal-load! a :mind metis:*mind*)
     (metis:symbol-seal-load! b :mind metis:*mind*)
     (is-true (metis::%seal-dep-loaded-p "dep-base"))
+    (is-true (metis:symbol-auto-loaded-p "dep-base")
+             "auto-dep load must mark dep-base cascade-eligible")
     (is (member "dep-a" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
     (is (member "dep-b" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
     ;; unload A — base must stay (B still pins it)
@@ -290,10 +292,56 @@
       (is (member "dep-b" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
       (is-false (member "dep-a" (metis:symbol-dep-holders "dep-base")
                         :test #'string-equal)))
-    ;; unload B — base may cascade if auto-loaded
-    (metis:symbol-seal-unload! "dep-b" :mind metis:*mind*)
-    (is-false (metis::%seal-dep-loaded-p "dep-a"))
-    (is-false (metis::%seal-dep-loaded-p "dep-b"))))
+    ;; unload B — last pin: auto-loaded base cascades away
+    (let ((u (metis:symbol-seal-unload! "dep-b" :mind metis:*mind*)))
+      (is-true (getf u :cascaded)
+               "last pin on auto-loaded dep-base should cascade")
+      (is-false (metis::%seal-dep-loaded-p "dep-a"))
+      (is-false (metis::%seal-dep-loaded-p "dep-b"))
+      (is-false (metis::%seal-dep-loaded-p "dep-base")
+                "auto-loaded dep-base must unload when last pin drops"))))
+
+(test symbol-dep-explicit-load-is-sticky
+  "Explicit user load of a dep is not cascade-unloaded with the consumer."
+  (metis:boot :bootstrap t :reset t)
+  (ignore-errors (metis:symbol-pack-disable! "math" :mind metis:*mind*))
+  (ignore-errors (metis::%symbol-unregister-caps! "math"))
+  (let* ((base (merge-pathnames "sticky-base/" *seal-scratch*))
+         (a (merge-pathnames "sticky-a/" *seal-scratch*)))
+    (ensure-directories-exist base)
+    (ensure-directories-exist a)
+    (metis:symbol-seal!
+     (list :id "sticky-base" :version "1.0.0" :license "MIT"
+           :capabilities '(:math)
+           :facets '(:knowledge :process)
+           :facts '((domain-def "sticky-base" "unit" "explicit sticky dep")))
+     base :mode :open-sealed)
+    (metis:symbol-seal!
+     (list :id "sticky-a" :version "1.0.0" :license "MIT"
+           :capabilities '(:math)
+           :depends-on '((:id "sticky-base" :role :required))
+           :facts '((domain-def "sticky-a" "a" "consumer")))
+     a :mode :open-sealed)
+    (let ((root (merge-pathnames "sticky-base/" (metis:symbol-sealed-root))))
+      (ensure-directories-exist root)
+      (uiop:copy-file (merge-pathnames "header.lisp" base)
+                      (merge-pathnames "header.lisp" root))
+      (uiop:copy-file (merge-pathnames "body.mse" base)
+                      (merge-pathnames "body.mse" root))
+      (uiop:copy-file (merge-pathnames "symbol.sig" base)
+                      (merge-pathnames "symbol.sig" root))
+      ;; user loads base explicitly first
+      (metis:symbol-seal-load! root :mind metis:*mind*)
+      (is-false (metis:symbol-auto-loaded-p "sticky-base"))
+      (metis:symbol-seal-load! a :mind metis:*mind*)
+      (is (member "sticky-a" (metis:symbol-dep-holders "sticky-base")
+                  :test #'string-equal))
+      (let ((u (metis:symbol-seal-unload! "sticky-a" :mind metis:*mind*)))
+        (is-true (getf u :unloaded))
+        (is-false (getf u :cascaded))
+        (is-true (metis::%seal-dep-loaded-p "sticky-base")
+                 "explicit sticky-base must remain after consumer unload")
+        (is-false (metis:symbol-auto-loaded-p "sticky-base"))))))
 
 (test dual-facet-math-knowledge-and-process
   "Math symbols: knowledge + process facets; unload removes both."

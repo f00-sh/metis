@@ -536,9 +536,12 @@
                (if (and (probe-file (merge-pathnames "header.lisp" seed))
                         (probe-file (merge-pathnames "body.mse" seed)))
                    (progn
-                     ;; recursive load as auto-dep (private still temporary)
+                     ;; recursive load as auto-dep: temporary overlay so cascade
+                     ;; unload does not leave permanent registry pollution, and
+                     ;; as-dependency marks cascade eligibility.
                      (symbol-seal-load! seed :mind m :verify t
-                                        :as-dependency t)
+                                        :as-dependency t
+                                        :temporary t)
                      (push dep-id loaded)
                      (when holder (symbol-dep-pin! holder dep-id)))
                    (push dep-id missing))))
