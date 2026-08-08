@@ -30,7 +30,10 @@ metis symbol — train and seal knowledge packages
       Create a source kit under knowledge/source-kits/<id>/
 
   symbol ingest <kit-dir> <file.txt> [more.txt ...]
-      Copy text corpora into kit corpus/
+      Copy text corpora into kit corpus/ (books OK — large files allowed)
+
+  symbol ingest-book <kit-dir> <book.txt> [--chunk N]
+      Split an ENTIRE book into ordered corpus chunks (book-scale symbols)
 
   symbol train <kit-dir>
       Train/build knowledge from kit (facts + corpus extraction)
@@ -91,10 +94,25 @@ EOF
     LKIT=$(lisp_str "$KIT")
     run_lisp "(progn (format t \"~S~%\" (metis:symbol-source-kit-ingest! \"$LKIT\" (list$FILE_ARGS))) (uiop:quit 0))"
     ;;
+  ingest-book)
+    KIT="${1:?kit dir}"
+    BOOK="${2:?book.txt required}"
+    shift 2 || true
+    CHUNK=12000
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --chunk) CHUNK="$2"; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    LKIT=$(lisp_str "$KIT")
+    LBOOK=$(lisp_str "$BOOK")
+    run_lisp "(progn (format t \"~S~%\" (metis:symbol-source-kit-ingest-book! \"$LKIT\" \"$LBOOK\" :chunk-chars $CHUNK)) (uiop:quit 0))"
+    ;;
   train)
     KIT="${1:?kit dir}"
     LKIT=$(lisp_str "$KIT")
-    run_lisp "(let ((r (metis:symbol-train-from-kit! \"$LKIT\"))) (format t \"trained id=~A facts=~A extracted=~A~%\" (getf r :id) (length (getf r :facts)) (getf r :extracted)) (uiop:quit 0))"
+    run_lisp "(let ((r (metis:symbol-train-from-kit! \"$LKIT\"))) (format t \"trained id=~A facts=~A extracted=~A corpus-lines=~A~%\" (getf r :id) (length (getf r :facts)) (getf r :extracted) (length (getf r :corpus))) (uiop:quit 0))"
     ;;
   build)
     KIT="${1:?kit dir}"

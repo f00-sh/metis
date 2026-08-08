@@ -1,0 +1,92 @@
+roaches as the input approaches a point.
+[Limits drill 1] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 2] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 3] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 4] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 5] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 6] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 7] A limit describes the value a function approaches as the input approaches a point.
+[Limits drill 8] A limit describes the value a function approaches as the input approaches a point.
+We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+Key idea (Limits): We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+In problems involving limits, remember: We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+Definition/identity note: We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 1] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 2] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 3] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 4] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 5] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 6] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 7] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+[Limits drill 8] We write lim x->a f(x) = L when f(x) can be made arbitrarily close to L by taking x sufficiently close to a (but not equal).
+One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+Key idea (Limits): One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+In problems involving limits, remember: One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+Definition/identity note: One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 1] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 2] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 3] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 4] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 5] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 6] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 7] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+[Limits drill 8] One-sided limits: left-hand lim x->a- and right-hand lim x->a+ must agree for a two-sided limit to exist.
+Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+Key idea (Limits): Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+In problems involving limits, remember: Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+Definition/identity note: Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 1] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 2] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 3] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 4] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 5] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 6] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 7] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+[Limits drill 8] Infinite limits describe vertical asymptotes; limits at infinity describe horizontal asymptotes.
+Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+Key idea (Limits): Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+In problems involving limits, remember: Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+Definition/identity note: Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 1] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 2] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 3] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 4] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 5] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 6] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 7] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+[Limits drill 8] Squeeze theorem: if g<=f<=h near a and lim g = lim h = L then lim f = L.
+Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+Key idea (Limits): Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+In problems involving limits, remember: Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+Definition/identity note: Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 1] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 2] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 3] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 4] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 5] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 6] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 7] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+[Limits drill 8] Continuity at a: lim x->a f(x) = f(a). Continuous on an interval if continuous at every point.
+Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+Key idea (Limits): Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+In problems involving limits, remember: Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+Definition/identity note: Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 1] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 2] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 3] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 4] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 5] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 6] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 7] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+[Limits drill 8] Intermediate value theorem: continuous f on [a,b] attains every value between f(a) and f(b).
+
+========================================================================
+CHAPTER: Derivatives
+========================================================================
+The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+Key idea (Derivatives): The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+In problems involving derivatives, remember: The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+Definition/identity note: The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 1] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 2] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 3] The 

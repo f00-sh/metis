@@ -1,0 +1,108 @@
+(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 7] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 8] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+Key idea (Applications of derivatives): L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+In problems involving applications of derivatives, remember: L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+Definition/identity note: L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 1] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 2] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 3] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 4] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 5] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 6] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 7] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+[Applications of derivatives drill 8] L'Hôpital's rule: for 0/0 or ∞/∞ indeterminate forms, lim f/g = lim f'/g' under hypotheses.
+
+========================================================================
+CHAPTER: Integrals
+========================================================================
+Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+Key idea (Integrals): Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+In problems involving integrals, remember: Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+Definition/identity note: Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 1] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 2] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 3] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 4] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 5] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 6] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 7] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+[Integrals drill 8] Indefinite integral ∫ f(x) dx denotes the family of antiderivatives of f.
+Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+Key idea (Integrals): Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+In problems involving integrals, remember: Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+Definition/identity note: Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 1] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 2] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 3] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 4] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 5] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 6] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 7] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+[Integrals drill 8] Definite integral ∫_a^b f(x) dx is the signed area / accumulation from a to b.
+Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+Key idea (Integrals): Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+In problems involving integrals, remember: Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+Definition/identity note: Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 1] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 2] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 3] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 4] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 5] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 6] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 7] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+[Integrals drill 8] Riemann sums: partition [a,b], sample points, sum f(x_i*) Δx_i; limit is the integral.
+Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+Key idea (Integrals): Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+In problems involving integrals, remember: Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+Definition/identity note: Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 1] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 2] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 3] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 4] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 5] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 6] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 7] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+[Integrals drill 8] Fundamental theorem of calculus part 1: d/dx ∫_a^x f(t) dt = f(x) for continuous f.
+Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+Key idea (Integrals): Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+In problems involving integrals, remember: Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+Definition/identity note: Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 1] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 2] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 3] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 4] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 5] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 6] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 7] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+[Integrals drill 8] Fundamental theorem part 2: ∫_a^b f = F(b)-F(a) when F'=f.
+Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+Key idea (Integrals): Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+In problems involving integrals, remember: Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+Definition/identity note: Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 1] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 2] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 3] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 4] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 5] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 6] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 7] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+[Integrals drill 8] Substitution: ∫ f(g(x)) g'(x) dx = ∫ f(u) du with u=g(x).
+Integration by parts: ∫ u dv = uv - ∫ v du.
+Key idea (Integrals): Integration by parts: ∫ u dv = uv - ∫ v du.
+In problems involving integrals, remember: Integration by parts: ∫ u dv = uv - ∫ v du.
+Definition/identity note: Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 1] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 2] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 3] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 4] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 5] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 6] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 7] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 8] Integration by parts: ∫ u dv = uv - ∫ v du.
+Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+Key idea (Integrals): Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+In problems involving integrals, remember: Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+Definition/identity note: Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 1] Area between curves: ∫_a^b |f-g|. Volumes v

@@ -1,0 +1,108 @@
+ limit exists.
+Key idea (Derivatives): The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+In problems involving derivatives, remember: The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+Definition/identity note: The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 1] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 2] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 3] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 4] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 5] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 6] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 7] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+[Derivatives drill 8] The derivative f'(a) is lim h->0 [f(a+h)-f(a)]/h when the limit exists.
+Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+Key idea (Derivatives): Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+In problems involving derivatives, remember: Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+Definition/identity note: Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 1] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 2] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 3] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 4] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 5] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 6] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 7] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+[Derivatives drill 8] Geometrically f'(a) is the slope of the tangent line to y=f(x) at x=a.
+Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+Key idea (Derivatives): Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+In problems involving derivatives, remember: Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+Definition/identity note: Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 1] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 2] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 3] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 4] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 5] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 6] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 7] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+[Derivatives drill 8] Differentiability implies continuity; the converse is false (e.g. |x| at 0).
+Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+Key idea (Derivatives): Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+In problems involving derivatives, remember: Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+Definition/identity note: Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 1] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 2] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 3] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 4] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 5] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 6] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 7] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+[Derivatives drill 8] Power rule: d/dx [x^n] = n x^(n-1) for real n where defined.
+Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+Key idea (Derivatives): Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+In problems involving derivatives, remember: Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+Definition/identity note: Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 1] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 2] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 3] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 4] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 5] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 6] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 7] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+[Derivatives drill 8] Sum rule: (f+g)' = f'+g'. Constant multiple: (cf)' = c f'.
+Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+Key idea (Derivatives): Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+In problems involving derivatives, remember: Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+Definition/identity note: Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 1] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 2] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 3] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 4] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 5] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 6] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 7] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+[Derivatives drill 8] Product rule: (fg)' = f'g + fg'. Quotient rule: (f/g)' = (f'g - fg')/g^2.
+Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+Key idea (Derivatives): Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+In problems involving derivatives, remember: Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+Definition/identity note: Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 1] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 2] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 3] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 4] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 5] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 6] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 7] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+[Derivatives drill 8] Chain rule: d/dx f(g(x)) = f'(g(x)) g'(x).
+Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+Key idea (Derivatives): Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+In problems involving derivatives, remember: Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+Definition/identity note: Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 1] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 2] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 3] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 4] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 5] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 6] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 7] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+[Derivatives drill 8] Derivatives of sin, cos, tan, exp, ln are standard identities used throughout calculus.
+Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+Key idea (Derivatives): Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+In problems involving derivatives, remember: Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+Definition/identity note: Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 1] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 2] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 3] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 4] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 5] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 6] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 7] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'.
+[Derivatives drill 8] Implicit differentiation: differentiate both sides treating y as y(x), then solve for y'

@@ -36,6 +36,21 @@ You ship a **trained, sealed package**. PDFs/notes stay in the source kit (or as
 
 ---
 
+## 0b. TUI keys (product surface)
+
+When the TUI is running, **Ctrl chords are hijacked by Metis** (raw tty:
+no IXON, no ISIG). If a host still eats a chord, backups exist.
+
+| Action | Keys |
+|--------|------|
+| Chat ↔ **symbols pane** | **Ctrl+T** · **F2** · type `/symbols` |
+| REPL popup | **Ctrl+R** · **F3** · `/repl` |
+| Settings popup | **Ctrl+S** · **F4** · `/settings` |
+| Newline in input | **Ctrl+N** |
+| Quit | `/quit` · Ctrl+C |
+
+Restart Metis after upgrades so key-rev in the banner increments (proves fresh code).
+
 ## 1. Install prerequisites
 
 ```bash
@@ -123,9 +138,31 @@ Facts are Lisp lists. Prefer stable predicates:
 
 - Prefer **CC-BY, CC0, public domain, university open course** material.
 - Do **not** dump pirated commercial textbooks into the repo.
-- Short definitional excerpts + worked examples + identity lists are ideal.
-- One concept per line often works well for definition extraction:
+- **Book-scale is expected.** A real calculus/language symbol is *large*
+  (full open textbooks / course notes), not ~20 hand facts.
+- Short `term: definition` lines still help fact extraction; **entire chapters**
+  go in via `symbol ingest-book`.
+- One concept per line is optional for extraction:
   `polynomial: expression that is a sum of terms a_i x^i`
+
+### 2.5 Book-scale ingest (entire open books)
+
+```bash
+# Convert PDF → text yourself (pdftotext) when the vendor allows, e.g. OpenStax CC-BY
+pdftotext -layout OpenStax-Calculus-Volume-1.pdf calculus-vol1.txt
+
+./bin/metis symbol ingest-book knowledge/source-kits/calculus \
+  ./calculus-vol1.txt --chunk 12000
+
+./bin/metis symbol train knowledge/source-kits/calculus
+./bin/metis symbol build knowledge/source-kits/calculus
+./bin/metis symbol verify knowledge/sealed/calculus
+```
+
+**Solving equations** is **not** “more facts.” Facts/corpus answer *what is*
+and *explain*. **Process engines** (PEMDAS / algebra / future CAS hooks gated by
+the math symbol capability) **compute**. A full calculus symbol needs **both**:
+huge open curriculum text **and** the math process surface enabled.
 
 ---
 

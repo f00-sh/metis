@@ -148,18 +148,61 @@
           :path (namestring dir))))
 
 (defun symbol-source-kit-ingest! (dir paths)
-  "Copy text files into kit corpus/. PATHS = list of pathnames/strings."
+  "Copy text files into kit corpus/. PATHS = list of pathnames/strings.
+   Large books are fine — each file is kept whole under corpus/."
   (let* ((dir (uiop:ensure-directory-pathname dir))
          (corp (merge-pathnames "corpus/" dir))
-         (copied nil))
+         (copied nil)
+         (bytes 0))
     (ensure-directories-exist corp)
     (dolist (p paths)
       (let* ((from (pathname p))
              (to (merge-pathnames (file-namestring from) corp)))
         (when (probe-file from)
           (uiop:copy-file from to)
+          (incf bytes (or (ignore-errors (with-open-file (in to) (file-length in))) 0))
           (push (namestring to) copied))))
-    (list :ingested (length copied) :files (nreverse copied))))
+    (list :ingested (length copied) :files (nreverse copied) :bytes bytes)))
+
+(defun symbol-source-kit-ingest-book!
+    (dir book-path &key (chunk-chars 12000) (name nil))
+  "Ingest an ENTIRE book (plain text) into the kit as chunked corpus files.
+   BOOK-PATH = .txt (preferred) or any text-like file. Chunks keep sequential order
+   so retrieval can pull long-form content. Returns stats.
+
+   This is the book-scale path: symbols are allowed to be large."
+  (let* ((dir (uiop:ensure-directory-pathname dir))
+         (corp (merge-pathnames "corpus/" dir))
+         (book (pathname book-path))
+         (base (or name (pathname-name book) "book"))
+         (text (with-open-file (in book :direction :input
+                                   :if-does-not-exist :error
+                                   :external-format :utf-8)
+                 (let ((s (make-string (file-length in))))
+                   (read-sequence s in)
+                   s)))
+         (n (length text))
+         (chunks 0)
+         (files nil))
+    (ensure-directories-exist corp)
+    (when (zerop n) (error "empty book ~A" book))
+    (loop for start from 0 below n by chunk-chars
+          for i from 0
+          for end = (min n (+ start chunk-chars))
+          for path = (merge-pathnames
+                      (format nil "~A-~4,'0D.txt" base i) corp)
+          do (with-open-file (out path :direction :output
+                                  :if-exists :supersede
+                                  :if-does-not-exist :create
+                                  :external-format :utf-8)
+               (write-string (subseq text start end) out))
+             (push (namestring path) files)
+             (incf chunks))
+    (list :book (namestring book)
+          :chars n
+          :chunks chunks
+          :chunk-chars chunk-chars
+          :files (nreverse files))))
 
 (defun %train-extract-def-facts (corpus-lines domain-tag)
   "Lightweight extraction: lines 'TERM: definition' → (domain-def domain term def)."

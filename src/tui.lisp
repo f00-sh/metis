@@ -255,7 +255,7 @@
   "Character output stream for the TUI (/dev/tty UTF-8).")
 (defvar *tui-in-fd* nil
   "OS fd for *tui-in* (SBCL).")
-(defvar *tui-key-rev* 9
+(defvar *tui-key-rev* 10
   "Bump when key path changes — proves fresh load.")
 
 (defun %tui-io-in ()
@@ -265,12 +265,14 @@
   (or *tui-out* *standard-output*))
 
 (defun %tui-termios-raw! (fd)
-  "Force termios: no ICANON, no ECHO, VMIN=0 VTIME=0. SBCL sb-posix."
+  "cfmakeraw-ish: Ctrl keys must reach us (no IXON=Ctrl+S freeze, no ISIG=Ctrl+C kill).
+   Classic Ctrl+T is byte 20; without this, the kernel/terminal steals chords."
   #+sbcl
   (ignore-errors
     (require 'sb-posix)
     (when (and fd (integerp fd) (>= fd 0))
       (let ((tty (sb-posix:tcgetattr fd)))
+        ;; local: no line discipline, no signal chars, no echo
         (setf (sb-posix:termios-lflag tty)
               (logand (sb-posix:termios-lflag tty)
                       (lognot (logior sb-posix:icanon
@@ -278,13 +280,27 @@
                                       sb-posix:echoe
                                       sb-posix:echok
                                       sb-posix:echonl
-                                      sb-posix:isig))))
+                                      sb-posix:isig
+                                      sb-posix:iexten))))
+        ;; input: no software flow control (Ctrl+S/Q), no CR→NL magic
         (setf (sb-posix:termios-iflag tty)
               (logand (sb-posix:termios-iflag tty)
-                      (lognot (logior sb-posix:ixon sb-posix:ixoff))))
-        (setf (sb-posix:termios-cc tty sb-posix:vmin) 0
-              (sb-posix:termios-cc tty sb-posix:vtime) 0)
-        (sb-posix:tcsetattr fd sb-posix:tcsadrain tty)
+                      (lognot (logior sb-posix:ixon
+                                      sb-posix:ixoff
+                                      sb-posix:icrnl
+                                      sb-posix:inlcr
+                                      sb-posix:igncr
+                                      sb-posix:brkint
+                                      sb-posix:inpck
+                                      sb-posix:istrip))))
+        (setf (sb-posix:termios-oflag tty)
+              (logand (sb-posix:termios-oflag tty)
+                      (lognot sb-posix:opost)))
+        ;; VMIN/VTIME: sb-posix:termios-cc returns a vector (not setf-able 3-arg)
+        (let ((cc (sb-posix:termios-cc tty)))
+          (setf (aref cc sb-posix:vmin) 0
+                (aref cc sb-posix:vtime) 0))
+        (sb-posix:tcsetattr fd sb-posix:tcsanow tty)
         t)))
   #-sbcl nil)
 
@@ -323,44 +339,49 @@
   nil)
 
 (defun %tui-raw-on ()
+  "Hijack the tty so EVERY Ctrl+key reaches Metis (not the shell/kernel)."
   (%tui-open-tty!)
-  ;; 1) stty (portable)
+  ;; One strong stty — do NOT follow with a weaker stty that re-enables IXON.
   (ignore-errors
     (uiop:run-program
      '("sh" "-c"
-       "stty raw -echo -echoe -echok -echoctl -icanon -isig -ixon min 0 time 0 </dev/tty 2>/dev/null; stty -echo -icanon min 0 time 0 </dev/tty 2>/dev/null; true")
+       "stty raw -echo -echoe -echok -echoctl -echonl -icanon -isig -iexten -ixon -ixoff -ixany -icrnl -inlcr min 0 time 0 </dev/tty 2>/dev/null || true")
      :ignore-error-status t :output nil :error-output nil))
-  ;; 2) termios on our actual fd (belt)
   (ignore-errors (%tui-termios-raw! *tui-in-fd*))
   #+sbcl
   (ignore-errors
-    (when *tui-in-fd*
-      (%tui-termios-raw! *tui-in-fd*)))
-  ;; NO hardware cursor ever while TUI runs — Tab moves the hardware cursor
-  ;; and leaves a visual gap that is NOT in our buffer (backspace can't kill it).
+    (when *tui-in-fd* (%tui-termios-raw! *tui-in-fd*)))
   (%tui-hide-cursor)
   (ignore-errors
-    (write-string (%tui-esc "?2004l") (%tui-io-out)) ; bracketed paste off
-    (write-string (%tui-esc ">4;0m") (%tui-io-out))  ; modifyOtherKeys off
-    (write-string (%tui-esc "?1000l") (%tui-io-out)) ; mouse off
-    (write-string (%tui-esc "?7l") (%tui-io-out))    ; no autowrap surprises
-    (write-string (%tui-esc "?25l") (%tui-io-out))    ; cursor hide
-    (force-output (%tui-io-out)))
+    (let ((o (%tui-io-out)))
+      (write-string (%tui-esc "?2004l") o)  ; bracketed paste off
+      ;; ENABLE xterm modifyOtherKeys so Ctrl+letter is reported as CSI when
+      ;; the terminal would otherwise eat/mangle it. We map those CSIs fully.
+      (write-string (%tui-esc ">4;1m") o)
+      (write-string (%tui-esc "?1000l") o)  ; mouse off
+      (write-string (%tui-esc "?7l") o)
+      (write-string (%tui-esc "?25l") o)
+      (force-output o)))
   (%tui-install-sigwinch!))
 
 (defun %tui-raw-off ()
   (ignore-errors
-    (write-string (%tui-esc "?2004l") (%tui-io-out))
-    (write-string (%tui-esc ">4;0m") (%tui-io-out))
-    (write-string (%tui-esc "?7h") (%tui-io-out))
-    (write-string (%tui-esc "?25h") (%tui-io-out))
-    (write-string (%tui-esc "0m") (%tui-io-out))
-    (force-output (%tui-io-out)))
+    (let ((o (%tui-io-out)))
+      (write-string (%tui-esc "?2004l") o)
+      (write-string (%tui-esc ">4;0m") o)   ; modifyOtherKeys off
+      (write-string (%tui-esc "?7h") o)
+      (write-string (%tui-esc "?25h") o)
+      (write-string (%tui-esc "0m") o)
+      (force-output o)))
   (ignore-errors
     (uiop:run-program
      '("sh" "-c" "stty sane </dev/tty 2>/dev/null || stty sane")
      :ignore-error-status t :output nil :error-output nil))
   (%tui-close-tty!))
+
+(defun %tui-assert-raw! ()
+  "Re-apply raw mode (some hosts reset termios). Call periodically."
+  (ignore-errors (%tui-termios-raw! *tui-in-fd*)))
 
 (defun %tui-byte-ready-p ()
   "T if at least one input char/byte is waiting."
@@ -404,9 +425,43 @@
                               (logand (third rest) #x3f))))))
       (t nil))))
 
+(defun %tui-mod-has-ctrl-p (mod)
+  "xterm/modifyOtherKeys / kitty modifier field contains Control?"
+  (let ((m (or (ignore-errors (parse-integer (string mod) :junk-allowed t)) 0)))
+    ;; xterm: 5=ctrl … 8=shift+alt+ctrl; also bits in kitty (ctrl = 4)
+    (or (member m '(5 6 7 8 13 14 15 16) :test #'=)
+        (plusp (logand m 4)))))
+
+(defun %tui-ctrl-letter-event (key-code)
+  "Map a letter/key code under Control to a TUI command. Hijack every chord we use."
+  (let ((k (if (characterp key-code) (char-code key-code) key-code)))
+    ;; normalize uppercase
+    (when (and (integerp k) (<= 65 k 90)) (setf k (+ k 32))) ; A-Z → a-z
+    (case k
+      ;; letters (lowercase codepoints)
+      (116 :focus-toggle)     ; t → symbols/chat
+      (114 :popup-repl)       ; r
+      (115 :popup-settings)   ; s
+      (110 :newline)          ; n
+      (111 :focus-toggle)     ; o (alias)
+      (108 :focus-toggle)     ; l (alias)
+      (107 :clear-input)      ; k
+      (117 :clear-input)      ; u
+      (119 :clear-input)      ; w
+      (99  :quit)             ; c
+      (100 :quit)             ; d
+      ;; also accept as ctrl byte already (1-26) if someone passes that
+      (20  :focus-toggle)
+      (18  :popup-repl)
+      (19  :popup-settings)
+      (14  :newline)
+      (3   :quit)
+      (4   :quit)
+      (t   :ignore))))
+
 (defun %tui-csi-event (s)
-  "Map full CSI body (after ESC [) to a key event. Consumes modifyOtherKeys etc.
-   Never returns NIL for known garbage sequences — :ignore so nothing is inserted."
+  "Map full CSI body (after ESC [) to a key event.
+   Maps Ctrl+letter via modifyOtherKeys AND kitty CSI-u — hijack path."
   (or
    ;; modifyOtherKeys / xterm: ESC [ 27 ; <mod> ; <key> ~
    (cl-ppcre:register-groups-bind (mod key)
@@ -414,12 +469,12 @@
      (let ((k (ignore-errors (parse-integer key)))
            (m (or mod "1")))
        (cond
-         ((= k 13)                      ; Enter family
+         ((null k) :ignore)
+         ((= k 13)
           (if (member m '("2" "4" "6" "8") :test #'string=) :newline :enter))
-         ((= k 9) (list :insert (string #\Tab))) ; Tab with mods → still tab data
-         ((= k 127) :backspace)
-         ((= k 8) :backspace)
-         ((and (= k 116) (string= m "5")) :focus-toggle) ; Ctrl+T via CSI
+         ((= k 9) (list :insert (string #\Tab)))
+         ((or (= k 127) (= k 8)) :backspace)
+         ((%tui-mod-has-ctrl-p m) (%tui-ctrl-letter-event k))
          (t :ignore))))
    ;; CSI u / kitty: ESC [ <key> ; <mod> u
    (cl-ppcre:register-groups-bind (key mod)
@@ -427,10 +482,13 @@
      (let ((k (ignore-errors (parse-integer key)))
            (m (or mod "1")))
        (cond
+         ((null k) :ignore)
          ((= k 13)
-          (if (member m '("2" "4" "6" "8") :test #'string=) :newline :enter))
+          (if (%tui-mod-has-ctrl-p m) :newline
+              (if (member m '("2" "4" "6" "8") :test #'string=) :newline :enter)))
          ((= k 9) (list :insert (string #\Tab)))
          ((= k 127) :backspace)
+         ((%tui-mod-has-ctrl-p m) (%tui-ctrl-letter-event k))
          (t :ignore))))
    (cl-ppcre:register-groups-bind (key)
        ("^([0-9]+)u$" s)
@@ -445,9 +503,10 @@
      ((string= s "D") :left)
      ((string= s "5~") :page-up)
      ((string= s "6~") :page-down)
-     ((string= s "Z") (list :insert (string #\Tab))) ; Shift+Tab → tab char (data)
-     ((string= s "12~") :focus-toggle) ; F2 still focus
-     ;; bare CSI fragment that looks like leaked modifyOtherKeys without ESC
+     ((string= s "Z") (list :insert (string #\Tab)))
+     ((string= s "12~") :focus-toggle) ; F2 → symbols
+     ((string= s "13~") :popup-repl)   ; F3 → REPL
+     ((string= s "14~") :popup-settings) ; F4 → settings
      ((cl-ppcre:scan "^27;[0-9]+;[0-9]+~$" s) :ignore)
      ((cl-ppcre:scan "^[0-9;]*[~uABCDEFHPQS]$" s) :ignore)
      (t :ignore))))
@@ -494,21 +553,22 @@
       (t :ignore))))
 
 (defun %tui-ctrl-event (b)
-  "Ctrl+key (ASCII 1–26). Immediate TUI commands — never typed as text."
+  "Ctrl+key as classic ASCII 1–26. Immediate TUI commands — never typed as text.
+   This is the primary hijack path when the kernel delivers the raw control byte."
   (case b
     (3  :quit)            ; Ctrl+C
     (4  :quit)            ; Ctrl+D
     (8  :backspace)       ; Ctrl+H
-    (9  nil)              ; Tab = data
+    (9  nil)              ; Tab = data (must not steal)
     (10 :enter)           ; Ctrl+J
     (11 :clear-input)     ; Ctrl+K
     (12 :focus-toggle)    ; Ctrl+L
     (13 :enter)           ; Ctrl+M
     (14 :newline)         ; Ctrl+N
     (15 :focus-toggle)    ; Ctrl+O
-    (18 :popup-repl)      ; Ctrl+R → REPL popup
-    (19 :popup-settings)  ; Ctrl+S → settings
-    (20 :focus-toggle)    ; Ctrl+T chat↔symbols
+    (18 :popup-repl)      ; Ctrl+R
+    (19 :popup-settings)  ; Ctrl+S  (needs -ixon or OS eats it as XOFF)
+    (20 :focus-toggle)    ; Ctrl+T  chat ↔ symbols
     (21 :clear-input)     ; Ctrl+U
     (23 :clear-input)     ; Ctrl+W
     (t  :ignore)))
@@ -1783,10 +1843,10 @@
         (ignore-errors (nn-enable-path m))
         (when *brain-auto-start* (brain-start!))
         (%tui-push-chat app :sys
-                        (format nil "Metis · ~A · Ctrl+T=symbols · Ctrl+R=REPL · Ctrl+S=settings · Enter=send · /quit  [r~A]"
+                        (format nil "Metis · ~A · Ctrl+T=symbols · Ctrl+R=REPL · Ctrl+S=settings · F2=sym · Enter=send · /quit  [r~A]"
                                 (sess-id s) *tui-key-rev*))
         (%tui-push-chat app :sys
-                        "Symbols are on-demand knowledge (math, NL, local-user, domains) — not a kitchen-sink model.")
+                        "Symbols pane: Ctrl+T (or F2 or type /symbols). REPL=Ctrl+R/F3 · Settings=Ctrl+S/F4.")
         (%tui-push-repl app ";; REPL popup — Esc closes · Enter runs · try 2+4(56/3) or (status)")
         (setf (tui-sym-expanded app)
               (list (cons "language" t) (cons "reasoning" t)
@@ -1810,6 +1870,9 @@
                  (let ((k (%tui-read-key-timeout 0.12d0))
                        (need-paint nil))
                    (incf (tui-status-tick app))
+                   ;; re-hijack termios every ~2s so IXON/ISIG never come back
+                   (when (zerop (mod (tui-status-tick app) 16))
+                     (%tui-assert-raw!))
                    ;; ALWAYS scrub controls from input every tick
                    (%tui-set-input! app (tui-input app))
                    (cond

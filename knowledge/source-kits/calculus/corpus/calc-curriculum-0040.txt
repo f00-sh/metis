@@ -1,0 +1,112 @@
+drill 3] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 4] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 5] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 6] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 7] Integration by parts: ∫ u dv = uv - ∫ v du.
+[Integrals drill 8] Integration by parts: ∫ u dv = uv - ∫ v du.
+Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+Key idea (Integrals): Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+In problems involving integrals, remember: Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+Definition/identity note: Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 1] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 2] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 3] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 4] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 5] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 6] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 7] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+[Integrals drill 8] Area between curves: ∫_a^b |f-g|. Volumes via disks, washers, shells.
+Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+Key idea (Integrals): Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+In problems involving integrals, remember: Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+Definition/identity note: Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 1] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 2] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 3] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 4] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 5] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 6] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 7] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+[Integrals drill 8] Average value of f on [a,b] is (1/(b-a)) ∫_a^b f.
+
+========================================================================
+CHAPTER: Transcendental functions
+========================================================================
+exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+Key idea (Transcendental functions): exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+In problems involving transcendental functions, remember: exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+Definition/identity note: exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 1] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 2] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 3] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 4] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 5] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 6] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 7] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+[Transcendental functions drill 8] exp and ln are inverse; d/dx e^x = e^x; d/dx ln|x| = 1/x.
+Logarithmic differentiation for products/quotients/powers.
+Key idea (Transcendental functions): Logarithmic differentiation for products/quotients/powers.
+In problems involving transcendental functions, remember: Logarithmic differentiation for products/quotients/powers.
+Definition/identity note: Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 1] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 2] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 3] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 4] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 5] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 6] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 7] Logarithmic differentiation for products/quotients/powers.
+[Transcendental functions drill 8] Logarithmic differentiation for products/quotients/powers.
+Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+Key idea (Transcendental functions): Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+In problems involving transcendental functions, remember: Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+Definition/identity note: Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 1] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 2] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 3] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 4] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 5] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 6] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 7] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+[Transcendental functions drill 8] Inverse trig derivatives: d/dx arcsin x = 1/sqrt(1-x^2), etc.
+Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+Key idea (Transcendental functions): Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+In problems involving transcendental functions, remember: Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+Definition/identity note: Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 1] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 2] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 3] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 4] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 5] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 6] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 7] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+[Transcendental functions drill 8] Exponential growth/decay: y' = ky has solutions y = y0 e^{kt}.
+
+========================================================================
+CHAPTER: Techniques and improper integrals
+========================================================================
+Partial fractions decompose rational functions for integration.
+Key idea (Techniques and improper integrals): Partial fractions decompose rational functions for integration.
+In problems involving techniques and improper integrals, remember: Partial fractions decompose rational functions for integration.
+Definition/identity note: Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 1] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 2] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 3] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 4] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 5] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 6] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 7] Partial fractions decompose rational functions for integration.
+[Techniques and improper integrals drill 8] Partial fractions decompose rational functions for integration.
+Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+Key idea (Techniques and improper integrals): Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+In problems involving techniques and improper integrals, remember: Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+Definition/identity note: Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 1] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 2] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 3] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 4] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 5] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 6] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 7] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+[Techniques and improper integrals drill 8] Trigonometric integrals and substitutions handle sqrt(a^2-x^2) forms.
+Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+Key idea (Techniques and improper integrals): Improper integrals: limits of definite integrals as bounds → ±∞ or approach sin

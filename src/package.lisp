@@ -308,6 +308,7 @@
    #:symbol-source-kit-new!
    #:symbol-source-kit-read
    #:symbol-source-kit-ingest!
+   #:symbol-source-kit-ingest-book!
    #:symbol-train-from-kit!
    #:symbol-build!
    #:symbol-source-kit-root

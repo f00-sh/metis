@@ -1,0 +1,119 @@
+h singularities.
+[Techniques and improper integrals drill 2] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 3] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 4] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 5] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 6] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 7] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+[Techniques and improper integrals drill 8] Improper integrals: limits of definite integrals as bounds → ±∞ or approach singularities.
+Comparison tests for convergence of improper integrals.
+Key idea (Techniques and improper integrals): Comparison tests for convergence of improper integrals.
+In problems involving techniques and improper integrals, remember: Comparison tests for convergence of improper integrals.
+Definition/identity note: Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 1] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 2] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 3] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 4] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 5] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 6] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 7] Comparison tests for convergence of improper integrals.
+[Techniques and improper integrals drill 8] Comparison tests for convergence of improper integrals.
+
+========================================================================
+CHAPTER: Sequences and series intro
+========================================================================
+Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+Key idea (Sequences and series intro): Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+In problems involving sequences and series intro, remember: Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+Definition/identity note: Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 1] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 2] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 3] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 4] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 5] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 6] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 7] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+[Sequences and series intro drill 8] Sequence convergence: a_n → L. Series Σ a_n converges when partial sums converge.
+Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+Key idea (Sequences and series intro): Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+In problems involving sequences and series intro, remember: Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+Definition/identity note: Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 1] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 2] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 3] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 4] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 5] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 6] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 7] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+[Sequences and series intro drill 8] Geometric series Σ r^n converges for |r|<1 to 1/(1-r).
+Integral, comparison, ratio, root, alternating series tests.
+Key idea (Sequences and series intro): Integral, comparison, ratio, root, alternating series tests.
+In problems involving sequences and series intro, remember: Integral, comparison, ratio, root, alternating series tests.
+Definition/identity note: Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 1] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 2] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 3] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 4] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 5] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 6] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 7] Integral, comparison, ratio, root, alternating series tests.
+[Sequences and series intro drill 8] Integral, comparison, ratio, root, alternating series tests.
+Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+Key idea (Sequences and series intro): Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+In problems involving sequences and series intro, remember: Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+Definition/identity note: Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 1] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 2] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 3] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 4] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 5] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 6] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 7] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+[Sequences and series intro drill 8] Power series Σ c_n (x-a)^n; radius of convergence; Taylor/Maclaurin expansions.
+Taylor polynomial degree n approximates f near a using derivatives through order n.
+Key idea (Sequences and series intro): Taylor polynomial degree n approximates f near a using derivatives through order n.
+In problems involving sequences and series intro, remember: Taylor polynomial degree n approximates f near a using derivatives through order n.
+Definition/identity note: Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 1] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 2] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 3] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 4] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 5] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 6] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 7] Taylor polynomial degree n approximates f near a using derivatives through order n.
+[Sequences and series intro drill 8] Taylor polynomial degree n approximates f near a using derivatives through order n.
+
+FORMULA TABLE (standard calculus identities)
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx sin x = cos x
+identity used in calculus: d/dx sin x = cos x
+formula: d/dx

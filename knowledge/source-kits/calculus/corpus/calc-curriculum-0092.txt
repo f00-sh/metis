@@ -1,0 +1,90 @@
+chain rule.
+[Derivatives drill 6] Related rates: differentiate a relation with respect to time using the chain rule.
+[Derivatives drill 7] Related rates: differentiate a relation with respect to time using the chain rule.
+[Derivatives drill 8] Related rates: differentiate a relation with respect to time using the chain rule.
+Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+Key idea (Derivatives): Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+In problems involving derivatives, remember: Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+Definition/identity note: Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 1] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 2] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 3] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 4] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 5] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 6] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 7] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+[Derivatives drill 8] Linear approximation: f(x) ≈ f(a) + f'(a)(x-a) near a.
+Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+Key idea (Derivatives): Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+In problems involving derivatives, remember: Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+Definition/identity note: Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 1] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 2] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 3] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 4] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 5] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 6] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 7] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+[Derivatives drill 8] Mean value theorem: continuous on [a,b], differentiable on (a,b) ⇒ exists c with f'(c)=(f(b)-f(a))/(b-a).
+
+========================================================================
+CHAPTER: Applications of derivatives
+========================================================================
+Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+Key idea (Applications of derivatives): Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+In problems involving applications of derivatives, remember: Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+Definition/identity note: Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 1] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 2] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 3] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 4] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 5] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 6] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 7] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+[Applications of derivatives drill 8] Critical points: f'(x)=0 or f' undefined. Use first/second derivative tests for local extrema.
+Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+Key idea (Applications of derivatives): Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+In problems involving applications of derivatives, remember: Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+Definition/identity note: Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 1] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 2] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 3] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 4] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 5] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 6] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 7] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+[Applications of derivatives drill 8] Concavity: f''>0 convex (concave up); f''<0 concave down. Inflection where concavity changes.
+Optimization: model quantity, find domain, critical points, evaluate endpoints.
+Key idea (Applications of derivatives): Optimization: model quantity, find domain, critical points, evaluate endpoints.
+In problems involving applications of derivatives, remember: Optimization: model quantity, find domain, critical points, evaluate endpoints.
+Definition/identity note: Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 1] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 2] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 3] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 4] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 5] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 6] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 7] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+[Applications of derivatives drill 8] Optimization: model quantity, find domain, critical points, evaluate endpoints.
+Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+Key idea (Applications of derivatives): Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+In problems involving applications of derivatives, remember: Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+Definition/identity note: Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 1] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 2] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 3] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 4] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 5] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 6] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 7] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+[Applications of derivatives drill 8] Curve sketching combines intercepts, asymptotes, monotonicity, and concavity.
+Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+Key idea (Applications of derivatives): Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+In problems involving applications of derivatives, remember: Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+Definition/identity note: Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 1] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 2] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 3] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 4] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 5] Newton's method: x_{n+1} = x_n - f(x_n)/f'(x_n) for root finding when f' nonzero.
+[Applications of derivatives drill 6] Newton's method: x_{n+1} = x_n - f

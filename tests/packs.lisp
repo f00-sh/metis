@@ -284,8 +284,21 @@
   (is (eq (metis::%tui-byte-event 20) :focus-toggle))
   (is (eq (metis::%tui-byte-event 18) :popup-repl))
   (is (eq (metis::%tui-byte-event 19) :popup-settings))
+  (is (eq (metis::%tui-byte-event 14) :newline))
+  ;; classic Ctrl bytes must be command events, never :insert
+  (let ((ev (metis::%tui-byte-event 20)))
+    (is (eq ev :focus-toggle))
+    (is (not (consp ev))))
   (is (eq (metis::%tui-csi-event "27;2;13~") :newline))
   (is (eq (metis::%tui-csi-event "27;1;13~") :enter))
+  ;; modifyOtherKeys: Ctrl+T / Ctrl+R / Ctrl+S (mod=5)
+  (is (eq (metis::%tui-csi-event "27;5;116~") :focus-toggle))
+  (is (eq (metis::%tui-csi-event "27;5;114~") :popup-repl))
+  (is (eq (metis::%tui-csi-event "27;5;115~") :popup-settings))
+  (is (eq (metis::%tui-csi-event "27;5;110~") :newline))
+  ;; kitty CSI-u ctrl+t
+  (is (eq (metis::%tui-csi-event "116;5u") :focus-toggle))
+  (is (eq (metis::%tui-csi-event "12~") :focus-toggle)) ; F2
   (let ((app (metis::make-tui-app)))
     (metis::%tui-input-append app "ab")
     (metis::%tui-input-append app (string #\Tab))

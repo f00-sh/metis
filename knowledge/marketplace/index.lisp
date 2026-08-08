@@ -5,7 +5,7 @@
    "/home/glenda/Projects/metis/knowledge/sealed/algebra/" :LICENSE
    "CC-BY-4.0")
   (:ID "calculus" :VERSION "1.0.0" :BODY-SHA256
-   "6a9f52cae43990fdc128457ab79b090b114143e262073d34f81a7c6bd2b5c085"
+   "5914ae29de90149dddd90d34c838ef42c6521175207afaeb2c686d08a236af1b"
    :TRUST-TIER :COMMUNITY :MODE :OPEN-SEALED :PATH
    "/home/glenda/Projects/metis/knowledge/sealed/calculus/" :LICENSE
    "CC-BY-4.0")
