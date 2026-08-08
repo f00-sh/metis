@@ -315,6 +315,27 @@
     (metis::%tui-popup-close! app)
     (is-false (metis::tui-popup app))))
 
+(test tui-scr-flush-uses-cup-per-row
+  "Raw -opost: flush must CUP each row (never rely on bare newline for column 0)."
+  (let* ((scr (metis::%tui-make-screen 3 5))
+         (out (make-string-output-stream))
+         (esc (string #\Esc)))
+    (metis::%tui-scr-put scr 0 0 "AAAAA")
+    (metis::%tui-scr-put scr 1 0 "BBBBB")
+    (metis::%tui-scr-put scr 2 0 "CCCCC")
+    (let ((metis::*tui-out* out)
+          (metis::*tui-in* nil))
+      (metis::%tui-scr-flush scr)
+      (let ((s (get-output-stream-string out)))
+        (is (search (concatenate 'string esc "[1;1H") s))
+        (is (search (concatenate 'string esc "[2;1H") s))
+        (is (search (concatenate 'string esc "[3;1H") s))
+        (is (search "AAAAA" s))
+        (is (search "BBBBB" s))
+        (is (search "CCCCC" s))
+        ;; no bare newlines between row payloads (CUP replaces them)
+        (is-false (search (format nil "A~%B") s))))))
+
 (test symbol-runtime-capabilities
   "Default symbols boot: math/NL/local-user gate freeform; NL varies."
   (metis:boot :bootstrap t :reset t)

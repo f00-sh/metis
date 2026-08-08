@@ -380,8 +380,12 @@
   (%tui-close-tty!))
 
 (defun %tui-assert-raw! ()
-  "Re-apply raw mode (some hosts reset termios). Call periodically."
-  (ignore-errors (%tui-termios-raw! *tui-in-fd*)))
+  "Re-apply raw mode + modifyOtherKeys (some hosts reset termios)."
+  (ignore-errors (%tui-termios-raw! *tui-in-fd*))
+  (ignore-errors
+    (let ((o (%tui-io-out)))
+      (write-string (%tui-esc ">4;1m") o)
+      (force-output o))))
 
 (defun %tui-byte-ready-p ()
   "T if at least one input char/byte is waiting."
@@ -860,15 +864,19 @@
     (values height width)))
 
 (defun %tui-scr-flush (scr)
-  "Write screen with ANSI color runs to the TUI tty."
+  "Write screen with ANSI color runs to the TUI tty.
+   CRITICAL: raw mode disables OPOST, so bare Newline does NOT return to
+   column 0 — each row is placed with CSI CUP (never rely on \\n wrapping)."
   (let ((o (%tui-io-out)))
     (%tui-goto 1 1)
-    (write-string (%tui-esc "0J") o)
-    (%tui-goto 1 1)
+    (write-string (%tui-esc "0J") o) ; clear from cursor to end of screen
     (let ((rows (ts-rows scr))
           (cols (ts-cols scr))
           (cur nil))
       (dotimes (r rows)
+        ;; 1-based row, always column 1 — required under -opost raw output
+        (%tui-goto (1+ r) 1)
+        (setf cur nil)
         (let ((line (aref (ts-chars scr) r))
               (att (aref (ts-attrs scr) r)))
           (dotimes (c cols)
@@ -884,10 +892,7 @@
                               #\Space
                               ch)
                           o)))
-          (write-string (%tui-ansi-attr :default) o)
-          (setf cur :default)
-          (when (< r (1- rows))
-            (write-char #\Newline o)))))
+          (write-string (%tui-ansi-attr :default) o))))
     (force-output o)))
 
 ;;; ------------------------------------------------------------------
@@ -1245,9 +1250,6 @@
          (br (ignore-errors (brain-status)))
          (st (and s (session-status s)))
          (atts (and s (session-list-attachments s)))
-         (ms (ignore-errors
-               (let ((x (mind-status m)))
-                 (truncate-string (if (stringp x) x (prin1-to-string x)) 40))))
          (live (and br (getf br :running)))
          (corpus (ignore-errors (length (session-corpus s))))
          (focus (tui-focus app))
@@ -1563,10 +1565,12 @@
                         help :fg :help)))
       (%tui-clear)
       (%tui-scr-flush scr)
-      ;; re-assert raw mode flags each frame (some terminals re-enable CSI keys)
+      ;; Keep modifyOtherKeys ON every frame (paint used to turn it OFF — Ctrl chords died).
       (ignore-errors
-        (write-string (%tui-esc ">4;0m") (%tui-io-out))  ; modifyOtherKeys off
-        (write-string (%tui-esc "?2004l") (%tui-io-out)))
+        (let ((o (%tui-io-out)))
+          (write-string (%tui-esc ">4;1m") o)
+          (write-string (%tui-esc "?2004l") o) ; bracketed paste off
+          (force-output o)))
       ;; Soft # marker is drawn on the bar; also park hardware cursor there so
       ;; the terminal's own caret is on the input (helps visibility).
       (%tui-goto (1+ cursor-row) (1+ cursor-col))
