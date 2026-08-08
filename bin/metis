@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# Metis product entry point. ROOT = package tree (source or installed share/metis).
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="${METIS_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+export METIS_ROOT="${ROOT}"
 export CL_SOURCE_REGISTRY="${ROOT}/:${CL_SOURCE_REGISTRY:-}"
 
 # Default = TUI (pure Common Lisp). Opt out with chat|line|notui|repl.
@@ -16,7 +18,31 @@ fi
 # Always: no LDB, process exits when the UI returns.
 SBCL=(sbcl --noinform --non-interactive --disable-debugger)
 
+version_string() {
+  local ver="unknown"
+  if [[ -f "${ROOT}/VERSION" ]]; then
+    ver="$(tr -d '[:space:]' < "${ROOT}/VERSION")"
+  fi
+  # Prefer live Lisp version when SBCL+Quicklisp can load the system.
+  if command -v sbcl >/dev/null 2>&1; then
+    local live
+    live="$("${SBCL[@]}" \
+      --eval "(pushnew (truename \"${ROOT}/\") asdf:*central-registry*)" \
+      --eval "(handler-case (progn (asdf:load-system :metis :verbose nil) (princ (metis:metis-version-string)) (fresh-line)) (error (e) (format t \"Metis ~A~%\" \"$ver\") (declare (ignore e))))" \
+      --quit 2>/dev/null | tail -1 || true)"
+    if [[ -n "${live}" ]]; then
+      printf '%s\n' "${live}"
+      return 0
+    fi
+  fi
+  printf 'Metis %s\n' "${ver}"
+}
+
 case "$MODE" in
+  version|ver|-V|--version)
+    version_string
+    exit 0
+    ;;
   tui|ui|default)
     # Force-load sources after quickload so key/math fixes always win over stale fasls.
     exec "${SBCL[@]}" \
@@ -49,11 +75,30 @@ case "$MODE" in
   symbol|symbols)
     exec "$ROOT/bin/symbol" "$@"
     ;;
+  help|-h|--help)
+    cat <<'EOF'
+Usage: metis [command] ...
+
+  (default)   full-screen TUI — /quit exits to shell
+  chat        line interface (no TUI)
+  version     print Metis version (VERSION file + Lisp when available)
+  production  production boot smoke
+  epoch       multi-session open pursuit
+  test        full FiveAM suite
+  symbol      train/seal/verify/load knowledge packages (see: metis symbol help)
+
+Environment:
+  METIS_ROOT           package tree (installed share/metis or git checkout)
+  CL_SOURCE_REGISTRY   prepended with METIS_ROOT by this launcher
+EOF
+    exit 0
+    ;;
   *)
-    echo "Usage: metis [chat|production|epoch|test|symbol] ..."
-    echo "  (default)  full-screen TUI — /quit exits to shell"
-    echo "  chat       line interface (no TUI)"
-    echo "  symbol     train/seal/verify/load knowledge packages (see symbol help)"
+    echo "Usage: metis [chat|version|production|epoch|test|symbol|help] ..." >&2
+    echo "  (default)  full-screen TUI — /quit exits to shell" >&2
+    echo "  chat       line interface (no TUI)" >&2
+    echo "  version    print version string" >&2
+    echo "  symbol     train/seal/verify/load knowledge packages" >&2
     exit 2
     ;;
 esac

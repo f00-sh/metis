@@ -18,10 +18,11 @@
       (ok8 (%suite-ok :metis-symbols))
       (ok8b (%suite-ok :metis-packs))
       (ok8c (%suite-ok :metis-seals))
+      (ok8d (%suite-ok :metis-install))
       (ok9 (%suite-ok :metis-frontiers))
       (ok10 (%suite-ok :metis-hybrid)))
-  (format t "~&~%=== METIS 4.4 TEST SUMMARY ===~%")
-  (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A  iface: ~A  nn: ~A  symbols: ~A  packs: ~A  seals: ~A  frontiers: ~A  hybrid: ~A~%"
+  (format t "~&~%=== METIS 4.5 TEST SUMMARY ===~%")
+  (format t "core: ~A  production: ~A  bench: ~A  further: ~A  epoch: ~A  iface: ~A  nn: ~A  symbols: ~A  packs: ~A  seals: ~A  install: ~A  frontiers: ~A  hybrid: ~A~%"
           (if ok1 "PASS" "FAIL")
           (if ok2 "PASS" "FAIL")
           (if ok3 "PASS" "FAIL")
@@ -32,6 +33,7 @@
           (if ok8 "PASS" "FAIL")
           (if ok8b "PASS" "FAIL")
           (if ok8c "PASS" "FAIL")
+          (if ok8d "PASS" "FAIL")
           (if ok9 "PASS" "FAIL")
           (if ok10 "PASS" "FAIL"))
-  (uiop:quit (if (and ok1 ok2 ok3 ok4 ok5 ok6 ok7 ok8 ok8b ok8c ok9 ok10) 0 1)))
+  (uiop:quit (if (and ok1 ok2 ok3 ok4 ok5 ok6 ok7 ok8 ok8b ok8c ok8d ok9 ok10) 0 1)))

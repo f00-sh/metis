@@ -54,13 +54,29 @@ Metis is not an “X is Y” rule shell wearing a modern label. 4.0 adds a real 
 
 The groundbreaking claim is architectural: **trainable models live in the same runtime as the symbolic mind** that plans, justifies, retracts, and self-modifies — one process, one language, shared KB/TMS facts about model readiness.
 
+## Install
+
+```bash
+# curl | bash
+curl -fsSL https://metis.f00.sh/install.sh | bash
+
+# Homebrew
+brew install f00-sh/tap/metis
+
+# AUR-style PKGBUILD (org-keyed)
+# see packaging/aur or https://github.com/f00-sh/aur-metis
+```
+
+Full guide: [docs/install.md](docs/install.md).
+
 ## Quick start
 
 ```bash
-./bin/metis repl                  # Lisp mind REPL
-./bin/metis iface                 # interactive product surface
+metis version                     # after install — or ./bin/metis version
+./bin/metis                       # TUI (default)
+./bin/metis chat                  # line interface
 ./bin/metis epoch                 # multi-session open pursuit
-./bin/metis test                  # full suite (core · production · bench · further · epoch · iface · nn)
+./bin/metis test                  # full suite
 ```
 
 ### English Q&A + background brain (real train, not just context)

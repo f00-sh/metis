@@ -2,27 +2,74 @@
 
 ## Requirements
 
-- SBCL (tested 2.x) + Quicklisp
-- Optional: NVIDIA driver + `libcuda.so` for `gpu-nn`
-- Optional: `git`, `curl`, `openssl` for remote symbol install and signing
+- **SBCL** 2.x + **Quicklisp** (runtime)
+- Optional: `git`, `curl`, `openssl` for remote symbol install and sealing
+- Optional: NVIDIA driver + `libcuda.so` for `gpu-nn` symbol
 - No Python required for core train/infer
 
-## Install
+## Install methods
+
+### 1) Curl / shell (recommended)
 
 ```bash
-# from source
-cd /path/to/metis
-# ensure Quicklisp can see the system (symlink or local-projects)
+curl -fsSL https://metis.f00.sh/install.sh | bash
+# pin:
+curl -fsSL https://metis.f00.sh/install.sh | METIS_VERSION=4.5.0 bash
+```
+
+Default prefix: `~/.local`  
+Launcher: `~/.local/bin/metis`  
+Tree: `~/.local/share/metis` (`METIS_ROOT`)  
+Man: `~/.local/share/man/man1/metis.1`
+
+From a git checkout (local tree, no network):
+
+```bash
+./scripts/install.sh
+PREFIX=/opt/metis ./scripts/install.sh
+```
+
+### 2) Homebrew (f00-sh tap)
+
+```bash
+brew install f00-sh/tap/metis
+metis version
+```
+
+Formula source in-tree: `packaging/homebrew/metis.rb` (published to
+[f00-sh/homebrew-tap](https://github.com/f00-sh/homebrew-tap)).
+
+### 3) AUR-style PKGBUILD
+
+In-tree: `packaging/aur/PKGBUILD`  
+Org-keyed mirror: [f00-sh/aur-metis](https://github.com/f00-sh/aur-metis)
+
+```bash
+# from packaging/aur
+makepkg -si
+# or clone the keyed AUR mirror when published
+```
+
+Depends on `sbcl`. Metis is **arch=any** source layout under `/usr/lib/metis`.
+
+### 4) From source (developer)
+
+```bash
+git clone https://github.com/f00-sh/metis.git
+cd metis
 ln -sfn "$(pwd)" ~/quicklisp/local-projects/metis
-sbcl --eval '(ql:quickload :metis)' --quit
+./bin/metis version
+./bin/metis test
 ```
 
 ## Run
 
 ```bash
-./bin/metis test
-./bin/metis iface
-./bin/metis repl
+metis                 # TUI (default)
+metis chat            # line interface
+metis version
+metis test
+metis symbol help
 ```
 
 ## GPU backend
@@ -31,36 +78,21 @@ sbcl --eval '(ql:quickload :metis)' --quit
 (metis:boot)
 (metis:enable-symbol! "gpu-nn")   ; fails cleanly if no CUDA
 (metis:nn-backend-status)
-(metis:disable-symbol! "gpu-nn")  ; back to cpu-nn
 ```
-
-Iface: `/symbols enable gpu-nn`, `/symbols backend`.
 
 ## Symbols install (local / remote / trust)
 
-```lisp
-;; local directory (unsigned OK by default)
-(metis:install-symbol! "/path/to/my-symbol")
+See `docs/SYMBOL-TRAINING.md`. Trust keys: `~/.metis/trust/keys.lisp`.
 
-;; remote requires symbol.sig (HMAC over package digests)
-(metis:sign-symbol-package "/path/to/my-symbol")  ; uses ~/.metis/trust/keys.lisp
-(metis:install-symbol! "file:///path/to/my-symbol")
-(metis:install-symbol! "https://example.com/pkg.tar.gz")  ; git/http also supported
-```
-
-Trust keys live in `~/.metis/trust/keys.lisp` as an alist of `(key-id . secret)`.
-Unsigned remote packages are **refused**.
-
-## Packaged image
+## Packaged SBCL image (optional)
 
 ```bash
 ./bin/package-metis
-# produces build/metis.image — run with:
-sbcl --core build/metis.image
+# build/metis.image — sbcl --core build/metis.image
 ```
 
 ## Ops notes
 
-- Models/checkpoints: `models/` under the system tree (or `*nn-model-dir*`)
-- User symbols: `~/.metis/symbols/`
+- User data / packs: `~/.metis/`
+- Models: `models/` under the package tree
 - HTTP API default: `127.0.0.1:7433` when started

@@ -1,0 +1,18 @@
+pkgbase = metis
+	pkgdesc = Pure Common Lisp hybrid mind with dual-facet sealed knowledge symbols
+	pkgver = 4.5.0
+	pkgrel = 1
+	url = https://metis.f00.sh/
+	arch = any
+	license = MIT
+	depends = sbcl
+	optdepends = git: clone/update workflows
+	optdepends = curl: curl|sh installer and remote symbols
+	optdepends = openssl: sealed package crypto helpers
+	provides = metis
+	conflicts = metis-git
+	options = !strip
+	source = metis-4.5.0.tar.gz::https://github.com/f00-sh/metis/archive/refs/tags/4.5.0.tar.gz
+	sha256sums = SKIP
+
+pkgname = metis

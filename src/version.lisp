@@ -1,11 +1,11 @@
 ;;;; version.lisp
 (in-package :metis)
 
-(defparameter *metis-version* "4.4.1"
+(defparameter *metis-version* "4.5.0"
   "Semantic version of the Metis production cognitive architecture.")
 
 (defparameter *metis-codename* "THEORY"
-  "Release codename — dual-facet sealed symbols + dep-pin unload on CLS THEORY base.")
+  "Release codename — install channels (curl/brew/AUR) on dual-facet THEORY base.")
 
 (defparameter *metis-api-version* "v1")
 

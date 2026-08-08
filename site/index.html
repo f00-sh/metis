@@ -32,7 +32,7 @@
 
   <main id="main">
     <section class="hero">
-      <p class="eyebrow mono"><span class="dot" aria-hidden="true"></span> v4.4.1 · MIT · metis.f00.sh</p>
+      <p class="eyebrow mono"><span class="dot" aria-hidden="true"></span> v4.5.0 · MIT · metis.f00.sh</p>
       <h1>Metis</h1>
       <p class="lede">
         An empty Common Lisp cognitive runtime. Intelligence arrives as
@@ -68,11 +68,19 @@
 
     <section class="panel" id="install">
       <header class="panel-head"><h2>Install</h2></header>
-      <pre class="mono">git clone https://github.com/f00-sh/metis.git
-cd metis
-./bin/metis          # TUI
-./bin/metis test</pre>
-      <p class="hint mono">SBCL + Quicklisp · Ctrl+T symbols pane · docs in repo</p>
+      <pre class="mono"># curl | bash (recommended)
+curl -fsSL https://metis.f00.sh/install.sh | bash
+
+# Homebrew (f00-sh tap)
+brew install f00-sh/tap/metis
+
+# AUR-style (org-keyed PKGBUILD)
+# packaging/aur or github.com/f00-sh/aur-metis
+
+# from source
+git clone https://github.com/f00-sh/metis.git && cd metis
+./bin/metis version && ./bin/metis</pre>
+      <p class="hint mono">SBCL + Quicklisp · man metis · docs/install.md</p>
     </section>
 
     <section class="panel" id="docs">

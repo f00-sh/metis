@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.5.0 — install channels (curl / Homebrew / AUR)
+
+**Install & packaging:**
+- `scripts/install.sh` + `site/install.sh` — curl|bash installer installs product tree + `bin/metis` launcher + man page
+- Default prefix `~/.local` (`PREFIX` override); release mode pulls GitHub source archive for a tag
+- Local mode: `METIS_LOCAL=1` / run from a git checkout without network
+- Homebrew formula `packaging/homebrew/metis.rb` → **`f00-sh/homebrew-tap`** (`brew install f00-sh/tap/metis`)
+- AUR-style `packaging/aur/PKGBUILD` + `.SRCINFO` → **`f00-sh/aur-metis`** (org-keyed)
+- `man/metis.1`; launcher `metis version` / `metis help`; `METIS_ROOT` for installed trees
+- Docs: `docs/install.md`; site install panel lists curl / brew / AUR
+- Tests: `:metis-install` drives real `install.sh` into a temp prefix + packaging structural checks
+
 ## 4.4.1 — dual-facet symbols + dep-pin unload (f00 release)
 
 **Dependency unload (refcount) — product law:**

@@ -21,7 +21,7 @@
                                     :resume nil
                                     :self-mod t)))
     (is (getf out :flagship))
-    (is (equal "4.4.1" (getf out :version)))
+    (is (equal "4.5.0" (getf out :version)))
     (is (getf out :report))
     (is (getf out :complete))
     (is (eq :complete (getf (getf out :status) :status)))

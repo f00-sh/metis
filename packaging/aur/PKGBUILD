@@ -1,0 +1,53 @@
+# Maintainer: William Theesfeld <william@theesfeld.net>
+# Keyed AUR-style package for Metis (source install; SBCL runtime).
+# Upstream keyed repo pattern: f00-sh/aur-metis (mirrors this PKGBUILD).
+pkgname=metis
+pkgver=4.5.0
+pkgrel=1
+pkgdesc="Pure Common Lisp hybrid mind with dual-facet sealed knowledge symbols"
+arch=('any')
+url="https://metis.f00.sh/"
+license=('MIT')
+depends=('sbcl')
+optdepends=(
+  'git: clone/update workflows'
+  'curl: curl|sh installer and remote symbols'
+  'openssl: sealed package crypto helpers'
+)
+provides=('metis')
+conflicts=('metis-git')
+options=('!strip')
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/f00-sh/metis/archive/refs/tags/${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  cd "${srcdir}/metis-${pkgver}"
+
+  install -d "${pkgdir}/usr/lib/metis"
+  # Product tree (exclude VCS/cache noise)
+  cp -a bin src knowledge symbols tests docs man site \
+        metis.asd VERSION LICENSE README.md CHANGELOG.md \
+        file_id.diz packaging scripts AGENTS.md \
+        "${pkgdir}/usr/lib/metis/" 2>/dev/null || true
+  # Ensure required core files exist even if optional dirs missing
+  for f in metis.asd VERSION bin/metis; do
+    [[ -e "${pkgdir}/usr/lib/metis/${f}" ]] || install -Dm644 "${f}" "${pkgdir}/usr/lib/metis/${f}"
+  done
+  chmod 755 "${pkgdir}/usr/lib/metis/bin/metis"
+  [[ -x bin/symbol ]] && chmod 755 "${pkgdir}/usr/lib/metis/bin/symbol"
+
+  install -d "${pkgdir}/usr/bin"
+  cat > "${pkgdir}/usr/bin/metis" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+export METIS_ROOT="/usr/lib/metis"
+export CL_SOURCE_REGISTRY="${METIS_ROOT}/:${CL_SOURCE_REGISTRY:-}"
+exec "${METIS_ROOT}/bin/metis" "$@"
+EOF
+  chmod 755 "${pkgdir}/usr/bin/metis"
+
+  if [[ -f man/metis.1 ]]; then
+    install -Dm644 man/metis.1 "${pkgdir}/usr/share/man/man1/metis.1"
+  fi
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
