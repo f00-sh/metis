@@ -1,12 +1,15 @@
 .TH METIS 1 "August 2026" "Metis 4.5.0" "User Commands"
 .SH NAME
-metis \- pure Common Lisp hybrid mind with dual\-facet sealed knowledge symbols
+metis \- pure Common Lisp hybrid mind with dual\-facet sealed symbols and house chat spine
 .SH SYNOPSIS
 .B metis
 [\fIcommand\fR] [\fIargs\fR...]
 .SH DESCRIPTION
-Metis is an empty Common Lisp cognitive runtime. Load dual\-facet sealed
-symbols (math process+knowledge, language use+about) on demand.
+Metis is an empty Common Lisp cognitive runtime (version
+.BR 4.5.0 ).
+Load dual\-facet sealed symbols (math process+knowledge, language use+about)
+on demand. Residual freeform uses an in\-process house language model;
+product freeform does not call external LLM APIs.
 .PP
 Default invocation starts the full\-screen TUI. Requires
 .B SBCL
@@ -29,6 +32,9 @@ Run the in\-tree FiveAM suite.
 .TP
 .B symbol
 Train, seal, verify, and load knowledge symbol packages.
+.TP
+.B epoch
+Multi\-session open pursuit continuum.
 .TP
 .B help
 Show launcher help.
@@ -53,11 +59,13 @@ User symbols, trust keys, pack registry.
 .SH INSTALL
 .nf
 curl -fsSL https://metis.f00.sh/install.sh | bash
+# pin: METIS_VERSION=4.5.0
 brew install f00-sh/tap/metis
-# AUR (keyed PKGBUILD): packaging/aur or f00-sh/aur-metis
+# AUR: packaging/aur or f00-sh/aur-metis
 .fi
 .SH SEE ALSO
 https://metis.f00.sh/ ,
-https://github.com/f00-sh/metis
+https://github.com/f00-sh/metis ,
+docs/install.md , docs/SYMBOL-TRAINING.md
 .SH LICENSE
 MIT

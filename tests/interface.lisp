@@ -161,33 +161,32 @@ This is a plain text file for attachment tests.
       (is (getf out :metrics)))))
 
 (test iface-freeform-generate-path-in
-  "With sketch enabled + TMS-IN, generate or honest-unknown (never silent).
-   Default product path keeps sketch OFF so untrained LMs cannot dump garbage."
+  "Residual freeform uses house chat spine (in-process), never external LLM.
+   House model may be trained on the turn via house-chat-ensure!."
   (metis:boot :bootstrap t :reset t)
   (metis:nn-enable-path metis:*mind*)
-  (metis:nn-train-language-model
-   "metis hybrid architecture trains pure common lisp models "
-   :name "online-lm" :epochs 1 :hidden 24 :seq-len 24 :depth 2
-   :max-batches 6 :lr 3d-2)
-  ;; product default: sketch off → honest unknown, not letter-salad
+  (metis:symbol-model-clear!)
+  (metis:house-chat-ensure!
+   :force t
+   :corpus "metis hybrid architecture trains pure common lisp models "
+   :epochs 1 :hidden 24 :seq-len 24 :depth 2 :max-batches 8)
   (let* ((s0 (metis:session-create :id "ff-gen-off" :boot nil))
-         (out0 (metis:iface-turn s0 "What is quantum chromodynamics zigzag?"))
+         (out0 (metis:iface-turn s0 "zigzag chromodynamics residual freeform please"))
          (res0 (getf out0 :result)))
-    (is (not (eq (getf res0 :freeform) :generate)))
+    (is (eq (getf res0 :source) :house-chat))
+    (is (eq (getf res0 :freeform) :house-chat))
     (is (stringp (getf out0 :reply)))
+    (is-false (eq (getf res0 :source) :llm))
     (is-false (search "Answer clearly in English"
                       (or (getf out0 :reply) "") :test #'char-equal)))
-  (let* ((metis::*iface-sketch-generate* t)
-         (s (metis:session-create :id "ff-gen" :boot nil))
-         (out (metis:iface-turn s "What is quantum chromodynamics zigzag?"))
+  (let* ((s (metis:session-create :id "ff-gen" :boot nil))
+         (out (metis:iface-turn s "zigzag chromodynamics residual freeform please"))
          (res (getf out :result))
          (reply (getf out :reply)))
-    (is (member (getf res :freeform) '(:generate :unknown) :test #'eq))
+    (is (eq (getf res :freeform) :house-chat))
+    (is (eq (getf res :source) :house-chat))
     (is (stringp reply))
     (is (plusp (length reply)))
-    (when (eq (getf res :freeform) :generate)
-      (is (stringp (getf res :prompt)))
-      (is (search "Question" (getf res :prompt) :test #'char-equal)))
     (is (getf out :explain))
     (is (getf out :metrics))))
 
@@ -213,14 +212,14 @@ This is a plain text file for attachment tests.
     (is (getf out :explain))))
 
 (test iface-freeform-kb-priority
-  "KB about hit preferred over generate when no attachment needed."
+  "KB about hit preferred over house generate for about-questions."
   (metis:boot :bootstrap t :reset t)
   (metis:nn-enable-path metis:*mind*)
   (let* ((s (metis:session-create :id "ff-kb" :boot nil))
          (m (metis::sess-mind s)))
     (metis:assert-fact m (list 'about "purple widget" "a purple widget is a demo fact")
                        :support :test :forward nil)
-    (let* ((out (metis:iface-turn s "purple widget"))
+    (let* ((out (metis:iface-turn s "what is a purple widget"))
            (res (getf out :result)))
       (is (eq (getf res :freeform) :kb))
       (is (stringp (getf out :reply)))

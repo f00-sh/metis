@@ -194,8 +194,8 @@ when the user requests an unknown capability.")
   "Tokens ignored when scoring freeform retrieval.")
 
 (defparameter *iface-sketch-generate* nil
-  "When T, freeform may fall back to pure-CL char-LM sketch (usually garbage).
-   Default NIL — prefer real English (chat, concepts, docs, optional API LLM).")
+  "Legacy flag: freeform residual now uses house-chat-generate (in-process).
+   Kept for TUI compatibility; product freeform no longer requires this.")
 
 (defun %iface-englishish-p (text)
   "T if TEXT looks like usable English (not untrained LM garbage / prompt echo)."
@@ -1163,67 +1163,91 @@ when the user requests an unknown capability.")
                               final)
               :source :math)))))
 
-(defun iface-freeform-answer (sess question &key (mind nil) (generate-length 120))
+(defun iface-freeform-answer (sess question &key (mind nil) (generate-length 120)
+                                              (task-symbols t))
   "English freeform pipeline (product):
-   0) chitchat / identity / clock
-   0b) math (1+2, 2+4(56/3), “what is …”)
-   1) extractive multi-sentence answer from attachments
-   2) built-in concept English
-   3) KB about / English fact rendering
-   4) TMS-gated external LLM if enabled
-   5) optional pure-CL sketch only if *iface-sketch-generate* and text looks English
-   Always returns :reply-text as user-facing English string — never garbage."
+   0) task-driven symbol prepare
+   0b) chitchat / identity (NL use)
+   0c) reason-act (assert / prove / bind / solve)
+   0d) process math
+   1) extractive attachments (document tool — not residual mind)
+   2) knowledge-about only for about-questions (dual-facet)
+   3) local-user
+   4) **house chat spine** — in-process base LM + symbol model conditioners
+   NEVER external API LLM as the freeform mind.
+   Always returns :reply-text as user-facing string."
   (declare (ignore generate-length))
   (let* ((m (or mind (sess-mind sess)))
          (q (string-trim '(#\Space #\Tab #\Newline) (or question "")))
-         ;; Capability symbols gate freeform surfaces (not kitchen-sink)
+         (task-prep
+          (when (and task-symbols
+                     (plusp (length q))
+                     (fboundp 'symbol-task-prepare!))
+            (ignore-errors (symbol-task-prepare! q :mind m :ensure t))))
          (chat (if (fboundp 'symbol-nl-chitchat)
                    (symbol-nl-chitchat q m)
                    (%iface-chitchat q m)))
-         (math (unless chat
+         (reasoned (unless chat
+                     (and (fboundp 'reason-act-answer)
+                          (reason-act-answer q m :learn :auto))))
+         (math (unless (or chat reasoned)
                  (if (fboundp 'symbol-math-answer)
                      (symbol-math-answer q)
                      (%iface-math-answer q))))
-         (math-know (unless (or chat math)
-                      (and (fboundp 'symbol-math-knowledge-answer)
+         (extractive (unless (or chat reasoned math)
+                       (iface-extractive-answer sess q)))
+         ;; About-only knowledge (not residual open-chat RAG)
+         (about-q (and (fboundp 'reason-about-question-p)
+                       (reason-about-question-p q)))
+         (math-know (unless (or chat reasoned math extractive)
+                      (and about-q
+                           (fboundp 'symbol-math-knowledge-answer)
                            (symbol-math-knowledge-answer q m))))
-         (local (unless (or chat math math-know)
+         (local (unless (or chat reasoned math extractive math-know)
                   (and (fboundp 'symbol-local-user-answer)
                        (symbol-local-user-answer q m))))
-         (extractive (unless (or chat math math-know local)
-                       (iface-extractive-answer sess q)))
-         (nl-about (unless (or chat math math-know local extractive)
-                     (and (fboundp 'symbol-nl-about-answer)
+         (nl-about (unless (or chat reasoned math extractive math-know local)
+                     (and about-q
+                          (fboundp 'symbol-nl-about-answer)
                           (symbol-nl-about-answer q m))))
-         (concept (unless (or chat math math-know local extractive nl-about)
-                    (if (fboundp 'symbol-nl-concept)
-                        (symbol-nl-concept q)
-                        (%iface-concept-answer q))))
-         (kb-ans (unless (or chat math math-know local extractive nl-about concept)
-                   (%iface-kb-about m q)))
-         (kb-eng (unless (or chat math math-know local extractive nl-about concept kb-ans)
-                   (%iface-kb-english-facts m q)))
-         (ctx (ignore-errors (session-corpus sess))))
+         (concept (unless (or chat reasoned math extractive math-know local nl-about)
+                    (and about-q
+                         (if (fboundp 'symbol-nl-concept)
+                             (symbol-nl-concept q)
+                             (%iface-concept-answer q)))))
+         (kb-ans (unless (or chat reasoned math extractive math-know local nl-about concept)
+                   (and about-q (%iface-kb-about m q))))
+         ;; Residual open freeform: house spine (NOT kb-eng dump, NOT external LLM)
+         (ctx (ignore-errors (session-corpus sess)))
+         (house (unless (or chat reasoned math extractive math-know local
+                            nl-about concept kb-ans)
+                  (and (fboundp 'house-chat-generate)
+                       (house-chat-generate q :mind m :context ctx
+                                            :length 80 :ensure t))))
+         (%with-task (lambda (ans)
+                       (if (and task-prep ans)
+                           (list* :task-symbols task-prep ans)
+                           ans))))
     (cond
-      (chat chat)
-      (math math)
-      (math-know math-know)
-      (local local)
-      (nl-about nl-about)
-      ;; 1) Real English from your documents
+      (chat (funcall %with-task chat))
+      (reasoned (funcall %with-task reasoned))
+      (math (funcall %with-task math))
       (extractive
-       (list* :freeform :from-attachments
-              :matches (mapcar (lambda (h)
-                                 (list :id (getf h :id)
-                                       :kind (getf h :kind)
-                                       :name (getf h :name)
-                                       :score (getf h :score)
-                                       :tokens (getf h :tokens)
-                                       :snippet (getf h :snippet)))
-                               (getf extractive :matches))
-              extractive))
-      (concept concept)
-      ;; 2a) about-fact
+       (funcall %with-task
+                (list* :freeform :from-attachments
+                       :matches (mapcar (lambda (h)
+                                          (list :id (getf h :id)
+                                                :kind (getf h :kind)
+                                                :name (getf h :name)
+                                                :score (getf h :score)
+                                                :tokens (getf h :tokens)
+                                                :snippet (getf h :snippet)))
+                                        (getf extractive :matches))
+                       extractive)))
+      (math-know (funcall %with-task math-know))
+      (local (funcall %with-task local))
+      (nl-about (funcall %with-task nl-about))
+      (concept (funcall %with-task concept))
       (kb-ans
        (let ((reply
               (cond
@@ -1231,20 +1255,14 @@ when the user requests an unknown capability.")
                 ((and (consp kb-ans) (stringp (second kb-ans)))
                  (format nil "~A" (or (third kb-ans) (second kb-ans))))
                 (t (format nil "~A" kb-ans)))))
-         (list :freeform :kb
-               :answer kb-ans
-               :reply-text reply
-               :source :kb)))
-      ;; 2b) related KB facts as English
-      (kb-eng
-       (list :freeform :kb-facts
-             :reply-text kb-eng
-             :source :kb-facts))
-      ;; 3) External LLM when configured (TMS-gated inside)
-      ((and (fboundp 'llm-enabled-p) (llm-enabled-p))
-       (or (%iface-llm-answer m q :context ctx)
-           (%iface-honest-unknown q)))
-      ;; 4) Neural path OUT → explicit refuse (not silent unknown)
+         (funcall %with-task
+                  (list :freeform :kb
+                        :answer kb-ans
+                        :reply-text reply
+                        :source :kb
+                        :facet :knowledge))))
+      ;; Product freeform residual: house in-process LM only
+      (house (funcall %with-task house))
       ((not (nn-path-allowed-p m))
        (list :freeform :refuse
              :refused t
@@ -1252,23 +1270,7 @@ when the user requests an unknown capability.")
              :reply-text
              "I can't generate: neural path is disabled (TMS OUT). Use /nn enable, or attach notes / teach facts."
              :source :tms-out))
-      ;; 5) Pure-CL sketch ONLY when explicitly enabled — never dump untrained LM garbage.
-      ((and *iface-sketch-generate*
-            (%iface-default-lm-name))
-       (let* ((model (%iface-default-lm-name))
-              (prompt (%iface-generate-prompt q ctx))
-              (gen (handler-case
-                       (nn-generate model :prompt prompt :length 120 :mind m)
-                     (error () nil)))
-              (clean (and gen (%iface-englishish-p gen))))
-         (if clean
-             (list :freeform :generate
-                   :model model
-                   :prompt prompt
-                   :text gen
-                   :reply-text gen
-                   :source :generate)
-             (%iface-honest-unknown q))))
+      ;; External LLM intentionally unreachable on product freeform
       (t (%iface-honest-unknown q)))))
 
 (defun %iface-format-reply (op result)

@@ -1,18 +1,34 @@
 # Metis — Develop & extend
 
+**Version: 4.5.0**
+
 ## Layout
 
 ```
-src/           kernel, nn, symbols core
-symbols/       first-class plugins (cpu-nn, gpu-nn, chat-ui, …)
-knowledge/     bootstrap domains
-tests/         FiveAM suites
-docs/          overview · install · develop (this triad)
-packaging/     image build helpers
-bin/           launchers
+src/              kernel, nn/, symbols/, chat-spine, reason-act, interface
+symbols/          first-class plugins (cpu-nn, gpu-nn, …)
+knowledge/        source-kits/, sealed/, packs/, bootstrap
+tests/            FiveAM suites (iface, nn, seals, reason-act, chat-spine, …)
+docs/             overview · install · develop · SYMBOL-* · SOPs
+site/             Cloudflare Pages root (metis.f00.sh)
+packaging/        Homebrew + AUR helpers
+bin/              launchers
+man/metis.1       man page
 ```
 
-## Writing a symbol
+## Quick developer loop
+
+```bash
+./bin/metis version
+./bin/metis test
+# targeted:
+sbcl --eval '(ql:quickload :metis/tests)' \
+     --eval '(fiveam:run! :metis-chat-spine)' --quit
+```
+
+Suites include: core, production, iface, nn, symbols, packs, seals, task-load, reason-act, **chat-spine**, install, frontiers, hybrid.
+
+## Writing a plugin symbol
 
 Create `symbols/my-cap/manifest.lisp`:
 
@@ -23,46 +39,55 @@ Create `symbols/my-cap/manifest.lisp`:
  :name "My Capability"
  :version "0.1.0"
  :description "…"
- :capabilities '(:tool :iface)  ; or :nn-backend, :domain, :train, …
+ :capabilities '(:tool :iface)
  :priority 40
  :path *default-pathname-defaults*
  :hooks (metis.symbols:define-symbol-hooks
-          :activate (lambda (rec) … t)
+          :activate (lambda (rec) t)
           :deactivate (lambda (rec) t)))
 ```
 
-Optional `symbol.lisp` loads after the manifest. Sign for remote install:
+Sign for remote install:
 
 ```lisp
 (metis:sign-symbol-package #P"symbols/my-cap/")
 ```
 
+## Knowledge symbols (sealed)
+
+See [SYMBOL-TRAINING.md](SYMBOL-TRAINING.md). Pipeline:
+
+1. `metis symbol new <id>`  
+2. Author facts/corpus in `knowledge/source-kits/<id>/`  
+3. `metis symbol train` → `metis symbol build`  
+4. `metis symbol verify` / `load`  
+
+## House chat spine & model packages
+
+| API | Role |
+|-----|------|
+| `house-chat-ensure!` | Train/register in-process house LM |
+| `house-chat-generate` | Residual freeform mouth |
+| `symbol-model-attach!` / `detach!` | Condition generation (adapter tags / weights metadata) |
+
+Packs with `model.ckpt` or `:model-package` attach conditioners on enable.
+
+## reason-act
+
+Session equalities: `x = y`, `what is y`, multi-clause compose. Canonical facts `(= A B)`. Freeform runs reason-act **before** knowledge dumps.
+
 ## NN backend protocol
 
-Backends implement:
-
-- `nn-backend-matmul`
-- `nn-backend-axpy`
-- `nn-backend-relu`
-- status/id/device
-
-`t-matmul` / `t-relu` dispatch forward work through the **active** backend (`cpu-nn` or `gpu-nn`). Op counts prove train uses the GPU path when enabled.
-
-## LM knobs (4.2 defaults)
-
-- `:depth` default **3**
-- `:seq-len` default **128**
-- Train history records `:backend` and `:op-counts`
-
-## Tests
-
-```bash
-./bin/metis test
-# suites: core production bench further epoch iface nn symbols frontiers
-```
+Backends implement matmul / axpy / relu. Active backend is `cpu-nn` or `gpu-nn`. TMS: `nn-enable-path` / `nn-disable-path`.
 
 ## Extension principles
 
-- Do not fork the kernel for product features — ship a **symbol**.
-- Keep Decision B: pure CL default train/infer; GPU is enableable acceleration.
-- Gate neural fire through TMS (`nn-path-enabled`).
+1. Prefer a **symbol** over forking the kernel.  
+2. Decision B: pure CL default; GPU is enableable.  
+3. Gate neural fire through TMS.  
+4. Product freeform never uses external LLM as the mind.  
+5. Dual-facet law is hard (see [SYMBOL-FACETS.md](SYMBOL-FACETS.md)).
+
+## Packaging
+
+See [packaging/README.md](../packaging/README.md) and [sop-release.md](sop-release.md).

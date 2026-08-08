@@ -1,5 +1,6 @@
 # Metis Symbol Training Guide (DETAILED)
 
+**Product version:** 4.5.0  
 **Audience:** researchers, students, labs, and independent authors who want to
 **create, train, seal, publish, and load** knowledge symbols for Metis.
 

@@ -1,7 +1,8 @@
 # Dual-facet product law (hard rule)
 
-Metis is an empty, unguarded runtime. **Symbols** are owner-controlled sealed packages.
-The host LLM injects **no** content biases.
+**Metis 4.5.0.** Metis is an empty, unguarded runtime. **Symbols** are owner-controlled sealed packages.
+The host injects **no** content biases. Residual freeform uses the **house chat spine** (in-process);
+external LLM APIs are not the product freeform mind.
 
 ## Mathematics symbols — always two facets
 
@@ -12,6 +13,29 @@ The host LLM injects **no** content biases.
 
 Unload a math domain → knowledge **and** compute for that domain stop.
 Facts alone never count as “having calculus.”
+
+### Use vs regurgitate (hard product law)
+
+| Path | When | Source |
+|------|------|--------|
+| **reason-act** (assert / prove / bind / solve) | `x = y`, `what is y`, multi-clause compose | `:bind` / `:prove` / `:solve` with supporters |
+| **Process** | bare arithmetic / algebra engines | `:math` |
+| **Knowledge** | about-questions only (`what is a limit?`) | `:math-knowledge` |
+
+**Bug:** answering a solve/value-of query by dumping `domain-def` bullets (“From loaded math symbols…”) is **regurgitation**, not use. Freeform runs reason-act **before** knowledge-about.
+
+### Chat spine (house base LM)
+
+Residual open freeform (no tool sieve match) answers via the **in-process house chat model** (`house-chat-generate`), conditioned by active **symbol model packages** (`symbol-model-attach!` / pack enable with `model.ckpt` or `:model-package`).  
+
+| Path | Role |
+|------|------|
+| **House spine** | Always-available pure-CL LM mouth (`:source :house-chat`) |
+| **Symbol adapters** | Condition generation (prompt/weights tags) — sieves, not RAG bags |
+| **Tools** | reason-act, process math, extractive docs |
+| **External LLM** | **Never** product freeform mind |
+
+Knowledge packs remain dual-facet content; **model packages** attach computation to the spine.
 
 ## Language symbols — always two facets
 

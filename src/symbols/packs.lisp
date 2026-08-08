@@ -484,6 +484,9 @@
       (setf (gethash id *symbol-pack-enabled*) t)
       (when (fboundp '%symbol-register-caps-from-manifest!)
         (%symbol-register-caps-from-manifest! id man))
+      ;; Model-package conditioning on the house chat spine (not RAG-only)
+      (when (fboundp 'symbol-model-on-enable!)
+        (ignore-errors (symbol-model-on-enable! id man :dir dir)))
       (list :enabled t :id id :stats stats))))
 
 (defun symbol-pack-disable! (id &key (mind nil))
@@ -495,6 +498,8 @@
       (setf retract (%pack-retract-layer! id :mind m)))
     (when (fboundp '%symbol-unregister-caps!)
       (%symbol-unregister-caps! id))
+    (when (fboundp 'symbol-model-on-disable!)
+      (ignore-errors (symbol-model-on-disable! id)))
     (list :enabled nil :id id :retract retract)))
 
 (defun symbol-pack-overlay-unload! (id &key (mind nil))

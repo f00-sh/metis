@@ -1,6 +1,10 @@
 # Metis packaging
 
+**Product version:** see root `VERSION` (**4.5.0**).  
 Metis is a **Common Lisp source product** (SBCL + Quicklisp), not a single static binary.
+
+Full release SOP: [docs/sop-release.md](../docs/sop-release.md).  
+Site deploy SOP: [docs/sop-site-deploy.md](../docs/sop-site-deploy.md).
 
 ## Channels
 

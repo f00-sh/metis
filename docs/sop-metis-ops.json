@@ -1,0 +1,125 @@
+{
+  "org": "f00-sh / Metis",
+  "doc_id": "METIS-SOP-OPS-4.5.0",
+  "doc_title": "Metis Operator SOP — Install, Run, Test, Deploy",
+  "version": "4.5.0",
+  "date": "2026-08-08",
+  "to": "Metis operators and coding agents",
+  "from": "Metis documentation pack",
+  "reply_to": "https://github.com/f00-sh/metis",
+  "subject": "Standard operating procedures for Metis 4.5.0",
+  "sections": [
+    {
+      "heading": "1. Purpose",
+      "body": "This SOP defines how to install Metis, run smoke checks, execute tests, load symbols, and deploy the public site. Product version is 4.5.0."
+    },
+    {
+      "heading": "2. Preconditions",
+      "items": [
+        "SBCL 2.x and Quicklisp on PATH (or install script will use system SBCL)",
+        "Optional: curl/git for remote install",
+        "Optional: Cloudflare Wrangler credentials for site deploy"
+      ]
+    },
+    {
+      "heading": "3. Install",
+      "steps": [
+        "Run: curl -fsSL https://metis.f00.sh/install.sh | bash",
+        "Or pin: curl -fsSL https://metis.f00.sh/install.sh | METIS_VERSION=4.5.0 bash",
+        "Or from checkout: ./scripts/install.sh",
+        "Or: brew install f00-sh/tap/metis",
+        "Confirm: metis version prints 4.5.0"
+      ]
+    },
+    {
+      "heading": "4. Run and smoke",
+      "steps": [
+        "Start TUI: metis",
+        "Or line chat: metis chat",
+        "Check help: metis help",
+        "Symbol CLI: metis symbol help",
+        "Exit TUI with /quit"
+      ]
+    },
+    {
+      "heading": "5. Test gate",
+      "steps": [
+        "From checkout: ./bin/metis test",
+        "Targeted: fiveam suite :metis-install after install-doc changes",
+        "Do not ship if suite fails"
+      ]
+    },
+    {
+      "heading": "6. Symbols",
+      "steps": [
+        "Train kit: metis symbol train knowledge/source-kits/<id>",
+        "Build seal: metis symbol build knowledge/source-kits/<id>",
+        "Verify: metis symbol verify knowledge/sealed/<id>",
+        "Load: metis symbol load knowledge/sealed/<id>"
+      ]
+    },
+    {
+      "heading": "7. Site deploy",
+      "steps": [
+        "Update site/ content and wrangler.toml if needed",
+        "Push main (CI pages.yml) or: npx wrangler pages deploy site --project-name=f00-metis --branch=main",
+        "Fetch https://metis.f00.sh/ and confirm version string"
+      ],
+      "flowchart": {
+        "title": "Operator day gate",
+        "color": true,
+        "nodes": [
+          {"id": "start", "label": "Start", "shape": "terminator"},
+          {"id": "ver", "label": "metis version", "shape": "process"},
+          {"id": "test", "label": "metis test?", "shape": "decision"},
+          {"id": "run", "label": "Run product", "shape": "process"},
+          {"id": "fix", "label": "Fix / retest", "shape": "process"},
+          {"id": "end", "label": "Ready", "shape": "terminator"}
+        ],
+        "edges": [
+          {"from": "start", "to": "ver"},
+          {"from": "ver", "to": "test"},
+          {"from": "test", "to": "run", "label": "pass"},
+          {"from": "test", "to": "fix", "label": "fail"},
+          {"from": "fix", "to": "test"},
+          {"from": "run", "to": "end"}
+        ]
+      }
+    },
+    {
+      "heading": "8. Release deploy flow",
+      "flowchart": {
+        "title": "Site publish",
+        "color": true,
+        "nodes": [
+          {"id": "edit", "label": "Edit site/", "shape": "process"},
+          {"id": "push", "label": "Push main", "shape": "process"},
+          {"id": "ci", "label": "pages.yml deploy", "shape": "process"},
+          {"id": "live", "label": "Fetch metis.f00.sh", "shape": "process"},
+          {"id": "ok", "label": "Done", "shape": "terminator"}
+        ],
+        "edges": [
+          {"from": "edit", "to": "push"},
+          {"from": "push", "to": "ci"},
+          {"from": "ci", "to": "live"},
+          {"from": "live", "to": "ok"}
+        ]
+      },
+      "body": "See docs/sop-site-deploy.md for credentials and manual wrangler path."
+    },
+    {
+      "heading": "9. References",
+      "items": [
+        "docs/install.md",
+        "docs/sop-release.md",
+        "docs/sop-site-deploy.md",
+        "README.md",
+        "https://metis.f00.sh/"
+      ]
+    }
+  ],
+  "signature": {
+    "name": "Metis documentation pack",
+    "title": "f00-sh"
+  }
+}

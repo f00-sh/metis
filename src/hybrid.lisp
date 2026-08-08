@@ -795,8 +795,11 @@ TMS re-check — refuse/allow/learn with machine-checkable justification.")
                                    (skip-act nil)
                                    (act-fn nil)
                                    (goal nil)
-                                   (context nil))
-  "Hybrid unit with explain object, separation encode, prioritized consolidate."
+                                   (context nil)
+                                   (task-symbols t))
+  "Hybrid unit with explain object, separation encode, prioritized consolidate.
+   When TASK-SYMBOLS is true, run symbol-task-prepare! (classify + ensure-on-miss)
+   before the act path so domain seals can activate for the utterance."
   (declare (ignore session))
   (let* ((m (ensure-mind mind))
          (*mind* m)
@@ -804,6 +807,15 @@ TMS re-check — refuse/allow/learn with machine-checkable justification.")
          (tms-before (if path-before :in :out))
          (text (or text ""))
          (teach-body (%strip-learn-prefix text))
+         (task-symbols-result
+          (when (and task-symbols
+                     (stringp text)
+                     (plusp (length (string-trim '(#\Space #\Tab) text)))
+                     (fboundp 'symbol-task-prepare!)
+                     ;; skip slash-commands — they are control, not domain text
+                     (not (eql 0 (search "/" text :test #'char-equal))))
+            (ignore-errors
+              (symbol-task-prepare! text :mind m :ensure t))))
          (act-result nil)
          (neural-result nil)
          (decision :act)
@@ -813,6 +825,16 @@ TMS re-check — refuse/allow/learn with machine-checkable justification.")
          (episode nil)
          (episodes-used nil)
          (weights-stepped nil))
+    (when task-symbols-result
+      (let ((st (getf task-symbols-result :status)))
+        (when (member st '(:ok :partial))
+          (push (format nil "Task symbols activated: ~{~A~^, ~}"
+                        (or (getf task-symbols-result :activated) '()))
+                why))
+        (when (eq st :suggest-only)
+          (push (format nil "Task symbol suggestions: ~{~A~^, ~}"
+                        (or (getf task-symbols-result :suggestions) '()))
+                why))))
     (unless skip-act
       (cond
         ((or neural-prompt
@@ -905,6 +927,7 @@ TMS re-check — refuse/allow/learn with machine-checkable justification.")
                        :act act-result
                        :neural neural-result
                        :learned learned
+                       :task-symbols task-symbols-result
                        :episode (and episode (getf episode :id))
                        :hippocampus-size (hippocampus-size)
                        :tms (list :before tms-before

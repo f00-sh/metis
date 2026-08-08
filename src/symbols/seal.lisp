@@ -635,6 +635,16 @@
                (dolist (c caps)
                  (when (fboundp 'symbol-capability-register!)
                    (symbol-capability-register! c id)))
+               ;; Temporary seal loads also attach model-package conditioning
+               (when (and temporary (fboundp 'symbol-model-on-enable!))
+                 (ignore-errors
+                   (symbol-model-on-enable!
+                    id
+                    (list :id id
+                          :capabilities caps
+                          :model-package (getf header :model-package)
+                          :weights-policy (getf header :weights-policy)
+                          :facets (getf header :facets)))))
                (list :loaded t
                      :id id
                      :version (getf header :version)

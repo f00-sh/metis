@@ -310,6 +310,44 @@
    #:symbol-dep-holders
    #:symbol-auto-loaded-p
    #:symbol-required-deps-of
+   ;; task-driven symbol activation (classify + ensure-on-miss)
+   #:symbol-task-classify
+   #:symbol-task-suggest
+   #:symbol-task-ensure!
+   #:symbol-task-release!
+   #:symbol-task-prepare!
+   #:symbol-task-loaded-p
+   #:symbol-task-trust-allows-p
+   #:symbol-task-catalog-entry
+   #:*symbol-task-holder-id*
+   #:*symbol-task-auto-trust-tiers*
+   #:*symbol-task-min-confidence*
+   ;; reason-act: assert / prove / bind / solve (not fact regurgitation)
+   #:parse-reason-act
+   #:reason-act-answer
+   #:reason-act-execute
+   #:reason-assert-equality!
+   #:reason-resolve-value
+   #:reason-prove-value
+   #:reason-equality-facts
+   #:reason-about-question-p
+   #:reason-act-metrics
+   #:reason-act-ensure-rules!
+   #:*reason-act-metrics*
+   ;; house chat spine + symbol model packages (not RAG-first residual)
+   #:house-chat-ensure!
+   #:house-chat-generate
+   #:house-chat-freeform-answer
+   #:house-chat-available-p
+   #:house-chat-model-name
+   #:symbol-model-attach!
+   #:symbol-model-detach!
+   #:symbol-model-active
+   #:symbol-model-clear!
+   #:symbol-model-on-enable!
+   #:symbol-model-on-disable!
+   #:*house-chat-model*
+   #:*product-freeform-external-llm*
    #:symbol-marketplace-load-index!
    #:symbol-marketplace-register!
    #:symbol-marketplace-save-index!

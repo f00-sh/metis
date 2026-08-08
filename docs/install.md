@@ -1,58 +1,62 @@
-# Metis — Install & operations
+# Metis — Install & operations (SOP)
 
-## Requirements
+**Version: 4.5.0** · Operator steps in STE-style order.
 
-- **SBCL** 2.x + **Quicklisp** (runtime)
-- Optional: `git`, `curl`, `openssl` for remote symbol install and sealing
-- Optional: NVIDIA driver + `libcuda.so` for `gpu-nn` symbol
-- No Python required for core train/infer
+## 1. Requirements
 
-## Install methods
+| Need | Notes |
+|------|--------|
+| **SBCL** 2.x | Runtime |
+| **Quicklisp** | Libraries |
+| Optional `git`, `curl`, `openssl` | Remote symbols / seal verify |
+| Optional NVIDIA + `libcuda.so` | `gpu-nn` symbol only |
+| No Python | Core train/infer |
 
-### 1) Curl / shell (recommended)
+## 2. Install methods
+
+### 2.1 Curl (recommended)
 
 ```bash
 curl -fsSL https://metis.f00.sh/install.sh | bash
-# pin:
 curl -fsSL https://metis.f00.sh/install.sh | METIS_VERSION=4.5.0 bash
 ```
 
-Default prefix: `~/.local`  
-Launcher: `~/.local/bin/metis`  
-Tree: `~/.local/share/metis` (`METIS_ROOT`)  
-Man: `~/.local/share/man/man1/metis.1`
+| Item | Default |
+|------|---------|
+| Prefix | `~/.local` |
+| Launcher | `~/.local/bin/metis` |
+| Tree | `~/.local/share/metis` (`METIS_ROOT`) |
+| Man | `~/.local/share/man/man1/metis.1` |
 
-From a git checkout (local tree, no network):
+From a git checkout (no network download of the tree):
 
 ```bash
 ./scripts/install.sh
 PREFIX=/opt/metis ./scripts/install.sh
 ```
 
-### 2) Homebrew (f00-sh tap)
+In-repo installer: [`scripts/install.sh`](../scripts/install.sh)  
+Site copy (must stay aligned): [`site/install.sh`](../site/install.sh)
+
+### 2.2 Homebrew
 
 ```bash
 brew install f00-sh/tap/metis
 metis version
 ```
 
-Formula source in-tree: `packaging/homebrew/metis.rb` (published to
-[f00-sh/homebrew-tap](https://github.com/f00-sh/homebrew-tap)).
+Formula: [`packaging/homebrew/metis.rb`](../packaging/homebrew/metis.rb) → [f00-sh/homebrew-tap](https://github.com/f00-sh/homebrew-tap).
 
-### 3) AUR-style PKGBUILD
-
-In-tree: `packaging/aur/PKGBUILD`  
-Org-keyed mirror: [f00-sh/aur-metis](https://github.com/f00-sh/aur-metis)
+### 2.3 AUR-style
 
 ```bash
 # from packaging/aur
 makepkg -si
-# or clone the keyed AUR mirror when published
 ```
 
-Depends on `sbcl`. Metis is **arch=any** source layout under `/usr/lib/metis`.
+In-tree: [`packaging/aur/PKGBUILD`](../packaging/aur/PKGBUILD) · mirror [f00-sh/aur-metis](https://github.com/f00-sh/aur-metis).
 
-### 4) From source (developer)
+### 2.4 Source (developer)
 
 ```bash
 git clone https://github.com/f00-sh/metis.git
@@ -62,37 +66,60 @@ ln -sfn "$(pwd)" ~/quicklisp/local-projects/metis
 ./bin/metis test
 ```
 
-## Run
+## 3. Run
 
 ```bash
-metis                 # TUI (default)
+metis                 # TUI
 metis chat            # line interface
 metis version
 metis test
 metis symbol help
+metis epoch
 ```
 
-## GPU backend
+From checkout: prefix with `./bin/`.
+
+## 4. Smoke (after install)
+
+1. `metis version` → prints **4.5.0** (or current `VERSION`).  
+2. `metis help` → lists chat / symbol / test.  
+3. Optional: `metis test` (needs SBCL + QL deps).  
+4. Optional: `metis symbol verify knowledge/sealed/math` from a full tree.
+
+## 5. Neural path
 
 ```lisp
 (metis:boot)
-(metis:enable-symbol! "gpu-nn")   ; fails cleanly if no CUDA
-(metis:nn-backend-status)
+(metis:nn-enable-path)          ; TMS path IN
+(metis:house-chat-ensure!)      ; residual freeform house LM
+(metis:enable-symbol! "gpu-nn") ; only if CUDA present
 ```
 
-## Symbols install (local / remote / trust)
+## 6. Symbols
 
-See `docs/SYMBOL-TRAINING.md`. Trust keys: `~/.metis/trust/keys.lisp`.
+```bash
+metis symbol load knowledge/sealed/calculus
+```
 
-## Packaged SBCL image (optional)
+Trust keys: `~/.metis/trust/keys.lisp`. Author guide: [SYMBOL-TRAINING.md](SYMBOL-TRAINING.md).
+
+## 7. Packaged image (optional)
 
 ```bash
 ./bin/package-metis
-# build/metis.image — sbcl --core build/metis.image
+# build/metis.image
 ```
 
-## Ops notes
+## 8. Ops paths
 
-- User data / packs: `~/.metis/`
-- Models: `models/` under the package tree
-- HTTP API default: `127.0.0.1:7433` when started
+| Path | Content |
+|------|---------|
+| `~/.metis/` | User packs, trust, keys |
+| `$METIS_ROOT/models/` | In-process LM checkpoints |
+| `127.0.0.1:7433` | HTTP API when started |
+
+## 9. Related SOPs
+
+- [sop-metis-ops.md](sop-metis-ops.md) — day-to-day gates  
+- [sop-release.md](sop-release.md) — version bump & release assets  
+- [sop-site-deploy.md](sop-site-deploy.md) — deploy metis.f00.sh  

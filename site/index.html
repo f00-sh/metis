@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Metis — sealed knowledge symbols · pure Common Lisp mind</title>
-  <meta name="description" content="Metis is an empty Common Lisp cognitive runtime. Load dual-facet sealed symbols (math process+knowledge, language use+about) on demand — not a kitchen-sink model." />
+  <title>Metis 4.5 — sealed symbols · house chat spine · pure CL mind</title>
+  <meta name="description" content="Metis 4.5.0: empty Common Lisp cognitive runtime. Dual-facet sealed symbols, reason-act, in-process house chat spine — no external LLM as freeform mind." />
   <meta name="theme-color" content="#14181B" />
   <link rel="canonical" href="https://metis.f00.sh/" />
-  <meta property="og:title" content="Metis" />
-  <meta property="og:description" content="Sealed dual-facet knowledge symbols on a pure Common Lisp hybrid mind." />
+  <meta property="og:title" content="Metis 4.5.0" />
+  <meta property="og:description" content="Sealed dual-facet symbols on a pure Common Lisp hybrid mind. House chat spine in-process." />
   <meta property="og:url" content="https://metis.f00.sh/" />
   <meta property="og:type" content="website" />
   <link rel="stylesheet" href="https://f00.sh/theme/f00-theme.css" data-f00-theme="1" />
@@ -24,6 +24,7 @@
     <nav class="nav" aria-label="Primary">
       <a href="#symbols">symbols</a>
       <a href="#facets">facets</a>
+      <a href="#spine">chat spine</a>
       <a href="#install">install</a>
       <a href="#docs">docs</a>
       <a href="https://github.com/f00-sh/metis" rel="noopener">github</a>
@@ -36,13 +37,15 @@
       <h1>Metis</h1>
       <p class="lede">
         An empty Common Lisp cognitive runtime. Intelligence arrives as
-        <strong>sealed symbols</strong> you load and unload — dual-facet math and language,
-        single-facet knowledge domains. Not a frozen 90B kitchen sink.
+        <strong>sealed dual-facet symbols</strong> you load and unload.
+        Residual freeform uses an <strong>in-process house chat spine</strong> —
+        not a kitchen-sink model, not an external API mind.
       </p>
       <ul class="facts mono">
         <li>pure CL neural train</li>
-        <li>open-sealed · private-sealed</li>
-        <li>no host content bias</li>
+        <li>reason-act compose</li>
+        <li>house-chat spine</li>
+        <li>open / private sealed</li>
         <li>MIT</li>
       </ul>
     </section>
@@ -51,8 +54,8 @@
       <header class="panel-head"><h2>Symbols</h2></header>
       <p>
         Authors train a source kit, seal it (opaque body + hash + signature), publish free.
-        Sideloads are always marked unvetted. Process surfaces (math, language use) are dual-facet;
-        history and fringe packs stay knowledge unless they ship a real procedure.
+        Math and language are dual-facet; other domains default to knowledge.
+        Model packages can <em>condition</em> the house chat spine (adapters / weights metadata).
       </p>
       <pre class="mono">./bin/metis symbol train knowledge/source-kits/calculus
 ./bin/metis symbol build knowledge/source-kits/calculus
@@ -62,19 +65,29 @@
     <section class="panel" id="facets">
       <header class="panel-head"><h2>Dual-facet law</h2></header>
       <p><strong>Math</strong> — Knowledge (explain) + Process (compute). Unload removes both.</p>
-      <p><strong>Language</strong> — Use (speak/read in the language) + About (metalanguage). Slang packs are dual-facet registers.</p>
+      <p><strong>Language</strong> — Use (speak/read) + About (metalanguage).</p>
       <p><strong>Domains</strong> — Knowledge by default.</p>
+    </section>
+
+    <section class="panel" id="spine">
+      <header class="panel-head"><h2>Freeform pipeline</h2></header>
+      <p class="mono">chitchat → reason-act → process math → extractive → about-knowledge → house-chat</p>
+      <p>
+        Product freeform never uses external LLM APIs as the answer mind.
+        Tools (prove/bind, math engines, attachments) remain first-class sieves.
+      </p>
     </section>
 
     <section class="panel" id="install">
       <header class="panel-head"><h2>Install</h2></header>
       <pre class="mono"># curl | bash (recommended)
 curl -fsSL https://metis.f00.sh/install.sh | bash
+# pin: METIS_VERSION=4.5.0
 
-# Homebrew (f00-sh tap)
+# Homebrew
 brew install f00-sh/tap/metis
 
-# AUR-style (org-keyed PKGBUILD)
+# AUR-style
 # packaging/aur or github.com/f00-sh/aur-metis
 
 # from source
@@ -86,9 +99,15 @@ git clone https://github.com/f00-sh/metis.git && cd metis
     <section class="panel" id="docs">
       <header class="panel-head"><h2>Docs</h2></header>
       <ul>
-        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/SYMBOL-TRAINING.md">Symbol training guide</a></li>
-        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/SYMBOL-FACETS.md">Dual-facet law</a></li>
-        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/SYMBOL-DOCTRINE.md">Seal doctrine</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/README.md">README</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/overview.md">Overview</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/install.md">Install &amp; ops</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/develop.md">Develop</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/SYMBOL-TRAINING.md">Symbol training</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/SYMBOL-FACETS.md">Dual-facet + chat spine</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/sop-metis-ops.md">Operator SOP</a> · <a href="https://github.com/f00-sh/metis/blob/main/docs/sop-metis-ops.pdf">PDF</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/sop-site-deploy.md">Site deploy SOP</a></li>
+        <li><a href="https://github.com/f00-sh/metis/blob/main/docs/sop-release.md">Release SOP</a></li>
         <li><a href="https://github.com/f00-sh/metis">Repository</a></li>
       </ul>
     </section>
@@ -98,9 +117,9 @@ git clone https://github.com/f00-sh/metis.git && cd metis
     <div class="wrap mono">
       <a href="https://f00.sh/">f00</a> ·
       <a href="https://github.com/f00-sh/metis">f00-sh/metis</a> ·
-      MIT · open sealed knowledge
+      <span>v4.5.0</span> ·
+      MIT
     </div>
   </footer>
-  <script src="https://f00.sh/theme/f00-entropy.js?v=27" data-f00-entropy-script defer></script>
 </body>
 </html>

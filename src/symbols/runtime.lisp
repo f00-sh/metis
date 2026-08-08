@@ -637,6 +637,9 @@
                           :test #'string-equal))
                 caps)
       (ignore-errors (symbol-nl-ingest-pack-facts! *mind*)))
+    ;; Model-package / adapter conditioning on house chat spine
+    (when (fboundp 'symbol-model-on-enable!)
+      (ignore-errors (symbol-model-on-enable! id man)))
     t))
 
 (defun %symbol-unregister-caps! (id)
@@ -645,6 +648,8 @@
                (symbol-capability-unregister! k id)))
            *symbol-capabilities*)
   (symbol-facet-unregister! id)
+  (when (fboundp 'symbol-model-on-disable!)
+    (ignore-errors (symbol-model-on-disable! id)))
   t)
 
 (defun symbol-math-answer (question)
@@ -660,26 +665,46 @@
     (%iface-math-answer question)))
 
 (defun symbol-math-knowledge-answer (question &optional mind)
-  "KNOWLEDGE facet: explain/recall from loaded math-domain facts (not compute)."
+  "KNOWLEDGE facet: explain/recall from loaded math-domain facts (not compute).
+   Matches DOMAIN-DEF / DOMAIN-IDENTITY only — not CAPABILITY meta rows.
+   Only for about-questions — never a substitute for value-of / prove (reason-act)."
   (unless (and (symbol-capability-enabled-p :math)
                (or (symbol-facet-enabled-p :knowledge)
                    (symbol-capability-enabled-p :math)))
     (return-from symbol-math-knowledge-answer nil))
+  ;; Refuse to regurgitate as solve: only when reason-act owns the turn as :query.
+  (when (and (fboundp 'parse-reason-act)
+             (let ((a (ignore-errors (parse-reason-act question))))
+               (and a (eq (getf a :act) :query))))
+    (return-from symbol-math-knowledge-answer nil))
   (let* ((m (or mind *mind*))
          (q (string-downcase (or question "")))
+         (stop '("tell" "about" "what" "whats" "what's" "from" "loaded"
+                 "please" "with" "this" "that" "have" "does" "into"
+                 "symbol" "symbols" "math" "know" "knowledge" "a" "an" "the"))
+         ;; Strip punctuation so "limit?" matches DOMAIN-DEF "limit"
+         (tokens (remove-if
+                  (lambda (tok)
+                    (or (<= (length tok) 2)
+                        (member tok stop :test #'string-equal)))
+                  (mapcar (lambda (tok)
+                            (string-trim
+                             '(#\? #\! #\. #\, #\; #\: #\" #\' #\( #\) #\[ #\])
+                             tok))
+                          (cl-ppcre:split "\\s+" q))))
          (hits nil))
     (when m
       (dolist (f (facts m))
         (when (and (consp f)
                    (symbolp (first f))
                    (member (string-upcase (symbol-name (first f)))
-                           '("DOMAIN-DEF" "DOMAIN-IDENTITY" "CAPABILITY")
+                           '("DOMAIN-DEF" "DOMAIN-IDENTITY")
                            :test #'string=))
-          (let ((s (format nil "~{~A~^ ~}" f)))
+          (let ((s (string-downcase (format nil "~{~A~^ ~}" f))))
             (when (some (lambda (tok)
-                          (and (> (length tok) 3)
-                               (search tok (string-downcase s))))
-                        (cl-ppcre:split "\\s+" q))
+                          (and (plusp (length tok))
+                               (search tok s)))
+                        tokens)
               (push s hits))))))
     (when hits
       (list :freeform :math-knowledge
