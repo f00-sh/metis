@@ -450,43 +450,117 @@
                    :key (lambda (x) (getf x :id)) :test #'string-equal))
         (and (fboundp '%pack-layer-get) (%pack-layer-get id)))))
 
-(defun symbol-seal-ensure-deps! (header &key (mind nil) (auto t))
+;;; ---- dependency pins (refcount) ----------------------------------
+;;; When A requires B, A holds a pin on B. Unloading A releases pins.
+;;; B is auto-unloaded only if: no remaining pins AND B was auto-loaded
+;;; as a dependency (not explicitly user-loaded).
+
+(defparameter *symbol-dep-pins* (make-hash-table :test #'equal)
+  "dep-id → list of holder symbol ids that currently require it.")
+
+(defparameter *symbol-required-deps* (make-hash-table :test #'equal)
+  "holder-id → list of required dep ids.")
+
+(defparameter *symbol-auto-loaded* (make-hash-table :test #'equal)
+  "id → T if this symbol was loaded only as a dependency (eligible for cascade unload).")
+
+(defun symbol-dep-pin! (holder dep-id)
+  "Record that HOLDER requires DEP-ID (refcount +1 style via membership)."
+  (let* ((h (string holder))
+         (d (string dep-id))
+         (holders (gethash d *symbol-dep-pins*)))
+    (unless (member h holders :test #'string-equal)
+      (setf (gethash d *symbol-dep-pins*) (cons h holders)))
+    t))
+
+(defun symbol-dep-unpin! (holder dep-id)
+  "Release HOLDER's pin on DEP-ID. Returns remaining holder count."
+  (let* ((h (string holder))
+         (d (string dep-id))
+         (rest (remove h (gethash d *symbol-dep-pins*) :test #'string-equal)))
+    (if rest
+        (setf (gethash d *symbol-dep-pins*) rest)
+        (remhash d *symbol-dep-pins*))
+    (length rest)))
+
+(defun symbol-dep-holders (dep-id)
+  (copy-list (gethash (string dep-id) *symbol-dep-pins*)))
+
+(defun symbol-mark-auto-loaded! (id)
+  (setf (gethash (string id) *symbol-auto-loaded*) t))
+
+(defun symbol-mark-explicit-loaded! (id)
+  "User/explicit load — not cascade-unloaded when last pin drops."
+  (remhash (string id) *symbol-auto-loaded*))
+
+(defun symbol-auto-loaded-p (id)
+  (gethash (string id) *symbol-auto-loaded*))
+
+(defun symbol-record-required-deps! (holder dep-ids)
+  (setf (gethash (string holder) *symbol-required-deps*)
+        (mapcar #'string dep-ids)))
+
+(defun symbol-required-deps-of (holder)
+  (copy-list (gethash (string holder) *symbol-required-deps*)))
+
+(defun symbol-clear-dep-state! (id)
+  (remhash (string id) *symbol-required-deps*)
+  (remhash (string id) *symbol-auto-loaded*)
+  ;; remove id as a holder from all pin lists
+  (maphash (lambda (dep holders)
+             (let ((rest (remove (string id) holders :test #'string-equal)))
+               (if rest
+                   (setf (gethash dep *symbol-dep-pins*) rest)
+                   (remhash dep *symbol-dep-pins*))))
+           *symbol-dep-pins*)
+  t)
+
+(defun symbol-seal-ensure-deps! (header &key (mind nil) (auto t) (holder nil))
   "Ensure required :depends-on are loaded. AUTO tries knowledge/sealed/<id>/.
+   HOLDER (usually the loading symbol id) pins each dep so unload is refcounted.
    Signals error with a clear missing list if unsatisfied."
   (let ((missing nil)
         (loaded nil)
-        (m (or mind *mind*)))
+        (m (or mind *mind*))
+        (holder (and holder (string holder))))
     (dolist (d (%seal-required-deps header))
       (let ((dep-id (string (or (getf d :id) (getf d :name) ""))))
         (when (plusp (length dep-id))
           (cond
             ((%seal-dep-loaded-p dep-id)
-             (push dep-id loaded))
+             (push dep-id loaded)
+             (when holder (symbol-dep-pin! holder dep-id)))
             (auto
              (let ((seed (merge-pathnames (format nil "~A/" dep-id)
                                           (symbol-sealed-root))))
                (if (and (probe-file (merge-pathnames "header.lisp" seed))
                         (probe-file (merge-pathnames "body.mse" seed)))
                    (progn
-                     ;; recursive load; private deps still force temporary
-                     (symbol-seal-load! seed :mind m :verify t)
-                     (push dep-id loaded))
+                     ;; recursive load as auto-dep (private still temporary)
+                     (symbol-seal-load! seed :mind m :verify t
+                                        :as-dependency t)
+                     (push dep-id loaded)
+                     (when holder (symbol-dep-pin! holder dep-id)))
                    (push dep-id missing))))
             (t (push dep-id missing))))))
     (when missing
       (error "symbol ~A requires deps not loaded: ~{~A~^, ~} (load those sealed packages first or place them under knowledge/sealed/)"
-             (getf header :id) (nreverse missing)))
+             (or holder (getf header :id)) (nreverse missing)))
+    (when holder
+      (symbol-record-required-deps! holder (nreverse (copy-list loaded))))
     (list :ok t :loaded (nreverse loaded))))
 
 (defun symbol-seal-load!
     (dir &key (mind nil) (key nil) (verify t) (temporary nil)
               (trust-tier-override nil)
-              (auto-deps t))
+              (auto-deps t)
+              (as-dependency nil))
   "Verify, decrypt, inject sealed knowledge into MIND via pack layers.
    Refuses on bad signature, hash mismatch, or decrypt failure.
    private-sealed ALWAYS loads as a temporary overlay — never writes a
    permanent plaintext pack.lisp/corpus.txt into the registry.
-   Required :depends-on are auto-loaded from knowledge/sealed/ when AUTO-DEPS."
+   Required :depends-on are auto-loaded from knowledge/sealed/ when AUTO-DEPS.
+   AS-DEPENDENCY T marks this load as auto-dep (cascade-unload only if unpinned)."
   (let* ((m (or mind *mind* (boot)))
          (dir (uiop:ensure-directory-pathname dir))
          (v (when verify (symbol-seal-verify dir :require t)))
@@ -505,7 +579,10 @@
                        (getf header :trust-tier))
                    :community)))
     (when auto-deps
-      (symbol-seal-ensure-deps! header :mind m :auto t))
+      (symbol-seal-ensure-deps! header :mind m :auto t :holder id))
+    (if as-dependency
+        (symbol-mark-auto-loaded! id)
+        (symbol-mark-explicit-loaded! id))
     (let* ((mkt (symbol-marketplace-check id
                                           :version (getf header :version)
                                           :body-sha256 (getf v :body-sha256)))
@@ -566,10 +643,63 @@
                      :marketplace mkt
                      :stats stats
                      :facts (length facts)
-                     :rules (length rules))))
+                     :rules (length rules)
+                     :as-dependency (and as-dependency t)
+                     :deps (symbol-required-deps-of id))))
         ;; always wipe plaintext material
         (ignore-errors (uiop:delete-directory-tree
                         tmp :validate t :if-does-not-exist :ignore))))))
+
+(defun %symbol-unload-core! (id &key (mind nil))
+  "Disable/overlay-unload ID and drop caps/facets. No dep cascade."
+  (let ((m (or mind *mind*))
+        (id (string id))
+        (action nil))
+    (cond
+      ((find id *symbol-pack-overlays*
+             :key (lambda (x) (getf x :id)) :test #'string-equal)
+       (symbol-pack-overlay-unload! id :mind m)
+       (setf action :unloaded))
+      ((gethash id *symbol-pack-enabled*)
+       (symbol-pack-disable! id :mind m)
+       (setf action :disabled))
+      (t
+       (setf action :not-loaded)))
+    (when (fboundp '%symbol-unregister-caps!)
+      (%symbol-unregister-caps! id))
+    (symbol-clear-dep-state! id)
+    (list :id id :action action)))
+
+(defun symbol-seal-unload!
+    (id &key (mind nil) (cascade-unused-deps t))
+  "Unload symbol ID. Releases dep pins. Cascades unload of auto-loaded deps
+   only when no other loaded symbol still pins them.
+   Never unloads a dep that is still required by another currently loaded symbol."
+  (let* ((m (or mind *mind*))
+         (id (string id))
+         (deps (symbol-required-deps-of id))
+         (core (%symbol-unload-core! id :mind m))
+         (cascaded nil)
+         (kept nil))
+    (when cascade-unused-deps
+      (dolist (d deps)
+        (let ((remaining (length (symbol-dep-holders d))))
+          ;; pins for this holder already cleared in symbol-clear-dep-state!
+          (cond
+            ((plusp remaining)
+             (push (list :id d :kept t :holders (symbol-dep-holders d)) kept))
+            ((and (symbol-auto-loaded-p d) (%seal-dep-loaded-p d))
+             ;; still auto-loaded and unpinned → safe cascade
+             (let ((r (symbol-seal-unload! d :mind m :cascade-unused-deps t)))
+               (push (list :id d :cascaded t :result r) cascaded)))
+            (t
+             ;; unpinned but user/explicit load — keep
+             (push (list :id d :kept t :reason :explicit-or-shared) kept))))))
+    (list :unloaded t
+          :id id
+          :core core
+          :cascaded (nreverse cascaded)
+          :kept-deps (nreverse kept))))
 
 ;;; ---- marketplace fingerprint index -------------------------------
 

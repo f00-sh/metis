@@ -303,9 +303,13 @@
    #:symbol-seal-verify
    #:symbol-seal-decrypt-body
    #:symbol-seal-load!
+   #:symbol-seal-unload!
    #:symbol-seal-read-header
    #:symbol-seal-dir-p
    #:symbol-seal-body-opaque-p
+   #:symbol-dep-holders
+   #:symbol-auto-loaded-p
+   #:symbol-required-deps-of
    #:symbol-marketplace-load-index!
    #:symbol-marketplace-register!
    #:symbol-marketplace-save-index!

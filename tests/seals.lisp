@@ -237,6 +237,64 @@
                                   (equal (second f) "math")))
                            (metis:facts metis:*mind*))))))))
 
+(test symbol-dep-refcount-keeps-shared-deps
+  "Unload A does not unload dep shared by still-loaded B."
+  (metis:boot :bootstrap t :reset t)
+  (ignore-errors (metis:symbol-pack-disable! "math" :mind metis:*mind*))
+  (ignore-errors (metis::%symbol-unregister-caps! "math"))
+  (let* ((base (merge-pathnames "depbase/" *seal-scratch*))
+         (a (merge-pathnames "depa/" *seal-scratch*))
+         (b (merge-pathnames "depb/" *seal-scratch*)))
+    (ensure-directories-exist base)
+    (ensure-directories-exist a)
+    (ensure-directories-exist b)
+    ;; base dep symbol
+    (metis:symbol-seal!
+     (list :id "dep-base" :version "1.0.0" :license "MIT"
+           :capabilities '(:math)
+           :facets '(:knowledge :process)
+           :facts '((domain-def "dep-base" "unit" "shared dependency unit")))
+     base :mode :open-sealed)
+    ;; two consumers that require dep-base
+    (metis:symbol-seal!
+     (list :id "dep-a" :version "1.0.0" :license "MIT"
+           :capabilities '(:math)
+           :depends-on '((:id "dep-base" :role :required))
+           :facts '((domain-def "dep-a" "a" "consumer a")))
+     a :mode :open-sealed)
+    (metis:symbol-seal!
+     (list :id "dep-b" :version "1.0.0" :license "MIT"
+           :capabilities '(:math)
+           :depends-on '((:id "dep-base" :role :required))
+           :facts '((domain-def "dep-b" "b" "consumer b")))
+     b :mode :open-sealed)
+    ;; install base into sealed root so auto-deps can find it
+    (let ((root (merge-pathnames "dep-base/" (metis:symbol-sealed-root))))
+      (ensure-directories-exist root)
+      (uiop:copy-file (merge-pathnames "header.lisp" base)
+                      (merge-pathnames "header.lisp" root))
+      (uiop:copy-file (merge-pathnames "body.mse" base)
+                      (merge-pathnames "body.mse" root))
+      (uiop:copy-file (merge-pathnames "symbol.sig" base)
+                      (merge-pathnames "symbol.sig" root)))
+    (metis:symbol-seal-load! a :mind metis:*mind*)
+    (metis:symbol-seal-load! b :mind metis:*mind*)
+    (is-true (metis::%seal-dep-loaded-p "dep-base"))
+    (is (member "dep-a" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
+    (is (member "dep-b" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
+    ;; unload A — base must stay (B still pins it)
+    (let ((u (metis:symbol-seal-unload! "dep-a" :mind metis:*mind*)))
+      (is-true (getf u :unloaded))
+      (is-true (metis::%seal-dep-loaded-p "dep-base")
+               "shared dep-base must remain loaded while dep-b is live")
+      (is (member "dep-b" (metis:symbol-dep-holders "dep-base") :test #'string-equal))
+      (is-false (member "dep-a" (metis:symbol-dep-holders "dep-base")
+                        :test #'string-equal)))
+    ;; unload B — base may cascade if auto-loaded
+    (metis:symbol-seal-unload! "dep-b" :mind metis:*mind*)
+    (is-false (metis::%seal-dep-loaded-p "dep-a"))
+    (is-false (metis::%seal-dep-loaded-p "dep-b"))))
+
 (test dual-facet-math-knowledge-and-process
   "Math symbols: knowledge + process facets; unload removes both."
   (metis:boot :bootstrap t :reset t)

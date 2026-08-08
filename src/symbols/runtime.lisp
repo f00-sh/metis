@@ -219,21 +219,35 @@
       (nreverse out))))
 
 (defun symbol-toggle! (id &key (mind nil) (temporary nil))
-  "Load/enable or unload/disable symbol ID. Returns status plist."
+  "Load/enable or unload/disable symbol ID. Returns status plist.
+   Unload uses dep refcount: shared deps of other loaded symbols stay loaded."
   (let ((m (or mind *mind* (boot)))
         (id (string id)))
     (cond
-      ;; currently overlay → unload
-      ((find id *symbol-pack-overlays*
-             :key (lambda (x) (getf x :id)) :test #'string-equal)
-       (let ((r (symbol-pack-overlay-unload! id :mind m)))
-         (%symbol-unregister-caps! id)
+      ;; currently loaded (overlay or enabled) → refcount-safe unload
+      ((or (find id *symbol-pack-overlays*
+                 :key (lambda (x) (getf x :id)) :test #'string-equal)
+           (gethash id *symbol-pack-enabled*))
+       (let ((r (if (fboundp 'symbol-seal-unload!)
+                    (symbol-seal-unload! id :mind m)
+                    (progn
+                      (when (find id *symbol-pack-overlays*
+                                  :key (lambda (x) (getf x :id))
+                                  :test #'string-equal)
+                        (symbol-pack-overlay-unload! id :mind m))
+                      (when (gethash id *symbol-pack-enabled*)
+                        (symbol-pack-disable! id :mind m))
+                      (%symbol-unregister-caps! id)
+                      (list :unloaded t :id id)))))
          (list* :action :unloaded r)))
-      ;; permanently enabled → disable
-      ((gethash id *symbol-pack-enabled*)
-       (let ((r (symbol-pack-disable! id :mind m)))
-         (%symbol-unregister-caps! id)
-         (list* :action :disabled r)))
+      ;; sealed package preferred when present
+      ((probe-file (merge-pathnames
+                    (format nil "~A/header.lisp" id)
+                    (symbol-sealed-root)))
+       (let ((r (symbol-seal-load!
+                 (merge-pathnames (format nil "~A/" id) (symbol-sealed-root))
+                 :mind m :temporary temporary)))
+         (list* :action :enabled r)))
       ;; installed in registry → enable
       ((probe-file (merge-pathnames
                     (format nil "~A/manifest.lisp" id)
@@ -243,6 +257,7 @@
                    (merge-pathnames (format nil "~A/" id)
                                     (symbol-pack-registry-dir)))))
          (%symbol-register-caps-from-manifest! id man)
+         (symbol-mark-explicit-loaded! id)
          (list* :action :enabled r)))
       ;; seed path → install then enable (or temp overlay)
       (t
@@ -254,11 +269,13 @@
          (if temporary
              (let ((r (symbol-pack-install! seed :id id :temporary t :mind m)))
                (%symbol-register-caps-from-manifest! id man)
+               (symbol-mark-explicit-loaded! id)
                (list* :action :overlay r))
              (progn
                (symbol-pack-install! seed :id id :mind m)
                (let ((r (symbol-pack-enable! id :mind m)))
                  (%symbol-register-caps-from-manifest! id man)
+                 (symbol-mark-explicit-loaded! id)
                  (list* :action :enabled r)))))))))
 
 ;;; ---- NL phrase banks (data, not one-shot hardcodes) --------------
@@ -627,6 +644,9 @@
   "Boot open-knowledge + core capability symbols (math, NL, local-user)."
   (clrhash *symbol-capabilities*)
   (clrhash *symbol-facet-store*)
+  (when (boundp '*symbol-dep-pins*) (clrhash *symbol-dep-pins*))
+  (when (boundp '*symbol-required-deps*) (clrhash *symbol-required-deps*))
+  (when (boundp '*symbol-auto-loaded*) (clrhash *symbol-auto-loaded*))
   (symbol-pack-boot!)
   (symbol-ensure-core-packs!)
   (when defaults

@@ -38,6 +38,18 @@ History, theology, lab notes, fringe packs: **knowledge** only, unless they ship
 
 If `:facets` omitted, Metis infers from capabilities (`symbol-default-facets-for-caps`).
 
+## Dependency unload (refcount)
+
+When A `depends-on` B and C also depends on B:
+
+- Loading A or C **pins** B.
+- Unloading A **releases A’s pin only**.
+- B stays loaded while **any** loaded symbol still pins it.
+- B may cascade-unload only if it was **auto-loaded as a dependency** and has **zero** remaining pins.
+- Explicit user loads of B are never cascade-unloaded just because a dependent went away.
+
+API: `symbol-seal-unload!`, `symbol-dep-holders`, used by `symbol-toggle!`.
+
 ## Seal honesty (unchanged)
 
 - Opaque + tamper-evident at rest: **yes**
