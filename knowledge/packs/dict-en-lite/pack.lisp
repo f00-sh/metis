@@ -1,9 +1,38 @@
-(:metis-pack 1 :facts
- ((metis::word-def "cat" "a small domesticated carnivorous mammal")
-  (metis::word-def "dog" "a domesticated carnivorous mammal")
-  (metis::word-def "metis" "cunning intelligence; Greek goddess of wisdom")
-  (metis::word-def "symbol" "a knowledge pack unit in Metis"))
- :rules (((metis::wordp metis::?w) ((metis::word-def metis::?w metis::?d))))
+(:metis-pack 1
+ :facts
+ ((word-def "cat" "a small domesticated carnivorous mammal")
+  (word-def "dog" "a domesticated carnivorous mammal often kept as a pet")
+  (word-def "metis" "cunning intelligence; Greek goddess of wisdom; this hybrid CL mind")
+  (word-def "symbol" "a knowledge pack unit in Metis you load and unload")
+  (word-def "facet" "one face of a dual-facet symbol (use/about or process/knowledge)")
+  (word-def "mind" "here: the Metis cognitive process with KB, TMS, session, and tools")
+  (word-def "pack" "installable symbol content: facts, rules, corpus, optional weights")
+  (word-def "seal" "opaque tamper-evident packaging for a symbol body")
+  (word-def "load" "enable a symbol so its capabilities and facts are live")
+  (word-def "unload" "disable a symbol; shared deps stay if other holders pin them")
+  (word-def "noun" "a word that names a person, place, thing, or idea")
+  (word-def "verb" "a word that expresses action or state")
+  (word-def "adjective" "a word that modifies a noun")
+  (word-def "sentence" "a complete thought with subject and predicate")
+  (word-def "language" "a structured system of communication")
+  (word-def "english" "a West Germanic language used by Metis NL packs")
+  (word-def "hello" "a greeting")
+  (word-def "goodbye" "a parting expression")
+  (word-def "please" "a polite request marker")
+  (word-def "thanks" "an expression of gratitude")
+  (word-def "question" "a request for information")
+  (word-def "answer" "a response to a question")
+  (word-def "truth" "what is the case; in Metis often TMS-labeled IN/OUT")
+  (word-def "learn" "acquire knowledge; here also train models from attached text")
+  (word-def "file" "a named blob of data; attach with @PATH")
+  (word-def "math" "study of quantity, structure, space, and change")
+  (word-def "computer" "a machine that executes programs")
+  (word-def "program" "instructions a computer can run")
+  (nl-concept "dictionary" "A dictionary maps words to definitions. dict-en-lite is a small open seed for About/Use lookup.")
+  (capability dictionary "word definitions for English freeform about"))
+ :rules
+ (((wordp ?w) ((word-def ?w ?d))))
  :corpus-inline
- ("cat: a small domesticated carnivorous mammal"
-  "dog: a domesticated carnivorous mammal" "metis: cunning intelligence"))
+ ("dict-en-lite: open dictionary seed for English About facet."
+  "Ask: what is a noun; define symbol; what does facet mean."
+  "Stack with natural-language and lang-en-about for richer metalanguage."))

@@ -23,6 +23,18 @@ Facts alone never count as “having calculus.”
 **Slang packs** are dual-facet language registers stacked on a core language symbol
 (`depends-on` core `lang-en` / `natural-language`).
 
+### Shipped English pack stack (richer freeform)
+
+| Pack | Role |
+|------|------|
+| `natural-language` | Core dual-facet English (Use dialogue + About metalanguage) — default on boot |
+| `lang-en-conversation` | Extra Use phrase banks (stacked) |
+| `lang-en-about` | Extra About grammar / metalanguage concepts |
+| `dict-en-lite` | Word definitions (`word-def`) for About lookups |
+| `slang-en-lite` | Informal register (Use+About), depends on `natural-language` |
+
+Enable from the symbols pane or catalog. Packs contribute `(nl-phrase …)` / `(nl-concept …)` facts that merge into live banks on enable.
+
 ## Other domain symbols — default one facet
 
 History, theology, lab notes, fringe packs: **knowledge** only, unless they ship a real procedure

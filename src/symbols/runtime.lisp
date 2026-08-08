@@ -111,11 +111,20 @@
                                :note "chitchat + concept lexicon"))
           :weights-policy :reproducible-from-data
           :extra (list :category :language
-                       :capabilities '(:nl :chitchat :concepts :language)))
+                       :capabilities '(:nl :chitchat :concepts :language)
+                       :facets '(:use :about)))
          :facts '((capability natural-language "english freeform surface")
-                  (capability chitchat "greetings and identity"))
-         :corpus (list "Natural language symbol provides English dialogue."
-                       "Load domain symbols for specialized knowledge."))))
+                  (capability chitchat "greetings identity creative play")
+                  (nl-concept "noun" "A noun names a person, place, thing, or idea (cat, Metis, freedom).")
+                  (nl-concept "verb" "A verb expresses action or state (run, is, load).")
+                  (nl-concept "adjective" "An adjective modifies a noun (quick, sealed, dual-facet).")
+                  (nl-concept "sentence" "A sentence is a complete thought, usually subject + predicate.")
+                  (nl-concept "english" "English is a West Germanic language; Metis NL packs provide Use+About surfaces in English.")
+                  (word-def "symbol" "in Metis: a sealed knowledge pack you load on demand")
+                  (word-def "facet" "a dual surface of a symbol: e.g. use/about for language, process/knowledge for math"))
+         :corpus (list "Natural language symbol: Use facet for dialogue; About for metalanguage."
+                       "Richer packs: lang-en-conversation, dict-en-lite, slang-en-lite, lang-en-about."
+                       "Load domain symbols for specialized knowledge; never kitchen-sink weights."))))
     ;; local-user — user-taught, not set-in-stone
     (let ((d (merge-pathnames "local-user/" root)))
       (unless (probe-file (merge-pathnames "manifest.lisp" d))
@@ -313,7 +322,68 @@
     ("whoami"
      . ("I don't have a stored name for you yet. Tell me with (tell (user-name \"…\")) or /context."
         "No user-name fact yet — teach me with (tell (user-name \"…\")) when local learning is on."
-        "Unknown so far. With local-user loaded and local learning on, (tell (user-name \"…\")) sticks.")))
+        "Unknown so far. With local-user loaded and local learning on, (tell (user-name \"…\")) sticks."))
+    ;; --- richer USE surface (core NL pack + conversation pack) ---
+    ("sing"
+     . ("♪ Metis hums a little Common Lisp lullaby: cons and cdr under a silver moon, load a symbol, learn a tune. ♪ (Not a music model — just English play.)"
+        "I can offer words, not a studio vocal: \"Oh give me a stack, where the lambdas run free…\" Want a poem instead, or a real domain symbol?"
+        "Here's a tiny song-in-text: verse one — ask me math; verse two — @ a file; chorus — symbols on demand, never kitchen-sink blues."))
+    ("joke"
+     . ("Why did the Lisp programmer get lost? Too many CARs without a MAP."
+        "I told my TMS a joke. It justified laughing only after checking the premises."
+        "Parallel parking and parent matching: both improve with more practice and fewer free variables."))
+    ("poem"
+     . ("Quiet stack, open paren — / a mind of rules and replay. / Load what you need; leave the rest unseen."
+        "Symbols sleep until you call them; / facts pin lightly, truth can fall. / Ask again — English answers, honest when thin."
+        "Green text on a dark pane — / you type \"sing\", I answer plain. / Not a trillion weights of weather: / just the packs we load together."))
+    ("story"
+     . ("Short story: A researcher opened Metis empty. They loaded math, then language, then a folder of notes. By evening the mind explained their own files — and refused the rest. The end (for now)."
+        "Once there was a kitchen-sink model that knew everything poorly. Metis took the other path: small sealed symbols, dual facets, and a user who chose what to load. The model stayed honest."
+        "In a lab of cold CPUs, a hybrid mind waited. \"Sing,\" said the human. It sang in words. \"Prove,\" they said. It planned. Symbols, not vibes."))
+    ("bored"
+     . ("Try: 2+4(56/3), @PATH on a notes file, Ctrl+T for symbols, or (tell (about \"topic\" \"fact\")). Or load lang-en-conversation / dict-en-lite for richer talk."
+        "Challenge mode: teach me three facts with local-user, then ask me them back. Or watch a folder with /watch folder PATH."
+        "I'm not bored — I'm under-provisioned until you load packs. Algebra, animals-lite, dict-en-lite, or your own sealed domain."))
+    ("sorry"
+     . ("No hard feelings. Try rephrasing, attach a note, or load a richer language pack (lang-en-conversation)."
+        "It's fine. If I missed context, @PATH or /context TEXT helps."
+        "Apology accepted. What should we do next?"))
+    ("encourage"
+     . ("You've got this. Break the problem into a fact, a question, and a check."
+        "Small steps: one symbol, one file, one question. Momentum follows."
+        "Keep going — load what you need and ask specifically."))
+    ("weather"
+     . ("I don't have live weather. Attach a forecast note with @PATH, set an LLM key for open-world, or ask something I can do offline (math, your files, loaded packs)."
+        "No sensors here — only symbols and session memory. Drop a weather text file if you want me to summarize it."))
+    ("how-to"
+     . ("General how-to: say what you want in English; for skills, type help; for math, type an expression; for your docs, @PATH; for domains, Ctrl+T and load a symbol."
+        "Start with: (1) load the right symbol, (2) attach material if needed, (3) ask a concrete question. help lists slash commands."))
+    ("what-should"
+     . ("If you're stuck: load natural-language + math, try a simple expression, then @ a small notes file. Or open symbols and enable dict-en-lite / lang-en-conversation."
+        "Good defaults: teach local-user a fact, ask it back; then try a domain pack. What goal are you aiming at?"))
+    ("yes"
+     . ("Understood."
+        "Okay."
+        "Got it."))
+    ("no"
+     . ("Okay — we can try another angle."
+        "Alright. What instead?"
+        "Fine. Tell me the better path."))
+    ("laugh"
+     . ("Ha. Fair."
+        "Heh — noted."
+        "I'll take the smile as a receipt."))
+    ("love"
+     . ("Appreciate the warmth. I'm software — I'll return usefulness: ask, teach, or load a pack."
+        "Kind words logged. What shall we build or learn next?"))
+    ("confused"
+     . ("Let's simplify: one sentence for the goal, then one fact you already know. Or type help."
+        "Confusion is data. Point at the last reply that didn't land, or attach the source text."
+        "Try a smaller question, or load lang-en-about / dict-en-lite for definitions."))
+    ("slang-hi"
+     . ("Yo. Metis online — load packs, don't drown in a kitchen sink."
+        "Sup. Symbols on demand; talk English, compute math, teach local-user."
+        "Hey hey. Ctrl+T for the tree; ask plain or load slang-en-lite for more register.")))
   "Intent → list of English variants. Format ~A slots filled at pick time.")
 
 (defun symbol-nl-bank-add! (intent phrases)
@@ -340,46 +410,40 @@
             (apply #'format nil tpl args)
             tpl)))))
 
+(defun %symbol-nl-reply (intent &key salt args source)
+  (list :freeform :chat
+        :reply-text (or (symbol-nl-pick intent :salt salt :args args)
+                        (format nil "~A" intent))
+        :source (or source :nl-symbol)
+        :facet :use))
+
 (defun %symbol-nl-chitchat-variants (question mind)
-  "NL-symbol surface: same intents as core chat, variable English."
+  "USE facet: broad English dialogue when NL/language packs are loaded.
+   Richer packs add banks via symbol-nl-ingest-pack-facts! — never letter-salad."
   (let* ((q (string-trim '(#\Space #\Tab #\Newline #\.) (or question "")))
          (qd (string-downcase q))
          (salt (sxhash qd)))
     (cond
       ((zerop (length qd)) nil)
-      ((cl-ppcre:scan "^(hi|hello|hey|howdy|yo|hiya|good\\s+(morning|afternoon|evening))\\b[!?.]*$" qd)
-       (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "hello" :salt salt)
-                             "Hello. I'm Metis.")
-             :source :nl-symbol))
+      ;; greetings (incl. light slang)
+      ((cl-ppcre:scan "^(hi|hello|hey|howdy|yo|hiya|sup|good\\s+(morning|afternoon|evening))\\b[!?.]*$" qd)
+       (if (cl-ppcre:scan "^(yo|sup)\\b" qd)
+           (%symbol-nl-reply "slang-hi" :salt salt :source :nl-use)
+           (%symbol-nl-reply "hello" :salt salt)))
       ((cl-ppcre:scan "^(thanks|thank you|thx|ty)\\b" qd)
-       (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "thanks" :salt salt) "You're welcome.")
-             :source :nl-symbol))
-      ((cl-ppcre:scan "^(bye|goodbye|see you|later)\\b" qd)
-       (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "bye" :salt salt) "Goodbye.")
-             :source :nl-symbol))
-      ((cl-ppcre:scan "how are you" qd)
-       (list :freeform :chat
-             :reply-text
-             (or (symbol-nl-pick "howareyou" :salt salt
-                                 :args (list (or (ignore-errors (metis-version-string)) "")))
-                 "Running.")
-             :source :nl-symbol))
+       (%symbol-nl-reply "thanks" :salt salt))
+      ((cl-ppcre:scan "^(bye|goodbye|see you|later|cya)\\b" qd)
+       (%symbol-nl-reply "bye" :salt salt))
+      ((cl-ppcre:scan "how are you|how('?s| is) it going|how you doing" qd)
+       (%symbol-nl-reply "howareyou" :salt salt
+                         :args (list (or (ignore-errors (metis-version-string)) ""))))
       ((or (cl-ppcre:scan "what('?s| is) your name" qd)
            (cl-ppcre:scan "who are you" qd)
            (cl-ppcre:scan "what are you" qd)
            (string= qd "name"))
-       (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "identity" :salt salt)
-                             "I'm Metis.")
-             :source :nl-symbol))
-      ((cl-ppcre:scan "what can you (do|help)" qd)
-       (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "help-cap" :salt salt)
-                             "Type help for commands.")
-             :source :nl-symbol))
+       (%symbol-nl-reply "identity" :salt salt))
+      ((cl-ppcre:scan "what can you (do|help)|help me|how do (i|you) use" qd)
+       (%symbol-nl-reply "help-cap" :salt salt))
       ((cl-ppcre:scan "what day is it|what('?s| is) (the )?date|today('?s)? date" qd)
        (multiple-value-bind (s m h day mon year)
            (decode-universal-time (get-universal-time) 0)
@@ -388,13 +452,78 @@
                :reply-text
                (format nil "On this machine's clock (UTC): ~4,'0D-~2,'0D-~2,'0D."
                        year mon day)
-               :source :time)))
+               :source :time :facet :use)))
       ((and mind (cl-ppcre:scan "who am i|what is my name" qd))
+       (%symbol-nl-reply "whoami" :salt salt))
+      ;; creative / social use (richer packs amplify banks)
+      ((cl-ppcre:scan "sing( a song)?|song for me|sing something" qd)
+       (%symbol-nl-reply "sing" :salt salt :source :nl-use))
+      ((cl-ppcre:scan "tell me a joke|make me laugh|joke\\b" qd)
+       (%symbol-nl-reply "joke" :salt salt :source :nl-use))
+      ((cl-ppcre:scan "write (me )?a poem|poem about|poetry" qd)
+       (%symbol-nl-reply "poem" :salt salt :source :nl-use))
+      ((cl-ppcre:scan "tell me a story|short story|story about" qd)
+       (%symbol-nl-reply "story" :salt salt :source :nl-use))
+      ((cl-ppcre:scan "i('?m| am) bored|this is boring|entertain me" qd)
+       (%symbol-nl-reply "bored" :salt salt :source :nl-use))
+      ((cl-ppcre:scan "^(sorry|my bad|apologies)\\b" qd)
+       (%symbol-nl-reply "sorry" :salt salt))
+      ((cl-ppcre:scan "encourage me|i need motivation|cheer me up" qd)
+       (%symbol-nl-reply "encourage" :salt salt))
+      ((cl-ppcre:scan "weather|temperature outside|forecast" qd)
+       (%symbol-nl-reply "weather" :salt salt))
+      ((cl-ppcre:scan "how (do|can|should) i |how to " qd)
+       (%symbol-nl-reply "how-to" :salt salt))
+      ((cl-ppcre:scan "what should i (do|try|ask)|i('?m| am) stuck" qd)
+       (%symbol-nl-reply "what-should" :salt salt))
+      ((cl-ppcre:scan "^(yes|yep|yeah|yup|ok|okay|sure)\\b[!?.]*$" qd)
+       (%symbol-nl-reply "yes" :salt salt))
+      ((cl-ppcre:scan "^(no|nope|nah)\\b[!?.]*$" qd)
+       (%symbol-nl-reply "no" :salt salt))
+      ((cl-ppcre:scan "^(lol|haha|heh|lmao)\\b" qd)
+       (%symbol-nl-reply "laugh" :salt salt))
+      ((cl-ppcre:scan "i love you|love ya" qd)
+       (%symbol-nl-reply "love" :salt salt))
+      ((cl-ppcre:scan "i('?m| am) confused|doesn'?t make sense|what does that mean\\??$" qd)
+       (%symbol-nl-reply "confused" :salt salt))
+      ;; bare "what" / "why" — still English, not garbage
+      ((member qd '("what" "why" "how" "huh" "?" "??" "???") :test #'string=)
        (list :freeform :chat
-             :reply-text (or (symbol-nl-pick "whoami" :salt salt)
-                             "I don't have your name yet.")
-             :source :nl-symbol))
+             :reply-text
+             "Need a bit more: try a full question (what is X?), a math expression, @PATH for your notes, or load dict-en-lite / lang-en-conversation for richer language."
+             :source :nl-use :facet :use))
       (t nil))))
+
+(defun symbol-nl-ingest-pack-facts! (&optional mind)
+  "Pull (nl-phrase intent text) and (nl-concept topic text) from MIND into live banks.
+   Language packs call this on enable so richer packs stack without kitchen-sink weights."
+  (let ((m (or mind *mind*))
+        (n 0))
+    (when m
+      (dolist (f (facts m))
+        (when (and (consp f) (symbolp (first f)))
+          (let ((head (string-upcase (symbol-name (first f)))))
+            (cond
+              ((and (string= head "NL-PHRASE")
+                    (stringp (second f)) (stringp (third f)))
+               (symbol-nl-bank-add! (second f) (list (third f)))
+               (incf n))
+              ((and (string= head "NL-CONCEPT")
+                    (stringp (second f)) (stringp (third f)))
+               (symbol-nl-concept-add! (second f) (third f))
+               (incf n)))))))
+    n))
+
+(defparameter *nl-concept-extra* (make-hash-table :test #'equal)
+  "topic → definition text contributed by loaded language packs.")
+
+(defun symbol-nl-concept-add! (topic text)
+  (setf (gethash (string-downcase (string topic)) *nl-concept-extra*)
+        (or text ""))
+  topic)
+
+(defun symbol-nl-concept-lookup (topic)
+  (gethash (string-downcase (string topic)) *nl-concept-extra*))
 
 ;;; ---- local-user knowledge surface --------------------------------
 
@@ -501,6 +630,13 @@
     (dolist (c caps)
       (symbol-capability-register! c id))
     (symbol-facet-register! id facets)
+    ;; Language packs may contribute phrase/concept tables via pack facts.
+    (when (some (lambda (c)
+                  (member (%cap-key c)
+                          '("nl" "chitchat" "concepts" "language" "slang")
+                          :test #'string-equal))
+                caps)
+      (ignore-errors (symbol-nl-ingest-pack-facts! *mind*)))
     t))
 
 (defun %symbol-unregister-caps! (id)
@@ -572,7 +708,20 @@
              (or (symbol-facet-enabled-p :about)
                  (symbol-capability-enabled-p :concepts)
                  (symbol-capability-enabled-p :nl)))
-    (%iface-concept-answer question)))
+    (or
+     ;; pack-contributed concepts
+     (let* ((toks (cl-ppcre:all-matches-as-strings
+                   "[a-z][a-z\\-]{2,}" (string-downcase (or question ""))))
+            (hit (dolist (t0 toks)
+                   (let ((d (symbol-nl-concept-lookup t0)))
+                     (when (and d (plusp (length d)))
+                       (return (list :freeform :nl-concept
+                                     :reply-text d
+                                     :topic t0
+                                     :source :nl-pack-concept
+                                     :facet :about)))))))
+       hit)
+     (%iface-concept-answer question))))
 
 (defun symbol-nl-about-answer (question &optional mind)
   "ABOUT facet: metalanguage — answer questions about the language itself."
@@ -588,30 +737,47 @@
                       (search "what's" q)
                       (search "mean" q)
                       (search "define" q)
+                      (search "definition" q)
                       (search "grammar" q)
                       (search "slang" q)
                       (search "noun" q)
-                      (search "verb" q)))
+                      (search "verb" q)
+                      (search "adjective" q)
+                      (search "adverb" q)
+                      (search "pronoun" q)
+                      (search "sentence" q)
+                      (search "english" q)
+                      (search "language" q)
+                      (search "word" q)))
          (hits nil))
     (unless about-p (return-from symbol-nl-about-answer nil))
-    (when m
-      (dolist (f (facts m))
-        (when (and (consp f)
-                   (symbolp (first f))
-                   (member (string-upcase (symbol-name (first f)))
-                           '("WORD-DEF" "DOMAIN-DEF" "CAPABILITY")
-                           :test #'string=))
-          (let ((s (format nil "~{~A~^ ~}" f)))
-            (when (some (lambda (tok)
-                          (and (> (length tok) 2)
-                               (search tok (string-downcase s))))
-                        (cl-ppcre:split "\\s+" q))
-              (push s hits))))))
+    ;; ingest any newly loaded pack tables
+    (ignore-errors (symbol-nl-ingest-pack-facts! m))
+    (let ((stop '("what" "whats" "what's" "is" "are" "the" "a" "an" "of"
+                  "for" "to" "in" "on" "and" "or" "how" "does" "do" "mean"
+                  "define" "definition" "please" "me" "my" "your")))
+      (when m
+        (dolist (f (facts m))
+          (when (and (consp f)
+                     (symbolp (first f))
+                     (member (string-upcase (symbol-name (first f)))
+                             '("WORD-DEF" "DOMAIN-DEF" "NL-CONCEPT")
+                             :test #'string=))
+            (let* ((s (format nil "~{~A~^ ~}" f))
+                   (sd (string-downcase s))
+                   (toks (remove-if
+                          (lambda (tok)
+                            (or (<= (length tok) 2)
+                                (member tok stop :test #'string-equal)))
+                          (cl-ppcre:split "\\s+" q))))
+              (when (and toks
+                         (some (lambda (tok) (search tok sd)) toks))
+                (push s hits)))))))
     (or (when hits
           (list :freeform :nl-about
                 :reply-text
                 (format nil "About the language (loaded symbol):~%~{• ~A~%~}"
-                        (subseq hits 0 (min 5 (length hits))))
+                        (subseq hits 0 (min 6 (length hits))))
                 :source :nl-about
                 :facet :about))
         (symbol-nl-concept question))))

@@ -1,12 +1,18 @@
-(:METIS-SYMBOL-PACK 1 :ID "natural-language" :NAME "Natural Language" :VERSION
- "1.0.0" :DESCRIPTION "English chitchat, identity, concepts — freeform surface"
- :LICENSE "MIT" :KIND :KNOWLEDGE :WEIGHTS-POLICY :REPRODUCIBLE-FROM-DATA
- :REPRO-LEVEL :BEST-EFFORT :SOURCES
- ((:URL "local://metis/nl" :LICENSE "MIT" :DATE "2026" :CONTENT-HASH "nl-core"
-   :NOTE "chitchat + concept lexicon"))
- :BUILD-RECIPE
- (:STEPS
-  ("assert facts/rules from pack.lisp" "optional: load ckpt if included") :TOOL
-  "metis")
- :CREATED "2026" :CATEGORY :LANGUAGE :CAPABILITIES
- (:NL :CHITCHAT :CONCEPTS :LANGUAGE))
+(:metis-symbol-pack 1
+ :id "natural-language"
+ :name "Natural Language"
+ :version "1.1.0"
+ :description "English dual-facet core — Use (dialogue) + About (metalanguage)"
+ :license "MIT"
+ :kind :knowledge
+ :weights-policy :reproducible-from-data
+ :repro-level :best-effort
+ :sources
+ ((:url "local://metis/nl" :license "MIT" :date "2026"
+   :content-hash "nl-core-1.1" :note "chitchat + concepts + creative use"))
+ :build-recipe
+ (:steps ("assert facts/rules from pack.lisp") :tool "metis")
+ :created "2026"
+ :category :language
+ :capabilities (:nl :chitchat :concepts :language)
+ :facets (:use :about))

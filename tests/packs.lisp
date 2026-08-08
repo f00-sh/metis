@@ -336,6 +336,44 @@
         ;; no bare newlines between row payloads (CUP replaces them)
         (is-false (search (format nil "A~%B") s))))))
 
+(test richer-language-packs-use-and-about
+  "NL loaded ⇒ English use (sing/joke) and about (noun); stacked packs install."
+  (metis:boot :bootstrap t :reset t)
+  (is-true (metis:symbol-capability-enabled-p :nl))
+  (let* ((s (metis:session-create :id "rich-nl" :boot nil))
+         (sing (metis:iface-turn s "sing a song"))
+         (joke (metis:iface-turn s "tell me a joke"))
+         (noun (metis:iface-turn s "what is a noun")))
+    (is (stringp (getf sing :reply)))
+    (is (plusp (length (getf sing :reply))))
+    (is-false (search "Answer clearly in English" (getf sing :reply)
+                      :test #'char-equal))
+    (is (or (search "♪" (getf sing :reply))
+            (search "song" (string-downcase (getf sing :reply)))
+            (search "lyric" (string-downcase (getf sing :reply)))
+            (search "verse" (string-downcase (getf sing :reply)))))
+    (is (stringp (getf joke :reply)))
+    (is (plusp (length (getf joke :reply))))
+    (is (stringp (getf noun :reply)))
+    (is (search "noun" (string-downcase (getf noun :reply)))))
+  ;; catalog contains richer language packs
+  (let* ((cat (metis:symbol-pack-catalog))
+         (ids (mapcar (lambda (e) (getf e :id)) (getf cat :catalog))))
+    (is (find "lang-en-conversation" ids :test #'string-equal))
+    (is (find "lang-en-about" ids :test #'string-equal))
+    (is (find "slang-en-lite" ids :test #'string-equal))
+    (is (find "dict-en-lite" ids :test #'string-equal)))
+  ;; enable conversation pack; banks grow
+  (let ((r (metis:symbol-catalog-download! "lang-en-conversation"
+                                           :mind metis:*mind* :enable t)))
+    (is (getf r :downloaded))
+    (is-true (or (gethash "lang-en-conversation" metis::*symbol-pack-enabled*)
+                 (metis::%pack-layer-get "lang-en-conversation"))))
+  (metis::symbol-nl-ingest-pack-facts! metis:*mind*)
+  (let ((p (metis::symbol-nl-pick "sing" :salt 42)))
+    (is (stringp p))
+    (is (plusp (length p)))))
+
 (test symbol-runtime-capabilities
   "Default symbols boot: math/NL/local-user gate freeform; NL varies."
   (metis:boot :bootstrap t :reset t)
