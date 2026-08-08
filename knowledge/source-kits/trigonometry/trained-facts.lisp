@@ -1,5 +1,5 @@
 (:FACTS
- ((METIS::SYMBOL-TRAINED "trigonometry" "1.0.0" 3995145213 8 8)
+ ((METIS::SYMBOL-TRAINED "trigonometry" "1.0.0" 8 8)
   (METIS::DOMAIN-DEF "trigonometry" "sine"
    "opposite/hypotenuse in a right triangle; also unit-circle y-coordinate")
   (METIS::DOMAIN-DEF "trigonometry" "cosine"

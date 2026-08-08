@@ -1,5 +1,5 @@
 (:FACTS
- ((METIS::SYMBOL-TRAINED "math" "1.0.0" 3995145213 9 9)
+ ((METIS::SYMBOL-TRAINED "math" "1.0.0" 9 9)
   (METIS::DOMAIN-DEF "math" "natural-number"
    "positive whole counting number 1,2,3,...")
   (METIS::DOMAIN-DEF "math" "integer"

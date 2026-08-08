@@ -150,6 +150,93 @@
                           :ignore-error-status t)
       (list :code code :out out :err err :cmd cmd))))
 
+(test seal-open-reproducible-fingerprint
+  "Open-sealed: two seals of the same trained plist share body-sha256."
+  (let* ((src (list :id "repro-open"
+                    :version "1.0.0"
+                    :license "MIT"
+                    :facts '((domain-def "repro-open" "x" "stable fact one")
+                             (symbol-trained "repro-open" "1.0.0" 1 1))
+                    :corpus '("x: stable fact one")
+                    :capabilities '(:test)))
+         (d1 (merge-pathnames "repro-a/" *seal-scratch*))
+         (d2 (merge-pathnames "repro-b/" *seal-scratch*)))
+    (ensure-directories-exist d1)
+    (ensure-directories-exist d2)
+    (let ((s1 (metis:symbol-seal! src d1 :mode :open-sealed :trust-tier :community))
+          (s2 (metis:symbol-seal! src d2 :mode :open-sealed :trust-tier :community)))
+      (is (equal (getf s1 :body-sha256) (getf s2 :body-sha256))
+          (format nil "open-sealed body hash not reproducible: ~A vs ~A"
+                  (getf s1 :body-sha256) (getf s2 :body-sha256)))
+      (is-true (getf (metis:symbol-seal-verify d1 :require t) :ok))
+      (is-true (getf (metis:symbol-seal-verify d2 :require t) :ok)))))
+
+(test seal-private-no-registry-plaintext
+  "Private-sealed load must not leave secret facts/corpus in permanent registry."
+  (metis:boot :bootstrap t :reset t)
+  (let* ((dest (merge-pathnames "priv-noleak/" *seal-scratch*))
+         (secret-line "TOP-SECRET-PRIVATE-CORPUS-LINE")
+         (fact (list 'secret-fact "noleak" secret-line))
+         (src (list :id "priv-noleak" :version "1.0.0" :license "MIT"
+                    :facts (list fact)
+                    :corpus (list secret-line))))
+    (ensure-directories-exist dest)
+    (metis:symbol-seal! src dest :mode :private-sealed :key "priv-key-99"
+                        :trust-tier :unvetted)
+    (let ((ld (metis:symbol-seal-load! dest :mind metis:*mind* :key "priv-key-99")))
+      (is-true (getf ld :loaded))
+      (is-true (getf ld :temporary))
+      (is-true (getf ld :private))
+      (is (find fact (metis:facts metis:*mind*) :test #'equal)))
+    (let* ((reg (merge-pathnames "priv-noleak/"
+                                 (metis::symbol-pack-registry-dir)))
+           (pack (merge-pathnames "pack.lisp" reg))
+           (corp (merge-pathnames "corpus.txt" reg)))
+      (is-false (probe-file pack)
+                "private-sealed must not permanent-install pack.lisp")
+      (is-false (probe-file corp)
+                "private-sealed must not permanent-install corpus.txt")
+      (when (probe-file reg)
+        (dolist (p (directory (merge-pathnames "*.*" reg)))
+          (unless (uiop:directory-pathname-p p)
+            (with-open-file (in p :element-type 'character :if-does-not-exist nil)
+              (when in
+                (let ((s (make-string (file-length in))))
+                  (read-sequence s in)
+                  (is-false (search secret-line s)
+                            (format nil "secret leaked in ~A" p)))))))))))
+
+(test seal-required-deps-refuse-or-autoload
+  "Required depends-on: refuse when missing; auto-load from knowledge/sealed when present."
+  (metis:boot :bootstrap t :reset t)
+  (metis:symbol-pack-clear-layers!)
+  ;; Refuse: dep id that does not exist
+  (let* ((dest (merge-pathnames "needs-missing/" *seal-scratch*))
+         (src (list :id "needs-missing" :version "1.0.0" :license "MIT"
+                    :depends-on '((:id "totally-missing-dep-xyz" :role :required))
+                    :facts '((domain-def "needs-missing" "a" "b")))))
+    (ensure-directories-exist dest)
+    (metis:symbol-seal! src dest :mode :open-sealed)
+    (signals error
+      (metis:symbol-seal-load! dest :mind metis:*mind* :auto-deps t)))
+  ;; Autoload: algebra requires math; both shipped under knowledge/sealed/
+  (let ((alg (merge-pathnames "algebra/" (metis:symbol-sealed-root))))
+    (when (probe-file (merge-pathnames "body.mse" alg))
+      (ignore-errors (metis:symbol-pack-disable! "math" :mind metis:*mind*))
+      (ignore-errors (metis:symbol-pack-disable! "algebra" :mind metis:*mind*))
+      (let ((ld (metis:symbol-seal-load! alg :mind metis:*mind* :auto-deps t)))
+        (is-true (getf ld :loaded))
+        ;; math must be present after auto-deps (enabled, overlay, or layer)
+        (is-true (or (gethash "math" metis::*symbol-pack-enabled*)
+                     (metis::%pack-layer-get "math")
+                     (find "math" metis::*symbol-pack-overlays*
+                           :key (lambda (x) (getf x :id))
+                           :test #'string-equal)
+                     (some (lambda (f)
+                             (and (consp f)
+                                  (equal (second f) "math")))
+                           (metis:facts metis:*mind*))))))))
+
 (test seal-cli-new-ingest-train-path
   "Shipped CLI: symbol new --name/--license, symbol ingest file.txt (guide §2–3)."
   (let* ((scratch (merge-pathnames "cli-kit/" *seal-scratch*))

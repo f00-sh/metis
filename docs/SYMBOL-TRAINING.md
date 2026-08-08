@@ -291,8 +291,16 @@ Examples:
 - `calculus` → requires `algebra` (and typically trigonometry)  
 - Domain history packs may soft-depend on `natural-language`  
 
-**Rule of thumb:** process stacks form a DAG. No cycles.  
-Load should install required deps first (or fail with a clear tree). Unload should warn if dependents are still live.
+**Rule of thumb:** process stacks form a DAG. No cycles.
+
+**Load behavior (shipped):** `symbol-seal-load!` / `./bin/metis symbol load`  
+reads `:depends-on` with `:role :required` and:
+
+1. If the dep is already loaded → continue  
+2. Else if `knowledge/sealed/<dep-id>/` exists → **auto-load** it first  
+3. Else → **refuse** with an error listing missing deps  
+
+Unload does not auto-cascade; disable dependents first if you need a clean tree.
 
 ---
 

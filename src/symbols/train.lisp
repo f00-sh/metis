@@ -193,9 +193,10 @@
       (let ((xs (%train-extract-def-facts corpus id)))
         (setf extracted (length xs)
               facts (append facts xs))))
-    ;; mark train event
+    ;; Stable train marker only (no wall-clock) so open-sealed fingerprints
+    ;; are reproducible from the same kit.
     (push (list 'symbol-trained id (getf kit :version)
-                (get-universal-time) extracted (length corpus))
+                extracted (length corpus))
           facts)
     (when (and m (plusp epochs) corpus
                (fboundp 'nn-continuous-train))

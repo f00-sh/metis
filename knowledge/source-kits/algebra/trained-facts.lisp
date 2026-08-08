@@ -1,5 +1,5 @@
 (:FACTS
- ((METIS::SYMBOL-TRAINED "algebra" "1.0.0" 3995145213 9 9)
+ ((METIS::SYMBOL-TRAINED "algebra" "1.0.0" 9 9)
   (METIS::DOMAIN-DEF "algebra" "variable"
    "symbol standing for an unknown or varying quantity")
   (METIS::DOMAIN-DEF "algebra" "polynomial"

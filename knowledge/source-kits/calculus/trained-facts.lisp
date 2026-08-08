@@ -1,5 +1,5 @@
 (:FACTS
- ((METIS::SYMBOL-TRAINED "calculus" "1.0.0" 3995145213 8 8)
+ ((METIS::SYMBOL-TRAINED "calculus" "1.0.0" 8 8)
   (METIS::DOMAIN-DEF "calculus" "limit"
    "value a function approaches as input approaches a point")
   (METIS::DOMAIN-DEF "calculus" "derivative"

@@ -12,7 +12,7 @@
    "https://openstax.org/details/books/algebra-and-trigonometry-2e" :LICENSE
    "CC-BY-4.0" :DATE "2021" :NOTE "Identity lists and conceptual summaries"))
  :BODY-SHA256
- "e26d4606b3582dcf1ca44bc829cf65f07059e384b701f51da093a96996ba5a5a"
+ "782b43a2b9ed38fdd1c02f12afcec13f4bb6356026c928d868c25ad93276277c"
  :PACKAGE-SHA256
- "dbfdb3b271d10f5e1e2576e661879e2e84aca6125f1c7ec2fb186a4d965d4c81" :CREATED
+ "41217172b3266b33d4d4ed30888ee02d329c952221b8cc5afcb70a5f86a50a89" :CREATED
  "2026-08-07" :CATEGORY :REASONING :SIDELOAD NIL)

@@ -1,5 +1,5 @@
 (:FACTS
- ((METIS::SYMBOL-TRAINED "geometry" "1.0.0" 3995145213 9 9)
+ ((METIS::SYMBOL-TRAINED "geometry" "1.0.0" 9 9)
   (METIS::DOMAIN-DEF "geometry" "point" "location in space with no size")
   (METIS::DOMAIN-DEF "geometry" "line"
    "straight one-dimensional figure extending without end")

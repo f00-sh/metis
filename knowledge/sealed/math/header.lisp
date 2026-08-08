@@ -14,7 +14,7 @@
    "https://dlmf.nist.gov/" :LICENSE "NIST-public" :DATE "2024" :NOTE
    "Authoritative reference for special functions; basic number concepts"))
  :BODY-SHA256
- "0299f164f7f719a05154564bda2ee42ab8ced475f6afdb2813a8d95633edb30f"
+ "ac24f671dc89fd02d7783021f06f68121924a49560177288725eca6cc63192f5"
  :PACKAGE-SHA256
- "d7c67d4ebfdbb5b935bbe712678a1d3906461428772f74c89b97efd4800def70" :CREATED
+ "c6e69c5f4f7c984f512eee43a3b3627a50eeafe7e0214e68e13b23a8bfe928b0" :CREATED
  "2026-08-07" :CATEGORY :REASONING :SIDELOAD NIL)

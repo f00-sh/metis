@@ -50,9 +50,16 @@
   (%seal-sha256-string
    (format nil "~A|~A|~A" *symbol-open-seal-label* id version)))
 
-(defun %seal-aes-encrypt (plaintext passphrase &key (out-path nil))
-  "AES-256-CBC encrypt PLAINTEXT string with PASSPHRASE → binary file or bytes path.
-   Uses openssl enc -aes-256-cbc -pbkdf2 -salt."
+(defun %seal-open-salt-hex (id version)
+  "16 hex digits (8 bytes) derived salt for open-sealed reproducibility."
+  (subseq (%seal-sha256-string
+           (format nil "salt|~A|~A|~A" *symbol-open-seal-label* id version))
+          0 16))
+
+(defun %seal-aes-encrypt (plaintext passphrase &key (out-path nil) (salt-hex nil))
+  "AES-256-CBC encrypt PLAINTEXT with PASSPHRASE → binary at OUT-PATH.
+   When SALT-HEX is provided (open-sealed), encryption is deterministic.
+   When NIL (private-sealed), openssl generates a random salt (non-reproducible)."
   (let ((tmp-in (uiop:tmpize-pathname
                  (merge-pathnames "seal-in.txt" (uiop:temporary-directory))))
         (tmp-out (or out-path
@@ -65,33 +72,37 @@
                               :if-does-not-exist :create
                               :element-type 'character)
              (write-string plaintext o))
-           (uiop:run-program
-            (list "openssl" "enc" "-aes-256-cbc" "-pbkdf2" "-salt"
-                  "-in" (namestring tmp-in)
-                  "-out" (namestring tmp-out)
-                  "-pass" (format nil "pass:~A" passphrase))
-            :output :string :error-output :string)
+           (let ((args (list "openssl" "enc" "-aes-256-cbc" "-pbkdf2"
+                             "-in" (namestring tmp-in)
+                             "-out" (namestring tmp-out)
+                             "-pass" (format nil "pass:~A" passphrase))))
+             (setf args (if salt-hex
+                            (append args (list "-S" salt-hex))
+                            (append args (list "-salt"))))
+             (uiop:run-program args :output :string :error-output :string))
            (unless (probe-file tmp-out)
              (error "seal encrypt failed"))
            (namestring (truename tmp-out)))
       (ignore-errors (delete-file tmp-in))
       (when (and (null out-path) (probe-file tmp-out))
-        ;; caller owns out-path; temp cleaned by caller after read
         nil))))
 
-(defun %seal-aes-decrypt-file (in-path passphrase)
-  "Decrypt AES body at IN-PATH with PASSPHRASE → plaintext string or signal."
+(defun %seal-aes-decrypt-file (in-path passphrase &key (salt-hex nil))
+  "Decrypt AES body at IN-PATH with PASSPHRASE → plaintext string or signal.
+   SALT-HEX required for open-sealed bodies sealed with fixed -S (no Salted__ header).
+   NIL salt → openssl reads embedded Salted__ (private-sealed / random -salt)."
   (let ((tmp-out (uiop:tmpize-pathname
                   (merge-pathnames "seal-dec.txt" (uiop:temporary-directory)))))
     (unwind-protect
          (progn
            (handler-case
-               (uiop:run-program
-                (list "openssl" "enc" "-d" "-aes-256-cbc" "-pbkdf2"
-                      "-in" (namestring (truename in-path))
-                      "-out" (namestring tmp-out)
-                      "-pass" (format nil "pass:~A" passphrase))
-                :output :string :error-output :string)
+               (let ((args (list "openssl" "enc" "-d" "-aes-256-cbc" "-pbkdf2"
+                                 "-in" (namestring (truename in-path))
+                                 "-out" (namestring tmp-out)
+                                 "-pass" (format nil "pass:~A" passphrase))))
+                 (when salt-hex
+                   (setf args (append args (list "-S" salt-hex))))
+                 (uiop:run-program args :output :string :error-output :string))
              (error (e)
                (error "symbol seal decrypt failed (wrong key or corrupt body): ~A" e)))
            (unless (probe-file tmp-out)
@@ -350,10 +361,12 @@
                     :corpus (getf src :corpus)
                     :capabilities (getf src :capabilities)
                     :meta (list :id id :version version)))
-         (bpath (merge-pathnames "body.mse" dest)))
+         (bpath (merge-pathnames "body.mse" dest))
+         ;; open-sealed: fixed salt → same kit/plist always same body-sha256
+         (salt (when (eq mode :open-sealed)
+                 (%seal-open-salt-hex id version))))
     (ensure-directories-exist dest)
-    ;; encrypt body → opaque binary
-    (%seal-aes-encrypt body-str pass :out-path bpath)
+    (%seal-aes-encrypt body-str pass :out-path bpath :salt-hex salt)
     (let* ((bh (%seal-sha256-file bpath))
            (header (make-symbol-seal-header
                     :id id
@@ -402,40 +415,109 @@
       (unless (getf v :ok) (error "seal verify failed: ~A" v))))
   (let* ((header (symbol-seal-read-header dir))
          (pass (%seal-resolve-passphrase header :key key))
+         (mode (getf header :mode))
+         (salt (unless (%seal-mode-private-p mode)
+                 (%seal-open-salt-hex (getf header :id)
+                                      (getf header :version))))
          (bpath (merge-pathnames "body.mse"
                                  (uiop:ensure-directory-pathname dir)))
          (plain (handler-case
-                    (%seal-aes-decrypt-file bpath pass)
+                    (%seal-aes-decrypt-file bpath pass :salt-hex salt)
                   (error (e)
                     (error "refusing load: decrypt failed (~A)" e)))))
     (%seal-parse-body-sexp plain)))
 
+(defun %seal-mode-private-p (mode)
+  (member mode '(:private-sealed "private-sealed") :test #'equal))
+
+(defun %seal-required-deps (header)
+  "List of required dependency plists from HEADER."
+  (remove-if-not
+   (lambda (d)
+     (let ((role (or (getf d :role) :required)))
+       (member role '(:required "required" :require "require") :test #'equal)))
+   (or (getf header :depends-on) nil)))
+
+(defun %seal-dep-loaded-p (dep-id)
+  (let ((id (string dep-id)))
+    (or (and (boundp '*symbol-pack-enabled*)
+             (gethash id *symbol-pack-enabled*))
+        (and (boundp '*symbol-pack-overlays*)
+             (find id *symbol-pack-overlays*
+                   :key (lambda (x) (getf x :id)) :test #'string-equal))
+        (and (fboundp '%pack-layer-get) (%pack-layer-get id)))))
+
+(defun symbol-seal-ensure-deps! (header &key (mind nil) (auto t))
+  "Ensure required :depends-on are loaded. AUTO tries knowledge/sealed/<id>/.
+   Signals error with a clear missing list if unsatisfied."
+  (let ((missing nil)
+        (loaded nil)
+        (m (or mind *mind*)))
+    (dolist (d (%seal-required-deps header))
+      (let ((dep-id (string (or (getf d :id) (getf d :name) ""))))
+        (when (plusp (length dep-id))
+          (cond
+            ((%seal-dep-loaded-p dep-id)
+             (push dep-id loaded))
+            (auto
+             (let ((seed (merge-pathnames (format nil "~A/" dep-id)
+                                          (symbol-sealed-root))))
+               (if (and (probe-file (merge-pathnames "header.lisp" seed))
+                        (probe-file (merge-pathnames "body.mse" seed)))
+                   (progn
+                     ;; recursive load; private deps still force temporary
+                     (symbol-seal-load! seed :mind m :verify t)
+                     (push dep-id loaded))
+                   (push dep-id missing))))
+            (t (push dep-id missing))))))
+    (when missing
+      (error "symbol ~A requires deps not loaded: ~{~A~^, ~} (load those sealed packages first or place them under knowledge/sealed/)"
+             (getf header :id) (nreverse missing)))
+    (list :ok t :loaded (nreverse loaded))))
+
 (defun symbol-seal-load!
     (dir &key (mind nil) (key nil) (verify t) (temporary nil)
-              (trust-tier-override nil))
+              (trust-tier-override nil)
+              (auto-deps t))
   "Verify, decrypt, inject sealed knowledge into MIND via pack layers.
-   Refuses on bad signature, hash mismatch, or decrypt failure."
+   Refuses on bad signature, hash mismatch, or decrypt failure.
+   private-sealed ALWAYS loads as a temporary overlay — never writes a
+   permanent plaintext pack.lisp/corpus.txt into the registry.
+   Required :depends-on are auto-loaded from knowledge/sealed/ when AUTO-DEPS."
   (let* ((m (or mind *mind* (boot)))
          (dir (uiop:ensure-directory-pathname dir))
          (v (when verify (symbol-seal-verify dir :require t)))
          (header (symbol-seal-read-header dir))
+         (mode (getf header :mode))
+         (private-p (%seal-mode-private-p mode))
+         ;; private-sealed: never permanent-install decrypted body
+         (temporary (or temporary private-p))
          (body (symbol-seal-decrypt-body dir :key key :verify nil))
          (id (getf header :id))
          (facts (getf body :facts))
          (rules (getf body :rules))
          (caps (or (getf body :capabilities) (getf header :capabilities)))
-         (tier (or trust-tier-override (getf header :trust-tier) :community)))
-    ;; marketplace advisory (non-fatal warnings as return fields)
+         (tier (or trust-tier-override
+                   (if private-p :unvetted
+                       (getf header :trust-tier))
+                   :community)))
+    (when auto-deps
+      (symbol-seal-ensure-deps! header :mind m :auto t))
     (let* ((mkt (symbol-marketplace-check id
                                           :version (getf header :version)
                                           :body-sha256 (getf v :body-sha256)))
-           ;; write a temp plaintext pack dir only in memory path via load-into-mind
            (tmp (merge-pathnames
-                 (format nil "seal-load-~A/" id)
+                 (format nil "seal-load-~A-~A/"
+                         id (get-internal-real-time))
                  (uiop:temporary-directory))))
       (unwind-protect
            (progn
              (ensure-directories-exist tmp)
+             ;; restrict temp tree as much as portable CL allows
+             (ignore-errors
+               (uiop:run-program
+                (list "chmod" "700" (namestring tmp))
+                :ignore-error-status t))
              (symbol-pack-write!
               tmp
               (make-symbol-pack-manifest
@@ -450,11 +532,15 @@
                             :capabilities caps
                             :trust-tier tier
                             :sealed t
-                            :mode (getf header :mode)
+                            :mode mode
                             :depends-on (getf header :depends-on)))
               :facts facts
               :rules rules
-              :corpus (getf body :corpus))
+              ;; private: do not leave corpus on disk longer than this tmp tree
+              :corpus (unless private-p (getf body :corpus)))
+             (when private-p
+               ;; still inject corpus into mind via facts only; no corpus file needed
+               nil)
              (let ((stats
                     (if temporary
                         (symbol-pack-install! tmp :id id :temporary t :mind m)
@@ -468,12 +554,15 @@
                      :id id
                      :version (getf header :version)
                      :trust-tier tier
-                     :mode (getf header :mode)
+                     :mode mode
+                     :temporary (and temporary t)
+                     :private private-p
                      :verify v
                      :marketplace mkt
                      :stats stats
                      :facts (length facts)
                      :rules (length rules))))
+        ;; always wipe plaintext material
         (ignore-errors (uiop:delete-directory-tree
                         tmp :validate t :if-does-not-exist :ignore))))))
 
