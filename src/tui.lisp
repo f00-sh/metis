@@ -1173,19 +1173,13 @@
                                      mark
                                      (getf r :label)
                                      (if (getf r :temporary) " [tmp]" ""))))
-                    (line (%tui-trunc lab width)))
-               (%tui-scr-put scr (+ row i) col line :fg fg)
-               ;; description on selected item if room on next visual... keep one line
-               (when (and sel (eq kind :item) (plusp (length (or (getf r :desc) ""))))
-                 ;; overlay dim desc truncated after name when wide enough
-                 (when (> width (+ 4 (length lab)))
-                   (let* ((d (%tui-trunc (getf r :desc)
-                                         (max 4 (- width (length lab) 1))))
-                          (x (+ col (min (1- width) (length line)))))
-                     (declare (ignore x))
-                     (%tui-scr-put scr (+ row i)
-                                   (min (+ col (length line) 1) (+ col width -4))
-                                   d :fg (if sel :sym-sel :sym-desc)))))))))
+                    (desc (and (eq kind :item) (or (getf r :desc) "")))
+                    (line (if (and sel (plusp (length desc))
+                                   (> width (+ (length lab) 6)))
+                              (%tui-trunc
+                               (format nil "~A  ~A" lab desc) width)
+                              (%tui-trunc lab width))))
+               (%tui-scr-put scr (+ row i) col line :fg fg)))))
 
 (defun %tui-paint-popup (scr app)
   "Centered REPL or Settings modal."

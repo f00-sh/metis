@@ -197,6 +197,37 @@ when the user requests an unknown capability.")
   "When T, freeform may fall back to pure-CL char-LM sketch (usually garbage).
    Default NIL — prefer real English (chat, concepts, docs, optional API LLM).")
 
+(defun %iface-englishish-p (text)
+  "T if TEXT looks like usable English (not untrained LM garbage / prompt echo)."
+  (let* ((s (string-trim '(#\Space #\Tab #\Newline #\Return) (or text "")))
+         (n (length s)))
+    (when (and (>= n 12) (<= n 4000))
+      (let* ((letters (count-if #'alpha-char-p s))
+             (spaces (count #\Space s))
+             (punct (count-if (lambda (c)
+                                (find c ".,;:!?-'\"()"))
+                              s))
+             (ratio (if (plusp n) (/ (float letters) n) 0.0))
+             (words (cl-ppcre:split "\\s+" s))
+             (avg-w (if (plusp (length words))
+                        (/ (float (reduce #'+ (mapcar #'length words)))
+                           (length words))
+                        99.0)))
+        ;; Reject pure prompt-template echoes and nonsense letter salad.
+        (and (>= ratio 0.55)
+             (>= spaces 2)
+             (<= avg-w 12.0)
+             (not (search "Answer clearly in English" s :test #'char-equal))
+             (not (cl-ppcre:scan "(?i)^\\s*nswer clearly" s))
+             (or (>= punct 0)
+                 t)
+             ;; at least a few dictionary-ish short words
+             (>= (count-if (lambda (w)
+                             (and (>= (length w) 2) (<= (length w) 12)
+                                  (every #'alpha-char-p w)))
+                           words)
+                 3))))))
+
 (defparameter *iface-concepts*
   '(("number" . "A number is a mathematical object used to count, measure, and label. Whole numbers (0, 1, 2, …) count discrete things; integers include negatives; rationals are fractions; reals fill the continuum. Arithmetic (+ − × ÷) is the basic language of numbers.")
     ("numbers" . "Numbers are mathematical objects for counting, measuring, and ordering. They include natural numbers, integers, rationals, reals, and complexes, each extending what you can express.")
@@ -1216,15 +1247,16 @@ when the user requests an unknown capability.")
              :reply-text
              "I can't generate: neural path is disabled (TMS OUT). Use /nn enable, or attach notes / teach facts."
              :source :tms-out))
-      ;; 5) Pure-CL generate when a session/default LM exists
-      ((and (%iface-default-lm-name)
-            (or *iface-sketch-generate* t))
+      ;; 5) Pure-CL sketch ONLY when explicitly enabled — never dump untrained LM garbage.
+      ((and *iface-sketch-generate*
+            (%iface-default-lm-name))
        (let* ((model (%iface-default-lm-name))
               (prompt (%iface-generate-prompt q ctx))
               (gen (handler-case
                        (nn-generate model :prompt prompt :length 120 :mind m)
-                     (error () nil))))
-         (if (and gen (plusp (length (string-trim '(#\Space #\Newline) gen))))
+                     (error () nil)))
+              (clean (and gen (%iface-englishish-p gen))))
+         (if clean
              (list :freeform :generate
                    :model model
                    :prompt prompt

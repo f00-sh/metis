@@ -161,22 +161,33 @@ This is a plain text file for attachment tests.
       (is (getf out :metrics)))))
 
 (test iface-freeform-generate-path-in
-  "No attachment hit → TMS-IN generate path; reply is a string."
+  "With sketch enabled + TMS-IN, generate or honest-unknown (never silent).
+   Default product path keeps sketch OFF so untrained LMs cannot dump garbage."
   (metis:boot :bootstrap t :reset t)
   (metis:nn-enable-path metis:*mind*)
   (metis:nn-train-language-model
    "metis hybrid architecture trains pure common lisp models "
    :name "online-lm" :epochs 1 :hidden 24 :seq-len 24 :depth 2
    :max-batches 6 :lr 3d-2)
-  (let* ((s (metis:session-create :id "ff-gen" :boot nil))
+  ;; product default: sketch off → honest unknown, not letter-salad
+  (let* ((s0 (metis:session-create :id "ff-gen-off" :boot nil))
+         (out0 (metis:iface-turn s0 "What is quantum chromodynamics zigzag?"))
+         (res0 (getf out0 :result)))
+    (is (not (eq (getf res0 :freeform) :generate)))
+    (is (stringp (getf out0 :reply)))
+    (is-false (search "Answer clearly in English"
+                      (or (getf out0 :reply) "") :test #'char-equal)))
+  (let* ((metis::*iface-sketch-generate* t)
+         (s (metis:session-create :id "ff-gen" :boot nil))
          (out (metis:iface-turn s "What is quantum chromodynamics zigzag?"))
          (res (getf out :result))
          (reply (getf out :reply)))
-    (is (eq (getf res :freeform) :generate))
+    (is (member (getf res :freeform) '(:generate :unknown) :test #'eq))
     (is (stringp reply))
     (is (plusp (length reply)))
-    (is (stringp (getf res :prompt)))
-    (is (search "Question" (getf res :prompt) :test #'char-equal))
+    (when (eq (getf res :freeform) :generate)
+      (is (stringp (getf res :prompt)))
+      (is (search "Question" (getf res :prompt) :test #'char-equal)))
     (is (getf out :explain))
     (is (getf out :metrics))))
 
