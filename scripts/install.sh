@@ -154,15 +154,18 @@ install_release() {
   tmp="$(mktemp -d)"
   # shellcheck disable=SC2064
   trap 'rm -rf "${tmp:-/tmp/metis-install-none}"' EXIT
-  # GitHub source archive (honest CL source install — not a static binary).
-  url="https://github.com/${REPO}/archive/refs/tags/${ver}.tar.gz"
+  # Prefer release asset (stable sha for brew/AUR), then GitHub tag archive.
+  url="https://github.com/${REPO}/releases/download/${ver}/metis-${ver}-src.tar.gz"
   printf 'downloading %s\n' "${url}"
   if ! curl -fsSL "${url}" -o "${tmp}/metis.tar.gz"; then
-    # fallback annotated/lightweight tag with v prefix
-    url="https://github.com/${REPO}/archive/refs/tags/v${ver}.tar.gz"
-    printf 'retry %s\n' "${url}"
-    curl -fsSL "${url}" -o "${tmp}/metis.tar.gz" \
-      || die "release source archive missing (${url})"
+    url="https://github.com/${REPO}/archive/refs/tags/${ver}.tar.gz"
+    printf 'retry tag archive %s\n' "${url}"
+    if ! curl -fsSL "${url}" -o "${tmp}/metis.tar.gz"; then
+      url="https://github.com/${REPO}/archive/refs/tags/v${ver}.tar.gz"
+      printf 'retry %s\n' "${url}"
+      curl -fsSL "${url}" -o "${tmp}/metis.tar.gz" \
+        || die "release source archive missing (${url})"
+    fi
   fi
   tar -C "${tmp}" -xzf "${tmp}/metis.tar.gz"
   local extracted

@@ -1,6 +1,6 @@
 # Maintainer: William Theesfeld <william@theesfeld.net>
 # Keyed AUR-style package for Metis (source install; SBCL runtime).
-# Upstream keyed repo pattern: f00-sh/aur-metis (mirrors this PKGBUILD).
+# Upstream keyed repo: f00-sh/aur-metis
 pkgname=metis
 pkgver=4.5.0
 pkgrel=1
@@ -17,19 +17,17 @@ optdepends=(
 provides=('metis')
 conflicts=('metis-git')
 options=('!strip')
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/f00-sh/metis/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('610f1600af5ae8dfcec2a07c3b3cab0dbc312819a1a75b5e895e19a34829bcbb')
+source=("${pkgname}-${pkgver}-src.tar.gz::https://github.com/f00-sh/metis/releases/download/${pkgver}/metis-${pkgver}-src.tar.gz")
+sha256sums=('b098595da0f7977a4f1bf4a067d84273a03df5ca1f7ead01aa34040dd7f9d3e5')
 
 package() {
   cd "${srcdir}/metis-${pkgver}"
 
   install -d "${pkgdir}/usr/lib/metis"
-  # Product tree (exclude VCS/cache noise)
   cp -a bin src knowledge symbols tests docs man site \
         metis.asd VERSION LICENSE README.md CHANGELOG.md \
         file_id.diz packaging scripts AGENTS.md \
         "${pkgdir}/usr/lib/metis/" 2>/dev/null || true
-  # Ensure required core files exist even if optional dirs missing
   for f in metis.asd VERSION bin/metis; do
     [[ -e "${pkgdir}/usr/lib/metis/${f}" ]] || install -Dm644 "${f}" "${pkgdir}/usr/lib/metis/${f}"
   done

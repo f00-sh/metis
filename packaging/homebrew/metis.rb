@@ -7,19 +7,19 @@
 #   curl -fsSL https://metis.f00.sh/install.sh | bash
 #
 # Requires SBCL + Quicklisp for runtime (depends_on sbcl).
+# SSOT for published checksums: f00-sh/homebrew-tap Formula/metis.rb
 
 class Metis < Formula
   desc "Pure Common Lisp hybrid mind with dual-facet sealed knowledge symbols"
   homepage "https://metis.f00.sh/"
-  url "https://github.com/f00-sh/metis/archive/refs/tags/4.5.0.tar.gz"
-  sha256 "610f1600af5ae8dfcec2a07c3b3cab0dbc312819a1a75b5e895e19a34829bcbb"
+  url "https://github.com/f00-sh/metis/releases/download/4.5.0/metis-4.5.0-src.tar.gz"
+  sha256 "b098595da0f7977a4f1bf4a067d84273a03df5ca1f7ead01aa34040dd7f9d3e5"
   license "MIT"
   version "4.5.0"
 
   depends_on "sbcl"
 
   def install
-    # Install product tree under libexec; wrapper on PATH.
     libexec.install Dir["*"]
     (bin/"metis").write <<~EOS
       #!/bin/bash
