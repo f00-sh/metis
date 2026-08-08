@@ -137,3 +137,51 @@
                            (equal (second f) id)))
                     (metis:facts metis:*mind*))
               (format nil "~A domain-def not in mind after load" id)))))))
+
+(defun %metis-symbol-cli (&rest args)
+  "Drive shipped ./bin/metis symbol CLI (real path)."
+  (let* ((root (asdf:system-source-directory :metis))
+         (cli (namestring (merge-pathnames "bin/metis" root)))
+         (cmd (append (list cli "symbol") args)))
+    (multiple-value-bind (out err code)
+        (uiop:run-program cmd
+                          :output :string
+                          :error-output :string
+                          :ignore-error-status t)
+      (list :code code :out out :err err :cmd cmd))))
+
+(test seal-cli-new-ingest-train-path
+  "Shipped CLI: symbol new --name/--license, symbol ingest file.txt (guide §2–3)."
+  (let* ((scratch (merge-pathnames "cli-kit/" *seal-scratch*))
+         (id (format nil "cli-ingest-~A" (get-universal-time)))
+         ;; place kit under default source-kit root via CLI, then ingest absolute file
+         (txt (merge-pathnames "ingest-me.txt" scratch)))
+    (ensure-directories-exist scratch)
+    (with-open-file (out txt :direction :output :if-exists :supersede
+                         :if-does-not-exist :create)
+      (format out "cli-term: ingested by shipped symbol ingest CLI~%"))
+    ;; new with flags advertised in help
+    (let ((r (%metis-symbol-cli "new" id
+                                "--name" "CLI Ingest Demo"
+                                "--license" "MIT")))
+      (is (zerop (getf r :code))
+          (format nil "symbol new failed: ~A~%~A"
+                  (getf r :out) (getf r :err)))
+      (is (search id (getf r :out) :test #'char-equal)))
+    (let* ((kit (merge-pathnames (format nil "~A/" id)
+                                 (metis:symbol-source-kit-root)))
+           (man (merge-pathnames "source-manifest.lisp" kit)))
+      (is-true (probe-file man) "kit source-manifest missing after symbol new")
+      ;; ingest — must not produce (list ( "path" )) illegal call
+      (let ((r (%metis-symbol-cli "ingest" (namestring kit) (namestring txt))))
+        (is (zerop (getf r :code))
+            (format nil "symbol ingest failed: ~A~%~A"
+                    (getf r :out) (getf r :err)))
+        (is (search "INGESTED" (string-upcase (getf r :out)))))
+      (is-true (probe-file (merge-pathnames "corpus/ingest-me.txt" kit))
+               "ingest did not copy file into corpus/")
+      (let ((r (%metis-symbol-cli "train" (namestring kit))))
+        (is (zerop (getf r :code))
+            (format nil "symbol train failed: ~A~%~A"
+                    (getf r :out) (getf r :err)))
+        (is (search "trained" (getf r :out) :test #'char-equal))))))
