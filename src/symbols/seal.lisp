@@ -382,6 +382,9 @@
                                       (getf src :sources))
                     :body-sha256 bh
                     :extra (list :category (getf src :category)
+                                 :facets (or (getf src :facets)
+                                             (symbol-default-facets-for-caps
+                                              (getf src :capabilities)))
                                  :sideload (eq trust-tier :unvetted)))))
       (symbol-seal-write-header! dest header)
       (let ((hh (%seal-sha256-file (merge-pathnames "header.lisp" dest))))
@@ -530,6 +533,8 @@
                :weights-policy :included
                :extra (list :category (getf header :category)
                             :capabilities caps
+                            :facets (or (getf header :facets)
+                                        (symbol-default-facets-for-caps caps))
                             :trust-tier tier
                             :sealed t
                             :mode mode

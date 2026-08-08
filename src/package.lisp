@@ -279,8 +279,13 @@
    #:symbol-toggle!
    #:symbol-default-enable!
    #:symbol-math-answer
+   #:symbol-math-knowledge-answer
    #:symbol-nl-chitchat
    #:symbol-nl-concept
+   #:symbol-nl-about-answer
+   #:symbol-facet-enabled-p
+   #:symbol-facets-for
+   #:symbol-default-facets-for-caps
    #:symbol-nl-pick
    #:symbol-nl-bank-add!
    #:symbol-local-user-answer

@@ -1,3 +1,7 @@
+## f00
+
+Part of [f00](https://f00.sh/) · site [metis.f00.sh](https://metis.f00.sh/) · org [f00-sh/metis](https://github.com/f00-sh/metis)
+
 # Metis 4.4 — THEORY
 
 **Cognitive architecture with in-process trainable models and a plugin system** — pure Common Lisp neural training by default, optional CUDA GPU acceleration as a **symbol** (plugin), bound to a full symbolic control stack (unifier, KB, RETE, TMS, STRIPS/HTN, durable continuum, multi-session EPOCH, interactive interface).
@@ -9,6 +13,13 @@ No Python. No external ML runtime required for the default path. Training and ge
 Marketplace is **in-tree** (free open catalog — no payments). **Knowledge symbols** are sealed, owner-controlled packages (not kitchen-sink weights).
 
 **4.4 THEORY CLS contract (shipped):** Complementary Learning Systems–style **on-the-fly training** — hippocampus (fast episodes) + neocortex (slow consolidate with replay) + TMS re-check — as one cognitive unit. Demo: `./bin/demo-hybrid` (refuse / allow / learn / explain). Research PDFs under `research/`.
+
+### Dual-facet product law
+
+- **Math symbols** always **two facets**: **Knowledge** (explain) + **Process** (compute). Unload removes both.
+- **Language symbols** always **two facets**: **Use** (speak/read in the language) + **About** (metalanguage). Slang packs are dual-facet registers.
+- **Other domains** default to **knowledge only**.
+- See [docs/SYMBOL-FACETS.md](docs/SYMBOL-FACETS.md). Host LLM biases are never injected.
 
 ### Sealed symbols (train → seal → load)
 

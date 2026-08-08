@@ -63,15 +63,8 @@
         (getf man :caps)
         nil)))
 
-(defun %symbol-register-caps-from-manifest! (id man)
-  (dolist (c (symbol-pack-capabilities man))
-    (symbol-capability-register! c id)))
-
-(defun %symbol-unregister-caps! (id)
-  (maphash (lambda (k ids)
-             (when (member id ids :test #'string-equal)
-               (symbol-capability-unregister! k id)))
-           *symbol-capabilities*))
+;;; %symbol-register-caps-from-manifest! / %symbol-unregister-caps!
+;;; defined below with dual-facet registration (product law).
 
 ;;; ---- ensure default knowledge packs exist ------------------------
 
@@ -430,24 +423,181 @@
 
 ;;; ---- freeform gates ----------------------------------------------
 
+;;; ---- dual-facet product law --------------------------------------
+;;; Math symbols: always (:knowledge :process)
+;;; Language symbols: always (:use :about)
+;;; Domain/history/etc.: default (:knowledge) only unless they ship a procedure.
+
+(defparameter *symbol-facet-store* (make-hash-table :test #'equal)
+  "pack-id → list of facet keywords currently provided by that pack.")
+
+(defun symbol-facet-register! (id facets)
+  (setf (gethash (string id) *symbol-facet-store*)
+        (mapcar (lambda (f) (intern (string-upcase (string f)) :keyword))
+                (or facets nil)))
+  t)
+
+(defun symbol-facet-unregister! (id)
+  (remhash (string id) *symbol-facet-store*)
+  t)
+
+(defun symbol-facets-for (id)
+  (gethash (string id) *symbol-facet-store*))
+
+(defun symbol-facet-enabled-p (facet)
+  "T if some loaded symbol currently provides FACET (:knowledge :process :use :about)."
+  (let ((want (intern (string-upcase (string facet)) :keyword))
+        (hit nil))
+    (maphash
+     (lambda (id facets)
+       (when (and (member want facets)
+                  (or (gethash id *symbol-pack-enabled*)
+                      (find id *symbol-pack-overlays*
+                            :key (lambda (x) (getf x :id)) :test #'string-equal)
+                      (%pack-layer-get id)))
+         (setf hit t)))
+     *symbol-facet-store*)
+    hit))
+
+(defun symbol-default-facets-for-caps (caps)
+  "Infer dual-facet product law from capability list."
+  (let* ((cs (mapcar #'%cap-key (or caps nil)))
+         (math-p (some (lambda (c)
+                         (member c '("math" "algebra" "geometry" "trigonometry"
+                                      "calculus" "statistics" "arithmetic" "reasoning")
+                                 :test #'string-equal))
+                       cs))
+         (lang-p (some (lambda (c)
+                         (member c '("nl" "chitchat" "concepts" "language" "slang")
+                                 :test #'string-equal))
+                       cs)))
+    (cond
+      (math-p '(:knowledge :process))
+      (lang-p '(:use :about))
+      (t '(:knowledge)))))
+
+(defun %symbol-register-caps-from-manifest! (id man)
+  (let ((caps (symbol-pack-capabilities man))
+        (facets (or (getf man :facets)
+                    (symbol-default-facets-for-caps
+                     (symbol-pack-capabilities man)))))
+    (dolist (c caps)
+      (symbol-capability-register! c id))
+    (symbol-facet-register! id facets)
+    t))
+
+(defun %symbol-unregister-caps! (id)
+  (maphash (lambda (k ids)
+             (when (member id ids :test #'string-equal)
+               (symbol-capability-unregister! k id)))
+           *symbol-capabilities*)
+  (symbol-facet-unregister! id)
+  t)
+
 (defun symbol-math-answer (question)
-  "Math only if math symbol capability is loaded."
-  (when (symbol-capability-enabled-p :math)
+  "PROCESS facet: compute only if math capability is loaded
+   (math packs always register :process under dual-facet law)."
+  (when (and (symbol-capability-enabled-p :math)
+             (or (symbol-facet-enabled-p :process)
+                 ;; no facet store yet (boot race) — capability alone
+                 (null (let ((n 0))
+                         (maphash (lambda (k v) (declare (ignore k v)) (incf n))
+                                  *symbol-facet-store*)
+                         n))))
     (%iface-math-answer question)))
 
+(defun symbol-math-knowledge-answer (question &optional mind)
+  "KNOWLEDGE facet: explain/recall from loaded math-domain facts (not compute)."
+  (unless (and (symbol-capability-enabled-p :math)
+               (or (symbol-facet-enabled-p :knowledge)
+                   (symbol-capability-enabled-p :math)))
+    (return-from symbol-math-knowledge-answer nil))
+  (let* ((m (or mind *mind*))
+         (q (string-downcase (or question "")))
+         (hits nil))
+    (when m
+      (dolist (f (facts m))
+        (when (and (consp f)
+                   (symbolp (first f))
+                   (member (string-upcase (symbol-name (first f)))
+                           '("DOMAIN-DEF" "DOMAIN-IDENTITY" "CAPABILITY")
+                           :test #'string=))
+          (let ((s (format nil "~{~A~^ ~}" f)))
+            (when (some (lambda (tok)
+                          (and (> (length tok) 3)
+                               (search tok (string-downcase s))))
+                        (cl-ppcre:split "\\s+" q))
+              (push s hits))))))
+    (when hits
+      (list :freeform :math-knowledge
+            :reply-text
+            (format nil "From loaded math symbols:~%~{• ~A~%~}"
+                    (subseq hits 0 (min 5 (length hits))))
+            :source :math-knowledge
+            :facet :knowledge))))
+
 (defun symbol-nl-chitchat (question mind)
-  "Natural-language symbol: variable English chitchat (phrase banks)."
-  (when (or (symbol-capability-enabled-p :nl)
-            (symbol-capability-enabled-p :chitchat)
-            (symbol-capability-enabled-p :language))
+  "USE facet: speak/interpret in natural language when NL symbol loaded."
+  (when (and (or (symbol-capability-enabled-p :nl)
+                 (symbol-capability-enabled-p :chitchat)
+                 (symbol-capability-enabled-p :language))
+             (or (symbol-facet-enabled-p :use)
+                 (symbol-capability-enabled-p :nl)
+                 (symbol-capability-enabled-p :language)))
     (or (%symbol-nl-chitchat-variants question mind)
         (%iface-chitchat question mind))))
 
 (defun symbol-nl-concept (question)
-  (when (or (symbol-capability-enabled-p :nl)
-            (symbol-capability-enabled-p :concepts)
-            (symbol-capability-enabled-p :language))
+  "ABOUT facet path for concepts when language/concepts capability loaded."
+  (when (and (or (symbol-capability-enabled-p :nl)
+                 (symbol-capability-enabled-p :concepts)
+                 (symbol-capability-enabled-p :language))
+             (or (symbol-facet-enabled-p :about)
+                 (symbol-capability-enabled-p :concepts)
+                 (symbol-capability-enabled-p :nl)))
     (%iface-concept-answer question)))
+
+(defun symbol-nl-about-answer (question &optional mind)
+  "ABOUT facet: metalanguage — answer questions about the language itself."
+  (unless (and (or (symbol-capability-enabled-p :nl)
+                   (symbol-capability-enabled-p :language)
+                   (symbol-capability-enabled-p :concepts))
+               (or (symbol-facet-enabled-p :about)
+                   (symbol-capability-enabled-p :nl)))
+    (return-from symbol-nl-about-answer nil))
+  (let* ((m (or mind *mind*))
+         (q (string-downcase (or question "")))
+         (about-p (or (search "what is" q)
+                      (search "what's" q)
+                      (search "mean" q)
+                      (search "define" q)
+                      (search "grammar" q)
+                      (search "slang" q)
+                      (search "noun" q)
+                      (search "verb" q)))
+         (hits nil))
+    (unless about-p (return-from symbol-nl-about-answer nil))
+    (when m
+      (dolist (f (facts m))
+        (when (and (consp f)
+                   (symbolp (first f))
+                   (member (string-upcase (symbol-name (first f)))
+                           '("WORD-DEF" "DOMAIN-DEF" "CAPABILITY")
+                           :test #'string=))
+          (let ((s (format nil "~{~A~^ ~}" f)))
+            (when (some (lambda (tok)
+                          (and (> (length tok) 2)
+                               (search tok (string-downcase s))))
+                        (cl-ppcre:split "\\s+" q))
+              (push s hits))))))
+    (or (when hits
+          (list :freeform :nl-about
+                :reply-text
+                (format nil "About the language (loaded symbol):~%~{• ~A~%~}"
+                        (subseq hits 0 (min 5 (length hits))))
+                :source :nl-about
+                :facet :about))
+        (symbol-nl-concept question))))
 
 (defun symbol-loaded-summary ()
   "Short list of currently loaded/enabled symbol ids for status UI."
@@ -476,6 +626,7 @@
 (defun symbol-runtime-boot! (&key (mind nil) (defaults t))
   "Boot open-knowledge + core capability symbols (math, NL, local-user)."
   (clrhash *symbol-capabilities*)
+  (clrhash *symbol-facet-store*)
   (symbol-pack-boot!)
   (symbol-ensure-core-packs!)
   (when defaults

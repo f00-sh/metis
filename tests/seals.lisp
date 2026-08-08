@@ -237,6 +237,69 @@
                                   (equal (second f) "math")))
                            (metis:facts metis:*mind*))))))))
 
+(test dual-facet-math-knowledge-and-process
+  "Math symbols: knowledge + process facets; unload removes both."
+  (metis:boot :bootstrap t :reset t)
+  ;; isolate fixture from default boot symbols
+  (ignore-errors (metis:symbol-pack-disable! "math" :mind metis:*mind*))
+  (ignore-errors (metis::%symbol-unregister-caps! "math"))
+  (let* ((dest (merge-pathnames "df-math/" *seal-scratch*))
+         (src (list :id "df-math" :version "1.0.0" :license "MIT"
+                    :capabilities '(:math :reasoning)
+                    :facets '(:knowledge :process)
+                    :facts '((domain-def "df-math" "pemdas"
+                               "parentheses exponents multiply divide add subtract")
+                             (capability math "process+knowledge"))
+                    :corpus '("pemdas: parentheses exponents multiply divide add subtract"))))
+    (ensure-directories-exist dest)
+    (metis:symbol-seal! src dest :mode :open-sealed :trust-tier :community)
+    (metis:symbol-seal-load! dest :mind metis:*mind*)
+    (is-true (metis:symbol-capability-enabled-p :math))
+    (is-true (metis:symbol-facet-enabled-p :process))
+    (is-true (metis:symbol-facet-enabled-p :knowledge))
+    (let ((proc (metis:symbol-math-answer "what is 2+2")))
+      (is (consp proc))
+      (is (eq :math (getf proc :freeform))))
+    (let ((know (metis:symbol-math-knowledge-answer "what is pemdas" metis:*mind*)))
+      (is (consp know))
+      (is (eq :math-knowledge (getf know :freeform)))
+      (is (search "pemdas" (string-downcase (getf know :reply-text)))))
+    (metis:symbol-pack-disable! "df-math" :mind metis:*mind*)
+    (metis::%symbol-unregister-caps! "df-math")
+    (is-false (metis:symbol-capability-enabled-p :math))
+    (is-false (metis:symbol-math-answer "2+2"))
+    (is-false (metis:symbol-math-knowledge-answer "pemdas" metis:*mind*))))
+
+(test dual-facet-language-use-and-about
+  "Language symbols: use + about; unload removes both."
+  (metis:boot :bootstrap t :reset t)
+  (ignore-errors (metis:symbol-pack-disable! "natural-language" :mind metis:*mind*))
+  (ignore-errors (metis::%symbol-unregister-caps! "natural-language"))
+  (let* ((dest (merge-pathnames "df-lang/" *seal-scratch*))
+         (src (list :id "df-lang" :version "1.0.0" :license "MIT"
+                    :capabilities '(:nl :language :concepts :chitchat)
+                    :facets '(:use :about)
+                    :facts '((word-def "noun" "a word that names a person place or thing")
+                             (capability natural-language "use+about"))
+                    :corpus '("noun: a word that names a person place or thing"))))
+    (ensure-directories-exist dest)
+    (metis:symbol-seal! src dest :mode :open-sealed :trust-tier :community)
+    (metis:symbol-seal-load! dest :mind metis:*mind*)
+    (is-true (metis:symbol-capability-enabled-p :nl))
+    (is-true (metis:symbol-facet-enabled-p :use))
+    (is-true (metis:symbol-facet-enabled-p :about))
+    (let ((use (metis:symbol-nl-chitchat "hello" metis:*mind*)))
+      (is (consp use))
+      (is (stringp (getf use :reply-text))))
+    (let ((about (metis:symbol-nl-about-answer "what is a noun" metis:*mind*)))
+      (is (consp about))
+      (is (search "noun" (string-downcase (getf about :reply-text)))))
+    (metis:symbol-pack-disable! "df-lang" :mind metis:*mind*)
+    (metis::%symbol-unregister-caps! "df-lang")
+    (is-false (metis:symbol-capability-enabled-p :nl))
+    (is-false (metis:symbol-nl-chitchat "hello" metis:*mind*))
+    (is-false (metis:symbol-nl-about-answer "what is a noun" metis:*mind*))))
+
 (test seal-cli-new-ingest-train-path
   "Shipped CLI: symbol new --name/--license, symbol ingest file.txt (guide §2–3)."
   (let* ((scratch (merge-pathnames "cli-kit/" *seal-scratch*))
